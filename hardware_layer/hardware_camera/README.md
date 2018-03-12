@@ -26,12 +26,19 @@ Next we make sure that we have permissions to activate
 sudo chmod o+x /dev/front_cam
 sudo chmod o+x /dev/bottom_cam
 ```
-### Building Arduino code
+### Building Camera code
 
 Run the following command:
 ```
 cd ~/catkin_ws
 catkin_make --pkg hardware_camera
+```
+### Setting up Udev Rules
+
+Run the following command
+```
+cd ~/catkin_ws/src/auv2018/utils
+sudo bash clone_udev.sh
 ```
 
 ## Usage
