@@ -1,8 +1,0 @@
-<launch>
-    <!--<node name="yawDirect" pkg="hardware_imu" respawn="true" type="yawDirect"/>-->
-    <!--<node name="serial_node" pkg="hardware_arduino" respawn="true" type="serial_node.sh"/>-->
-    <node name="cameras" output="screen" pkg="hardware_camera" respawn="true" type="vid_pub">
-        <param name="error_angle" type="double" value="0.0" />
-        <param name="flag" type="int" value="0" />
-  </node>
-</launch>

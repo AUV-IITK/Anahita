@@ -9,6 +9,7 @@ The `hardware_arduino` package has been tested under [ROS](http://www.ros.org) K
 The hardware used are as follows:
 * [Arduino MEGA](https://store.arduino.cc/usa/arduino-mega-2560-rev3)
 * [8V-28V, 5Amp Dual DC Motor Driver with Current Sensor](http://www.nex-robotics.com/products/motor-drivers/8v-28v-5amp-dual-dc-motor-driver-with-current-sense.html)
+* [Pressure Sensor](https://www.bluerobotics.com/store/electronics/bar30-sensor-r1/)
 
 
 ## Setting up Arduino
@@ -55,19 +56,37 @@ Run the following command:
 cd ~/catkin_ws
 catkin_make --pkg hardware_arduino
 ```
+### Setting up the Udev rules for arduino
 
+Run the following command:
+```
+cd ~/catkin_ws/src/auv2018/utils
+sudo bash clone_udev.sh
+```
 ## Usage
 
 To connect to the arduino, run:
 ```
-roslaunch hardware_arduino hardware_nodes.launch
+roslaunch hardware_arduino hardware_arduino.launch
 ```
+First upload the code on arduino through Arduino IDE.
 
 ## Nodes
 
 ### arduino_node
+Subscribes to topics with PWM data and actuate the thrusters with that duty cycle, and also publishes the data obtained from pressure sensor
 
 #### Subscribed Topics
+* **`/ard/east`** ([std_msgs/Int32])
+* **`/ard/west`** ([std_msgs/Int32])
+* **`/ard/northsway`** ([std_msgs/Int32])
+* **`/ard/southsway`** ([std_msgs/Int32])
+* **`/ard/northup`** ([std_msgs/Int32])
+* **`/ard/southup`** ([std_msgs/Int32])
+
+#### Published Topics
+* **`/varun/sensors/pressure_sensor/depth`** ([std_msgs/Int32])
+
 
 ## Bugs & Feature Requests
 
