@@ -2,30 +2,31 @@
 
 ## Overview
 
-This is a ROS package for interacting arduino through the [usb_cam](http://wiki.ros.org/usb_cam) package. The package is meant to activate cameras connected to the system, and publish the measurements taken from the front and bottom camera onto separate topics.
+This is a ROS package for getting feed from the camera using [usb_cam](http://wiki.ros.org/usb_cam) and publishing it as a [sensor_msgs/Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html) to the other layers.
 
 The `hardware_camera` package has been tested under [ROS](http://www.ros.org) Kinetic and Ubuntu 16.04 LTS. The source code is released under a [BSD 3-Clause license](LICENSE.md).
 
 The hardware used are as follows:
-* [Logitech C930e](https://www.logitech.com/en-in/product/c930e-webcam)
+* Front-facing Camera: [Logitech C930e](https://www.logitech.com/en-in/product/c930e-webcam)
+* Bottom-facing Camera: [Logitech C930e](https://www.logitech.com/en-in/product/c930e-webcam)
 
-## Setting up Arduino
+## Setting up hardware_camera
 
 ### Dependencies
 
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics),
 - Following ROS Packages: [usb_cam](http://wiki.ros.org/usb_cam)
 
-### Preparing the Serial Port
-Camera will likely connect to computer as port `/dev/front_cam` and `/dev/bottom_cam`.
+### Preparing the Serial Port via udev rules
+
+The udev rules for the cameras connected to the robot are present in the [/utils/udev] directory. To copy them to your system, run:
 ```
-ls /dev*
+cd ~/catkin_ws/src/auv2018/utils
+sudo bash clone_udev.sh
 ```
-Next we make sure that we have permissions to activate
-```
-sudo chmod o+x /dev/front_cam
-sudo chmod o+x /dev/bottom_cam
-```
+
+Camera will then be connected to the ports with id `/dev/front_cam` and `/dev/bottom_cam`.
+
 ### Building Camera code
 
 Run the following command:
@@ -33,29 +34,53 @@ Run the following command:
 cd ~/catkin_ws
 catkin_make --pkg hardware_camera
 ```
-### Setting up Udev Rules
-
-Run the following command
-```
-cd ~/catkin_ws/src/auv2018/utils
-sudo bash clone_udev.sh
-```
 
 ## Usage
 
-To connect to the arduino, run:
+To initialize the cmaera nodes, run:
 ```
-roslaunch hardware_camera camera_config.launch
+roslaunch hardware_camera camera_logitech.launch
 ```
 
 ## Nodes
 
-#### Subscribed Topics
-All topic subscribed by usb_cam package
+### front_camera
+
+The `usb_cam_node` interfaces with standard USB cameras (e.g. the Logitech Quickcam) using libusb_cam and publishes images as `sensor_msgs::Image`. The node belongs to the [usb_cam](http://wiki.ros.org/usb_cam) package.
+
+#### Published Topics
+* **`hardware_camera/front_cam/image_raw`** ([sensor_msgs/Image])
+
+#### Parameters
+* `~image_width` (integer, default: 1280)
+        Image width
+* `~image_height` (integer, default: 720)
+        Image height
+* `~framerate` (integer, default: 30)
+        The required framerate
+* `~camera_info_url` (string, default: )
+        An url to the camera calibration file that will be read by the [CameraInfoManager](http://wiki.ros.org/CameraInfoManager) class
+
+### bottom_camera
+
+The `usb_cam_node` interfaces with standard USB cameras (e.g. the Logitech Quickcam) using libusb_cam and publishes images as `sensor_msgs::Image`. The node belongs to the [usb_cam](http://wiki.ros.org/usb_cam) package.
+
+#### Published Topics
+* **`bottom_camera/image_raw`** ([sensor_msgs/Image])
+
+#### Parameters
+* `~image_width` (integer, default: 1280)
+        Image width
+* `~image_height` (integer, default: 720)
+        Image height
+* `~framerate` (integer, default: 30)
+        The required framerate
+* `~camera_info_url` (string, default: )
+        An url to the camera calibration file that will be read by the [CameraInfoManager](http://wiki.ros.org/CameraInfoManager) class.
+
 
 ## Bugs & Feature Requests
 
-Please report bugs and request features using the [Issue Tracker](https://github.com/AUV-IITK/auv2017/issues).
+Please report bugs and request features using the [Issue Tracker](https://github.com/AUV-IITK/auv2018/issues).
 
 [sensor_msgs/Image]: http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
-
