@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>hardware_camera</name>
+  <version>0.0.1</version>
+  <description>The hardware_camera package runs the bottom and front cameras connected to the AUV.</description>
+
+  <maintainer email="suryansh.a98@gmail.com">Suryansh</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>usb_cam</build_depend>
+  <run_depend>usb_cam</run_depend>
+
+</package>

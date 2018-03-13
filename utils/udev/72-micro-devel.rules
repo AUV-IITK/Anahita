@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty" ATTRS{manufacturer}=="Arduino (www.arduino.cc)" SYMLINK+="arduino"
