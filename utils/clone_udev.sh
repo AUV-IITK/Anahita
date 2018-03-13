@@ -12,12 +12,12 @@ if (( $EUID != 0 )); then
    	echo -e "${RED}[ERROR] Please run the script as root${NC}"
     	exit
 else
-	cd $(dirname $0) 
+	cd $(dirname $0)
 
 	# Copy webcamera udev rules
 	sudo cp -i ./udev/83-webcam.rules /etc/udev/rules.d/
-    sudo cp -i ./udev/72-micro-devel.rules /etc/udev/rules.d/
+  sudo cp -i ./udev/72-micro-devel.rules /etc/udev/rules.d/
 
 	echo -e "${GREEN}[INFO] Copied udev rules to /etc/udev/rules.d successfully${NC}"
-    
+
 fi

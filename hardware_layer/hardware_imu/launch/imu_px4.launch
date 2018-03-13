@@ -1,0 +1,15 @@
+<launch>
+
+  <arg name="fcu_url"     default="/dev/ttyACM0:921600"/>
+  <arg name="gcs_url"     default="udp://@172.16.254.1"/>
+  <arg name="config_yaml" default="$(find hardware_imu)/cfg/px4_config.yaml" />
+
+  <node name="imu_px4" pkg="mavros" type="mavros_node" clear_params="true" output="screen">
+    <param name="fcu_url" value="$(arg fcu_url)" />
+    <param name="gcs_url" value="$(arg fcu_url)" />
+
+    <!-- load blacklist, config -->
+    <rosparam command="load" file="$(arg config_yaml)" />
+  </node>
+
+</launch>
