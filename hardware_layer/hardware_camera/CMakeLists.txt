@@ -5,12 +5,11 @@ project(hardware_camera)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roslint
   usb_cam
 )
 
 ## System dependencies are found with CMake's conventions
-roslint_cpp()
+# roslint_cpp()
 
 ###################################
 ## catkin specific configuration ##
@@ -23,8 +22,8 @@ roslint_cpp()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   #  INCLUDE_DIRS include
-  #  LIBRARIES 
-  CATKIN_DEPENDS usb_cam  
+  #  LIBRARIES
+  CATKIN_DEPENDS usb_cam
   #  DEPENDS system_lib
 )
 
