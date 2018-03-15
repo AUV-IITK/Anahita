@@ -54,6 +54,8 @@ void setup()
     ANORTHUP.setPins(pwmPinNorthUp,directionPinNorthUp1,directionPinNorthUp2);
     ASOUTHUP.setPins(pwmPinSouthUp,directionPinSouthUp1,directionPinSouthUp2);
     
+    nh.getHardware()->setBaud(57600);
+
     nh.subscribe(subPwmEast);
     nh.subscribe(subPwmWest);
     nh.subscribe(subPwmNorthSway);
@@ -62,6 +64,10 @@ void setup()
     nh.subscribe(subPwmSouthUp);
     nh.advertise(ps_voltage);
     
+    while (!nh.connected())
+    {
+        nh.spinOnce();
+    }
     Serial.begin(57600);
     
     std_msgs::Int32 v;
