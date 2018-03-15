@@ -2,12 +2,12 @@
 
 #include <std_msgs/Int32.h>
 #include <math.h>
-#include "thruster.h"
+#include "Thruster.h"
 
-//instances of the class thruster defined in header file
-thruster TEAST,TWEST,TNORTHUP,TSOUTHUP,TNORTHSWAY,TSOUTHSWAY;
+//instances of the class Thruster defined in header file
+Thruster TEAST,TWEST,TNORTHUP,TSOUTHUP,TNORTHSWAY,TSOUTHSWAY;
 
-bool isMovingForward = false; //variable to distinguish for turning with forward or sideward thrusters
+bool isMovingForward = false; //variable to distinguish for turning with forward or sideward Thrusters
 
 ros::NodeHandle n;
 
@@ -62,7 +62,7 @@ void TurnCB(const std_msgs::Int32& msg)
 {
     int pwm = msg.data;
     std_msgs::Int32 v;
-    if(!isMovingForward)    //checking if forward thrusters are not preoccupied
+    if(!isMovingForward)    //checking if forward Thrusters are not preoccupied
     {
         TEAST.calibration(pwm, TEAST.mode(abs(pwm)));
         TWEST.calibration(-pwm, TWEST.mode(abs(pwm)));
@@ -71,7 +71,7 @@ void TurnCB(const std_msgs::Int32& msg)
         v.data = TWEST.getPWM();
         pubPwmWest.publish(v);
     }
-    else    ///forward thrusters are already in motion
+    else    ///forward Thrusters are already in motion
     {
         TNORTHSWAY.calibration(pwm, TNORTHSWAY.mode(abs(pwm)));
         TSOUTHSWAY.calibration(-pwm, TSOUTHSWAY.mode(abs(pwm)));

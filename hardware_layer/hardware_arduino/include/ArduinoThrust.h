@@ -1,19 +1,19 @@
-#ifndef arduino_thrust_h
-#define arduino_thrust_h
+#ifndef ArduinoThrust_H
+#define ArduinoThrust_H
 
 using namespace std;
 
-class arduino_thrust
+class ArduinoThrust
 {
     public:
     
-        arduino_thrust();
+        ArduinoThrust();
     
         //sets the direction and pwm pins for the thrusters and initiate them as outputs
         void setPins(int A1, int D1, int D2);
     
         //applies analogwrite and digitalwrite functions in arduino
-        void ON(int pwm, bool Dir1, bool Dir2);
+        void ON(int pwm);
     
     private:
         int An1_;   //stores the analog pin number for the thruster on arduino

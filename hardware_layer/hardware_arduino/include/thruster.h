@@ -1,15 +1,15 @@
-#ifndef thruster_h
-#define thruster_h
+#ifndef Thruster_H
+#define Thruster_H
 using namespace std;
 
-struct thrusterMode         //structure to store the three speed mode values in one direction
+struct ThrusterMode         //structure to store the three speed mode values in one direction
 {
     int High;
     int Med;
     int Low;
 };
 
-class thruster
+class Thruster
 {
 	public:
 
@@ -27,8 +27,8 @@ class thruster
 
 	private:
         int pwm_;        //stores the value of pwm corresponding to each thruster
-        thrusterMode clock_;     //stores the value of high,med and low pwm values for clockwise direction
-        thrusterMode anticlock_;    //stores the value of high,med and low pwm values for anticlockwise direction
+        ThrusterMode clock_;     //stores the value of high,med and low pwm values for clockwise direction
+        ThrusterMode anticlock_;    //stores the value of high,med and low pwm values for anticlockwise direction
 };
 
 #endif
