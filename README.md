@@ -1,6 +1,6 @@
-# AUV Triton
+# AUV Hyperion
 
-This repository contains the code for our second underwater vehicle `Triton`. 
+This repository contains the code for our second underwater vehicle `Hyperion`. 
 
 ## How to build the repository?
 
