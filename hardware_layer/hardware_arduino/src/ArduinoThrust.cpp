@@ -1,9 +1,9 @@
 #include "Arduino.h"
-#include "arduino_thrust.h"
+#include "../include/ArduinoThrust.h"
 
 using namespace std;
 
-void arduino_thrust::setPins(int A1, int D1, int D2)
+void ArduinoThrust::setPins(int A1, int D1, int D2)
 {
     An1_ = A1;
     D1_ = D1;
@@ -13,7 +13,7 @@ void arduino_thrust::setPins(int A1, int D1, int D2)
     pinMode(D2_, OUTPUT);
 }
 
-void arduino_thrust::ON(int pwm)
+void ArduinoThrust::ON(int pwm)
 {
     if(pwm > 0)
     {

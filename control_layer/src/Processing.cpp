@@ -2,7 +2,7 @@
 
 #include <std_msgs/Int32.h>
 #include <math.h>
-#include "Thruster.h"
+#include "../include/Thruster.h"
 
 //instances of the class Thruster defined in header file
 Thruster TEAST,TWEST,TNORTHUP,TSOUTHUP,TNORTHSWAY,TSOUTHSWAY;

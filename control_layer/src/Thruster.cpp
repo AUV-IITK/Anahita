@@ -1,4 +1,4 @@
-#include "thruster.h"
+#include "../include/Thruster.h"
 
 #define HIGH 3
 #define MED 2
@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int thruster::mode(int P)
+int Thruster::mode(int P)
 {
     if(P == 0)
         return 0;
@@ -18,11 +18,11 @@ int thruster::mode(int P)
         return HIGH;
 }
 
-int thruster::getPWM(){
+int Thruster::getPWM(){
   return pwm_;
 }
 
-void thruster::setValues(int HC, int MC, int LC, int HAC, int MAC, int LAC)
+void Thruster::setValues(int HC, int MC, int LC, int HAC, int MAC, int LAC)
 {
     clock_.High = HC;
     clock_.Med = MC;
@@ -32,7 +32,7 @@ void thruster::setValues(int HC, int MC, int LC, int HAC, int MAC, int LAC)
     anticlock_.Low = LAC;
 }
 
-void thruster::calibration(int PWM, int M)
+void Thruster::calibration(int PWM, int M)
 {
     bool positive = true;
     if(M == 0 && PWM == 0)

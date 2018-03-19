@@ -7,8 +7,6 @@ class ArduinoThrust
 {
     public:
     
-        ArduinoThrust();
-    
         //sets the direction and pwm pins for the thrusters and initiate them as outputs
         void setPins(int A1, int D1, int D2);
     

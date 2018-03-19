@@ -1,8 +1,8 @@
-#if (ARDUINO >= 100)
+/*#if (ARDUINO >= 100)
     #include <Arduino.h>
 #else
     #include <WProgram.h>
-#endif
+#endif*/
 
 #include "ros.h"
 #include <Arduino.h>
@@ -16,18 +16,23 @@
 
 MS5837 sensor;
 
-ArduinoThrust AEAST,AWEST,ANORTHUP,ASOUTHUP,ANORTHSWAY,ASOUTHSWAY;
+ArduinoThrust AEAST; 
+ArduinoThrust AWEST;
+ArduinoThrust ANORTHUP;
+ArduinoThrust ASOUTHUP;
+ArduinoThrust ANORTHSWAY;
+ArduinoThrust ASOUTHSWAY;
 
 float last_pressure_sensor_value, pressure_sensor_value;
 std_msgs::Float64 voltage;
 ros::NodeHandle nh;
 
-void TEastCb(const std_msgs::Int32 msg);
-void TWestCb(const std_msgs::Int32 msg);
-void TNorthSwayCb(const std_msgs::Int32 msg);
-void TSouthSwayCb(const std_msgs::Int32 msg);
-void TNorthUpCb(const std_msgs::Int32 msg);
-void TSouthUpCb(const std_msgs::Int32 msg);
+void TEastCb(const std_msgs::Int32& msg);
+void TWestCb(const std_msgs::Int32& msg);
+void TNorthSwayCb(const std_msgs::Int32& msg);
+void TSouthSwayCb(const std_msgs::Int32& msg);
+void TNorthUpCb(const std_msgs::Int32& msg);
+void TSouthUpCb(const std_msgs::Int32& msg);
 
 ros::Subscriber<std_msgs::Int32> subPwmEast("/ard/east", &TEastCb);
 ros::Subscriber<std_msgs::Int32> subPwmWest("/ard/west", &TWestCb);
@@ -100,33 +105,33 @@ void loop()
 }
 
 
-void TEastCb(const std_msgs::Int32 msg)
+void TEastCb(const std_msgs::Int32& msg)
 {
    AEAST.ON(msg.data);
 }
 
 
-void TWestCb(const std_msgs::Int32 msg)
+void TWestCb(const std_msgs::Int32& msg)
 {
     AWEST.ON(msg.data);
 }
 
-void TNorthSwayCb(const std_msgs::Int32 msg)
+void TNorthSwayCb(const std_msgs::Int32& msg)
 {
    ANORTHSWAY.ON(msg.data);
 }
 
-void TSouthSwayCb(const std_msgs::Int32 msg)
+void TSouthSwayCb(const std_msgs::Int32& msg)
 {
     ASOUTHSWAY.ON(msg.data);
 }
 
-void TNorthUpCb(const std_msgs::Int32 msg)
+void TNorthUpCb(const std_msgs::Int32& msg)
 {
    ANORTHUP.ON(msg.data);
 }
 
-void TSouthUpCb(const std_msgs::Int32 msg)
+void TSouthUpCb(const std_msgs::Int32& msg)
 {
     ASOUTHUP.ON(msg.data);
 }
