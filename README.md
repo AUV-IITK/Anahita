@@ -6,8 +6,7 @@ This repository contains the code for our second underwater vehicle `Hyperion`.
 
 | S. No. 	| Operating System 	|  ROS Version 	| Build Status 	|
 |:------:	|:----------------:	|:------------:	|:------------:	|
-| 1.     	| [Ubuntu 16.04 LTS](http://releases.ubuntu.com/16.04/) 	| [Kinetic Kame](http://wiki.ros.org/kinetic) 	|  [![Build Status](https://travis-ci.org/AUV-IITK/auv2018.svg?branch=master)](https://travis-ci.org/AUV-IITK/auv2018)
- |
+| 1.     	| [Ubuntu 16.04 LTS](http://releases.ubuntu.com/16.04/) 	| [Kinetic Kame](http://wiki.ros.org/kinetic) 	|  [![Build Status](https://travis-ci.org/AUV-IITK/auv2018.svg?branch=master)](https://travis-ci.org/AUV-IITK/auv2018)|
 
 ## How to build the repository?
 
