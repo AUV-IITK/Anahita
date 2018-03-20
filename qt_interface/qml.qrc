@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MainForm.ui.qml</file>
+        <file>welcome.qml</file>
+        <file>snippets.qml</file>
+        <file>sensors.qml</file>
+        <file>sensor_topics.qml</file>
+        <file>sensor_stats.qml</file>
+        <file>sensor_name.qml</file>
+        <file>remote.qml</file>
+        <file>reconfig.qml</file>
+        <file>nodes.qml</file>
+        <file>node_des1.qml</file>
+        <file>monitor.qml</file>
+        <file>data_log.qml</file>
+        <file>up.png</file>
+        <file>logo .png</file>
+        <file>down.png</file>
+        <file>remote/thrust6.qml</file>
+        <file>remote/thrust5.qml</file>
+        <file>remote/thrust4.qml</file>
+        <file>remote/thrust3.qml</file>
+        <file>remote/thrust2.qml</file>
+        <file>remote/thrust1.qml</file>
+        <file>remote/remote_upward.qml</file>
+        <file>remote/remote_sway.qml</file>
+        <file>remote/remote_forward.qml</file>
+        <file>remote/clock.png</file>
+        <file>remote/anticlock.png</file>
+    </qresource>
+</RCC>
