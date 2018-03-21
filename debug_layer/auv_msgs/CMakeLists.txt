@@ -20,6 +20,7 @@ add_message_files(
     msg
   FILES
     Pressure.msg
+    Depth.msg
 )
 
 ## Generate services in the 'srv' folder
