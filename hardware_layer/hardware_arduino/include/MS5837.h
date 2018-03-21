@@ -39,63 +39,65 @@ THE SOFTWARE.
 
 #include "Arduino.h"
 
-class MS5837
-{
+class MS5837 {
 public:
-  static constexpr float Pa = 100.0f;
-  static constexpr float bar = 0.001f;
-  static constexpr float mbar = 1.0f;
+	static const float Pa;
+	static const float bar;
+	static const float mbar;
 
-  MS5837();
+	static const uint8_t MS5837_30BA;
+	static const uint8_t MS5837_02BA;
 
-  void init();
+	MS5837();
 
-  /** Provide the density of the working fluid in kg/m^3. Default is for
-   * seawater. Should be 997 for freshwater.
-   */
-  void setFluidDensity(float density);
+	bool init();
 
-  /** The read from I2C takes up for 40 ms, so use sparingly is possible.
-   */
-  void read();
+	/** Set model of MS5837 sensor. Valid options are MS5837::MS5837_30BA (default)
+	 * and MS5837::MS5837_02BA.
+	 */
+	void setModel(uint8_t model);
 
-  /** This function loads the datasheet test case values to verify that
-   *  calculations are working correctly. No example checksum is provided
-   *  so the checksum test may fail.
-   */
-  void readTestCase();
+	/** Provide the density of the working fluid in kg/m^3. Default is for
+	 * seawater. Should be 997 for freshwater.
+	 */
+	void setFluidDensity(float density);
 
-  /** Pressure returned in mbar or mbar*conversion rate.
-   */
-  float pressure(float conversion = 1.0f);
+	/** The read from I2C takes up to 40 ms, so use sparingly is possible.
+	 */
+	void read();
 
-  /** Temperature returned in deg C.
-   */
-  float temperature();
+	/** Pressure returned in mbar or mbar*conversion rate.
+	 */
+	float pressure(float conversion = 1.0f);
 
-  /** Depth returned in meters (valid for operation in incompressible
-   *  liquids only. Uses density that is set for fresh or seawater.
-   */
-  float depth();
+	/** Temperature returned in deg C.
+	 */
+	float temperature();
 
-  /** Altitude returned in meters (valid for operation in air only).
-   */
-  float altitude();
+	/** Depth returned in meters (valid for operation in incompressible
+	 *  liquids only. Uses density that is set for fresh or seawater.
+	 */
+	float depth();
+
+	/** Altitude returned in meters (valid for operation in air only).
+	 */
+	float altitude();
 
 private:
-  uint16_t C[8];
-  uint32_t D1, D2;
-  int32_t TEMP;
-  int32_t P;
+	uint16_t C[8];
+	uint32_t D1, D2;
+	int32_t TEMP;
+	int32_t P;
+	uint8_t _model;
 
-  float fluidDensity;
+	float fluidDensity;
 
-  /** Performs calculations per the sensor data sheet for conversion and
-   *  second order compensation.
-   */
-  void calculate();
+	/** Performs calculations per the sensor data sheet for conversion and
+	 *  second order compensation.
+	 */
+	void calculate();
 
-  uint8_t crc4(uint16_t n_prom[]);
+	uint8_t crc4(uint16_t n_prom[]);
 };
 
 #endif
