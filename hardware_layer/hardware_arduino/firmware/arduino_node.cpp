@@ -1,137 +1,172 @@
-/*#if (ARDUINO >= 100)
-    #include <Arduino.h>
-#else
-    #include <WProgram.h>
-#endif*/
-
-#include "ros.h"
 #include <Arduino.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float64.h>
-#include <math.h>
 #include <Wire.h>
-#include "../include/MS5837.h"
-#include "../include/ArduinoThrust.h"
-#include "../include/ArduinoConfig.h"
 
-MS5837 sensor;
+#include <ros.h>
+#include <ros/time.h>
+#include <std_msgs/Int32.h>
+#include <auv_msgs/Pressure.h>
+#include <auv_msgs/Depth.h>
 
-ArduinoThrust AEAST; 
-ArduinoThrust AWEST;
-ArduinoThrust ANORTHUP;
-ArduinoThrust ASOUTHUP;
-ArduinoThrust ANORTHSWAY;
-ArduinoThrust ASOUTHSWAY;
+#include "MS5837.h"
+#include "Thruster.h"
+#include "ArduinoConfig.h"
 
-float last_pressure_sensor_value, pressure_sensor_value;
-std_msgs::Float64 voltage;
+// define rate at which sensor data should be published (in Hz)
+#define PRESSURE_PUBLISH_RATE 10
+
+// pressure sensor
+MS5837 pressure_sensor;
+
+/*
+ROBOT ORIENTATION
+          FRONT
+          -----
+          SWAY1
+          HEAVE1
+            -
+  SURGE1           SURGE2
+            -
+          HEAVE2
+          SWAY2
+          -----
+          BACK
+*/
+Thruster surge1;
+Thruster surge2;
+Thruster heave1;
+Thruster heave2;
+Thruster sway1;
+Thruster sway2;
+
+// function declration to puboish pressure sensor data
+void publish_pressure_data();
+
+// callback function for thrsuters
+void surge1_callback(const std_msgs::Int32& msg);
+void surge2_callback(const std_msgs::Int32& msg);
+void heave1_callback(const std_msgs::Int32& msg);
+void heave2_callback(const std_msgs::Int32& msg);
+void sway1_callback(const std_msgs::Int32& msg);
+void sway2_callback(const std_msgs::Int32& msg);
+
+// defining rosnode handle
 ros::NodeHandle nh;
 
-void TEastCb(const std_msgs::Int32& msg);
-void TWestCb(const std_msgs::Int32& msg);
-void TNorthSwayCb(const std_msgs::Int32& msg);
-void TSouthSwayCb(const std_msgs::Int32& msg);
-void TNorthUpCb(const std_msgs::Int32& msg);
-void TSouthUpCb(const std_msgs::Int32& msg);
+// declare subscribers
+ros::Subscriber<std_msgs::Int32> surge1_pwm_pub("/thruster/surge1/pwm", &surge1_callback);
+ros::Subscriber<std_msgs::Int32> surge2_pwm_pub("/thruster/surge2/pwm", &surge2_callback);
+ros::Subscriber<std_msgs::Int32> heave1_pwm_pub("/thruster/heave1/pwm", &heave1_callback);
+ros::Subscriber<std_msgs::Int32> heave2_pwm_pub("/thruster/heave2/pwm", &heave2_callback);
+ros::Subscriber<std_msgs::Int32> sway1_pwm_pub("/thruster/sway1/pwm", &sway1_callback);
+ros::Subscriber<std_msgs::Int32> sway2_pwm_pub("/thruster/sway1/pwm", &sway2_callback);
 
-ros::Subscriber<std_msgs::Int32> subPwmEast("/ard/east", &TEastCb);
-ros::Subscriber<std_msgs::Int32> subPwmWest("/ard/west", &TWestCb);
-ros::Subscriber<std_msgs::Int32> subPwmNorthSway("/ard/northsway", &TNorthSwayCb);
-ros::Subscriber<std_msgs::Int32> subPwmSouthSway("/ard/southsway", &TSouthSwayCb);
-ros::Subscriber<std_msgs::Int32> subPwmNorthUp("/ard/northup", &TNorthUpCb);
-ros::Subscriber<std_msgs::Int32> subPwmSouthUp("/ard/southup", &TSouthUpCb);
-ros::Publisher ps_voltage("/varun/sensors/pressure_sensor/depth", &voltage);
+// declare publishers
+auv_msgs::Pressure depth;
+auv_msgs::Pressure pressure;
+ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth);
+ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure);
 
 void setup()
 {
-    nh.initNode();
-    Wire.begin();
-    
-    sensor.init();
-    
-    sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)
-    
-    //setting the pins to output mode
-    AEAST.setPins(pwmPinEast,directionPinEast1,directionPinEast2);
-    AWEST.setPins(pwmPinWest,directionPinWest1,directionPinWest2);
-    ANORTHSWAY.setPins(pwmPinNorthSway,directionPinNorthSway1,directionPinNorthSway2);
-    ASOUTHSWAY.setPins(pwmPinSouthSway,directionPinSouthSway1,directionPinSouthSway2);
-    ANORTHUP.setPins(pwmPinNorthUp,directionPinNorthUp1,directionPinNorthUp2);
-    ASOUTHUP.setPins(pwmPinSouthUp,directionPinSouthUp1,directionPinSouthUp2);
-    
-    nh.getHardware()->setBaud(57600);
+    //setting up thruster pins
+    surge1.setup(SURGE1_PWM, SURGE1_IN_A, SURGE1_IN_B);
+    surge2.setup(SURGE2_PWM, SURGE2_IN_A, SURGE2_IN_B);
+    heave1.setup(HEAVE1_PWM, HEAVE1_IN_A, HEAVE1_IN_B);
+    heave2.setup(HEAVE2_PWM, HEAVE2_IN_A, HEAVE2_IN_B);
+    sway1.setup(SWAY1_PWM, SWAY1_IN_A, SWAY1_IN_B);
+    sway2.setup(SWAY2_PWM, SWAY2_IN_A, SWAY2_IN_B);
 
-    nh.subscribe(subPwmEast);
-    nh.subscribe(subPwmWest);
-    nh.subscribe(subPwmNorthSway);
-    nh.subscribe(subPwmSouthSway);
-    nh.subscribe(subPwmNorthUp);
-    nh.subscribe(subPwmSouthUp);
-    nh.advertise(ps_voltage);
-    
+    // setting up pressure sensor
+    Wire.begin();
+    // We can't continue with the rest of the program unless we can initialize the sensor
+    while (!pressure_sensor.init())
+    {
+        nh.loginfo("Init failed!");
+        nh.loginfo("Are SDA/SCL connected correctly?");
+        nh.loginfo("Blue Robotics Bar30: White=SDA, Green=SCL");
+        nh.loginfo("\n\n");
+        delay(5000);
+    }
+    pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)
+
+    // initialize ROS node
+    nh.initNode();
+    nh.getHardware()->setBaud(57600);
+    // subscribers
+    nh.subscribe(surge1_pwm_pub);
+    nh.subscribe(surge2_pwm_pub);
+    nh.subscribe(heave1_pwm_pub);
+    nh.subscribe(heave2_pwm_pub);
+    nh.subscribe(sway1_pwm_pub);
+    nh.subscribe(sway2_pwm_pub);
+    // publisher
+    nh.advertise(ps_depth_pub);
+    nh.advertise(ps_pressure_pub);
+
     while (!nh.connected())
     {
         nh.spinOnce();
     }
-    Serial.begin(57600);
-    
-    std_msgs::Int32 v;
-    v.data = 0;
-    TEastCb(v);
-    TWestCb(v);
-    TNorthSwayCb(v);
-    TSouthSwayCb(v);
-    TNorthUpCb(v);
-    TSouthUpCb(v);
-    
-    sensor.read();
-    last_pressure_sensor_value = -(sensor.depth() * 100);
+    nh.loginfo("Hyperion CONNECTED");
 }
 
 void loop()
 {
-    sensor.read();
-    // voltage.data made -ve because pressure sensor data should increase going up
-    pressure_sensor_value = -(sensor.depth() * 100);
-    // to avoid random high values
-    if (abs(last_pressure_sensor_value - pressure_sensor_value) < 100)
+    static unsigned long prev_pressure_time = 0;
+
+    //this block publishes the pressure sensor data based on defined rate
+    if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
     {
-        voltage.data = 0.7 * pressure_sensor_value + 0.3 * last_pressure_sensor_value;
-        ps_voltage.publish(&voltage);
-        last_pressure_sensor_value = pressure_sensor_value;
+        publish_pressure_data();
+        prev_pressure_time = millis();
     }
-    delay(200);
+
     nh.spinOnce();
 }
 
-
-void TEastCb(const std_msgs::Int32& msg)
+// function definition for publish_pressure_data
+void publish_pressure_data()
 {
-   AEAST.ON(msg.data);
+    pressure_sensor.read();
+    depth.header.frame_id = "depth_sensor_link"
+    depth.header.stamp = nh.now();
+    depth.depth = pressure_sensor.depth();
+
+    pressure_sensor.header.frame_id = "depth_sensor_link";
+    pressure_sensor.header.time = depth.header.time;
+    pressure_sensor.pressure = pressure_sensor.pressure(100);
+
+    ps_depth_pub.publish(depth);
+    ps_pressure_pub.publish(pessure);
 }
 
-
-void TWestCb(const std_msgs::Int32& msg)
+// function definitions for callback
+void surge1_callback(const std_msgs::Int32& msg)
 {
-    AWEST.ON(msg.data);
+   surge1.spin(msg.data);
 }
 
-void TNorthSwayCb(const std_msgs::Int32& msg)
+void surge2_callback(const std_msgs::Int32& msg)
 {
-   ANORTHSWAY.ON(msg.data);
+    surge2.spin(msg.data);
 }
 
-void TSouthSwayCb(const std_msgs::Int32& msg)
+void heave1_callback(const std_msgs::Int32& msg)
 {
-    ASOUTHSWAY.ON(msg.data);
+   heave1.spin(msg.data);
 }
 
-void TNorthUpCb(const std_msgs::Int32& msg)
+void heave2_callback(const std_msgs::Int32& msg)
 {
-   ANORTHUP.ON(msg.data);
+    heave2.spin(msg.data);
 }
 
-void TSouthUpCb(const std_msgs::Int32& msg)
+void sway1_callback(const std_msgs::Int32& msg)
 {
-    ASOUTHUP.ON(msg.data);
+   sway1.spin(msg.data);
+}
+
+void sway2_callback(const std_msgs::Int32& msg)
+{
+    sway2.spin(msg.data);
 }

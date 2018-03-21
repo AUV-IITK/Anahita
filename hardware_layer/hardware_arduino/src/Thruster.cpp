@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "Thruster.h"
+#include "../include/Thruster.h"
 
 // constructor call without current sensor setup
 Thruster::Thruster(int pwm_pin, int thruster_pinA, int thruster_pinB)

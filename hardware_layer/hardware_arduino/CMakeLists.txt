@@ -8,8 +8,6 @@ project(hardware_arduino)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  message_runtime
   roscpp
   roslint
   rospy
@@ -31,7 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
    INCLUDE_DIRS include
 #  LIBRARIES hardware_arduino
-   CATKIN_DEPENDS message_generation message_runtime roscpp roslint rospy rosserial_arduino rosserial_client std_msgs
+   CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs
 #  DEPENDS system_lib
 )
 
