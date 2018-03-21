@@ -1,28 +1,49 @@
-#ifndef ArduinoConfig_H
-#define ArduinoConfig_H
+#ifndef __ArduinoConfig_H_INCLUDED__
+#define __ArduinoConfig_H_INCLUDED__
 
-#define pwmPinWest 3        // pin definitions for forward thrusters
-#define pwmPinEast 2
-#define directionPinEast1 30
-#define directionPinEast2 31
-#define directionPinWest1 32
-#define directionPinWest2 33
+/*
+ROBOT ORIENTATION
+          FRONT
+          -----
+          SWAY1
+          HEAVE1
+            -
+  SURGE1           SURGE2
+            -
+          HEAVE2
+          SWAY2
+          -----
+          BACK
+*/
 
-#define pwmPinNorthSway 5       // pin definitions for sway thrusters
-#define pwmPinSouthSway 4
-#define directionPinSouthSway1 27
-#define directionPinSouthSway2 26
-#define directionPinNorthSway1 29
-#define directionPinNorthSway2 287
+// for sway motion
+#define SWAY1_PWM 5
+#define SWAY1_IN_A 27
+#define SWAY1_IN_B 26
 
-#define pwmPinNorthUp 6     // pin definitions for upward thrusters
-#define pwmPinSouthUp 7
-#define directionPinNorthUp1 24
-#define directionPinNorthUp2 25
-#define directionPinSouthUp1 22
-#define directionPinSouthUp2 23
+#define SWAY2_PWM 4
+#define SWAY2_IN_A 29
+#define SWAY2_IN_B 28
 
-#define analogPinPressureSensor A0      //pin definition for depth sensor
+// for surge motion
+#define SURGE1_PWM 3
+#define SURGE1_IN_A 32
+#define SURGE1_IN_B 33
 
+#define SURGE2_PWM 2
+#define SURGE2_IN_A 30
+#define SURGE2_IN_B 31
+
+// for heave motion
+#define HEAVE1_PWM 6
+#define HEAVE1_IN_A 24
+#define HEAVE1_IN_B 25
+
+#define HEAVE2_PWM 7
+#define HEAVE2_IN_A 22
+#define HEAVE2_IN_B 23
+
+// for pressure sensor
+#define PRESSURE_SENSOR_PIN A0
 
 #endif
