@@ -4,12 +4,12 @@
 #include <ros.h>
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
-#include <auv_msgs/Pressure.h>
-#include <auv_msgs/Depth.h>
+#include <underwater_sensor_msgs/Pressure.h>
+// #include <hyperion_msgs/Depth.h>
 
-#include "MS5837.h"
-#include "Thruster.h"
-#include "ArduinoConfig.h"
+#include "../include/MS5837.h"
+#include "../include/Thruster.h"
+#include "../include/ArduinoConfig.h"
 
 // define rate at which sensor data should be published (in Hz)
 #define PRESSURE_PUBLISH_RATE 10
@@ -31,12 +31,12 @@ ROBOT ORIENTATION
           -----
           BACK
 */
-Thruster surge1;
-Thruster surge2;
-Thruster heave1;
-Thruster heave2;
-Thruster sway1;
-Thruster sway2;
+Thruster surge1(SURGE1_PWM, SURGE1_IN_A, SURGE1_IN_B);
+Thruster surge2(SURGE2_PWM, SURGE2_IN_A, SURGE2_IN_B);
+Thruster heave1(HEAVE1_PWM, HEAVE1_IN_A, HEAVE1_IN_B);
+Thruster heave2(HEAVE2_PWM, HEAVE2_IN_A, HEAVE2_IN_B);
+Thruster sway1(SWAY1_PWM, SWAY1_IN_A, SWAY1_IN_B);
+Thruster sway2(SWAY2_PWM, SWAY2_IN_A, SWAY2_IN_B);
 
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
@@ -61,20 +61,20 @@ ros::Subscriber<std_msgs::Int32> sway1_pwm_pub("/thruster/sway1/pwm", &sway1_cal
 ros::Subscriber<std_msgs::Int32> sway2_pwm_pub("/thruster/sway1/pwm", &sway2_callback);
 
 // declare publishers
-auv_msgs::Pressure depth;
-auv_msgs::Pressure pressure;
-ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth);
-ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure);
+underwater_sensor_msgs::Pressure pressure_msg;
+ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
+// hyperion_msgs::Pressure depth_msg;
+// ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 void setup()
 {
     //setting up thruster pins
-    surge1.setup(SURGE1_PWM, SURGE1_IN_A, SURGE1_IN_B);
-    surge2.setup(SURGE2_PWM, SURGE2_IN_A, SURGE2_IN_B);
-    heave1.setup(HEAVE1_PWM, HEAVE1_IN_A, HEAVE1_IN_B);
-    heave2.setup(HEAVE2_PWM, HEAVE2_IN_A, HEAVE2_IN_B);
-    sway1.setup(SWAY1_PWM, SWAY1_IN_A, SWAY1_IN_B);
-    sway2.setup(SWAY2_PWM, SWAY2_IN_A, SWAY2_IN_B);
+    surge1.setup();
+    surge2.setup();
+    heave1.setup();
+    heave2.setup();
+    sway1.setup();
+    sway2.setup();
 
     // setting up pressure sensor
     Wire.begin();
@@ -100,8 +100,8 @@ void setup()
     nh.subscribe(sway1_pwm_pub);
     nh.subscribe(sway2_pwm_pub);
     // publisher
-    nh.advertise(ps_depth_pub);
     nh.advertise(ps_pressure_pub);
+    // nh.advertise(ps_depth_pub);
 
     while (!nh.connected())
     {
@@ -128,16 +128,16 @@ void loop()
 void publish_pressure_data()
 {
     pressure_sensor.read();
-    depth.header.frame_id = "depth_sensor_link"
-    depth.header.stamp = nh.now();
-    depth.depth = pressure_sensor.depth();
+    pressure_msg.header.frame_id = "pressure_sensor_link";
+    pressure_msg.header.stamp = nh.now();
+    pressure_msg.pressure = pressure_sensor.pressure(100);
 
-    pressure_sensor.header.frame_id = "depth_sensor_link";
-    pressure_sensor.header.time = depth.header.time;
-    pressure_sensor.pressure = pressure_sensor.pressure(100);
+    // depth_msg.header.frame_id = "depth_sensor_link"
+    // depth_msg.header.stamp = pressure_sensor.header.time;
+    // depth_msg.depth = pressure_sensor.depth();
 
-    ps_depth_pub.publish(depth);
-    ps_pressure_pub.publish(pessure);
+    // ps_depth_pub.publish(depth);
+    ps_pressure_pub.publish(&pressure_msg);
 }
 
 // function definitions for callback
