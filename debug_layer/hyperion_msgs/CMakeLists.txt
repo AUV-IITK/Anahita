@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(auv_msgs)
+project(hyperion_msgs)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -19,7 +19,6 @@ add_message_files(
   DIRECTORY
     msg
   FILES
-    Pressure.msg
     Depth.msg
 )
 
@@ -40,7 +39,10 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geographic_msgs   geometry_msgs   sensor_msgs   std_msgs
+    geographic_msgs
+    geometry_msgs
+    sensor_msgs
+    std_msgs
 )
 
 ###################################
@@ -54,7 +56,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES auv_msgs
+#  LIBRARIES hyperion_msgs
    CATKIN_DEPENDS geographic_msgs geometry_msgs message_generation message_runtime sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
