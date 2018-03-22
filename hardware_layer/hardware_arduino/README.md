@@ -19,6 +19,16 @@ The hardware used are as follows:
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics),
 - Following ROS Packages: [rosserial](http://wiki.ros.org/rosserial), [rosserial_arduino](http://wiki.ros.org/rosserial_arduino)
 
+### Setting up the Udev rules for arduino
+
+Run the following command to copy the udev rules specified for the Arduino port:
+```
+cd ~/catkin_ws/src/auv2018/utils
+sudo bash clone_udev.sh
+```
+
+__NOTE:__ This connects the arduino always to the port named `/dev/arduino`.
+
 ### Preparing the Serial Port
 Arduino will likely connect to computer as port `/dev/arduino`. The easiest way to make the determination is to unplug all other USB devices, plug in your Arduino, then run the command:
 ```
@@ -56,13 +66,34 @@ Run the following command:
 cd ~/catkin_ws
 catkin_make --pkg hardware_arduino
 ```
-### Setting up the Udev rules for arduino
 
+### Uploading code to Arduino
 Run the following command:
 ```
-cd ~/catkin_ws/src/auv2018/utils
-sudo bash clone_udev.sh
+cd ~/catkin_ws
+source devel/setup.zsh
+catkin_make hardware_arduino_firmware_arduino_node    
+catkin_make hardware_arduino_firmware_arduino_node-upload     
 ```
+
+## Robot Orientation
+
+```
+          FRONT
+          -----
+          SWAY1
+          HEAVE1
+            -
+  SURGE1           SURGE2
+            -
+          HEAVE2
+          SWAY2
+          -----
+          BACK
+```
+
+For technical definition of terms, refer to documentation [here](https://en.wikipedia.org/wiki/Ship_motions).
+
 ## Usage
 
 To connect to the arduino, run:
@@ -76,16 +107,18 @@ First upload the code on arduino through Arduino IDE.
 ### arduino_node
 Subscribes to topics with PWM data and actuate the thrusters with that duty cycle, and also publishes the data obtained from pressure sensor
 
+__NOTE:__ Pins configurations are specified in the [ArduinoConfig.h](include/ArduinoConfig.h) file.
+
 #### Subscribed Topics
-* **`/ard/east`** ([std_msgs/Int32])
-* **`/ard/west`** ([std_msgs/Int32])
-* **`/ard/northsway`** ([std_msgs/Int32])
-* **`/ard/southsway`** ([std_msgs/Int32])
-* **`/ard/northup`** ([std_msgs/Int32])
-* **`/ard/southup`** ([std_msgs/Int32])
+* **`/thruster/surge1/pwm`** ([std_msgs/Int32])
+* **`/thruster/surge2/pwm`** ([std_msgs/Int32])
+* **`/thruster/heave1/pwm`** ([std_msgs/Int32])
+* **`/thruster/heave2/pwm`** ([std_msgs/Int32])
+* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
+* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
 
 #### Published Topics
-* **`/varun/sensors/pressure_sensor/depth`** ([std_msgs/Int32])
+* **`/pressure_sensor/pressure`** ([underwater_sensor_msgs/Pressure]): Pressure sensor data (in Pascals)
 
 
 ## Bugs & Feature Requests
@@ -93,3 +126,4 @@ Subscribes to topics with PWM data and actuate the thrusters with that duty cycl
 Please report bugs and request features using the [Issue Tracker](https://github.com/AUV-IITK/auv2017/issues).
 
 [std_msgs/Int32]: http://docs.ros.org/api/std_msgs/html/msg/Int32.html
+[underwater_sensor_msgs/Pressure]: http://docs.ros.org/hydro/api/underwater_sensor_msgs/html/msg/Pressure.html
