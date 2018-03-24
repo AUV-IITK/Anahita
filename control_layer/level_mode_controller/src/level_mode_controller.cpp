@@ -1,23 +1,23 @@
 #include <ros/ros.h>
-
 #include <std_msgs/Int32.h>
+
+#include "level_mode_controller/Thruster.h"
 #include <math.h>
-#include "../include/Thruster.h"
 
 //instances of the class Thruster defined in header file
 Thruster TEAST,TWEST,TNORTHUP,TSOUTHUP,TNORTHSWAY,TSOUTHSWAY;
 
 bool isMovingForward = false; //variable to distinguish for turning with forward or sideward Thrusters
 
-ros::NodeHandle n;
+ros::NodeHandle nh;
 
 //Topics for publishing data and communicating to the arduino
-ros::Publisher pubPwmEast = n.advertise<std_msgs::Int32>("/ard/east", 1000);
-ros::Publisher pubPwmWest = n.advertise<std_msgs::Int32>("/ard/west", 1000);
-ros::Publisher pubPwmNorthUp = n.advertise<std_msgs::Int32>("/ard/northup", 1000);
-ros::Publisher pubPwmSouthUp = n.advertise<std_msgs::Int32>("/ard/southup", 1000);
-ros::Publisher pubPwmNorthSway = n.advertise<std_msgs::Int32>("/ard/northsway", 1000);
-ros::Publisher pubPwmSouthSway = n.advertise<std_msgs::Int32>("/ard/southsway", 1000);
+ros::Publisher pubPwmEast = nh.advertise<std_msgs::Int32>("/ard/east", 1000);
+ros::Publisher pubPwmWest = nh.advertise<std_msgs::Int32>("/ard/west", 1000);
+ros::Publisher pubPwmNorthUp = nh.advertise<std_msgs::Int32>("/ard/northup", 1000);
+ros::Publisher pubPwmSouthUp = nh.advertise<std_msgs::Int32>("/ard/southup", 1000);
+ros::Publisher pubPwmNorthSway = nh.advertise<std_msgs::Int32>("/ard/northsway", 1000);
+ros::Publisher pubPwmSouthSway = nh.advertise<std_msgs::Int32>("/ard/southsway", 1000);
 
 void ForwardCB(const std_msgs::Int32& msg)  //callback function
 {
@@ -84,14 +84,13 @@ void TurnCB(const std_msgs::Int32& msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "Processing");
+    ros::init(argc, argv, "level_mode_controller");
 
     //Topics receiving pwm values from the motion library
-    ros::Subscriber subPwmForward = n.subscribe("/pwm/forward", 1000, ForwardCB);
-    ros::Subscriber subPwmSideward = n.subscribe("/pwm/sideward", 1000, SidewardCB);
-    ros::Subscriber subPwmUpward= n.subscribe("/pwm/upward", 1000, UpwardCB);
-    ros::Subscriber subPwmTurn = n.subscribe("/pwm/turn", 1000, TurnCB);
-
+    ros::Subscriber subPwmForward = nh.subscribe("/pwm/forward", 1000, ForwardCB);
+    ros::Subscriber subPwmSideward = nh.subscribe("/pwm/sideward", 1000, SidewardCB);
+    ros::Subscriber subPwmUpward= nh.subscribe("/pwm/upward", 1000, UpwardCB);
+    ros::Subscriber subPwmTurn = nh.subscribe("/pwm/turn", 1000, TurnCB);
 
     ros::spin();
     return 0;

@@ -1,27 +1,26 @@
-#include "../include/Thruster.h"
-
-#define HIGH 3
-#define MED 2
-#define LOW 1
+#include "level_mode_controller/Thruster.h"
 
 using namespace std;
 
+// tells the speed mode of the thruster
 int Thruster::mode(int P)
 {
     if(P == 0)
-        return 0;
+        return (int) Mode::STOP;
     else if(P < 180)
-        return LOW;
+        return (int) Mode::LOW;
     else if(P >= 180 && P < 220)
-        return MED;
+        return (int) Mode::MED;
     else
-        return HIGH;
+        return (int) Mode::HIGH;
 }
 
+// returns the value of pwm_
 int Thruster::getPWM(){
   return pwm_;
 }
 
+// it sets the struct values of any instance of this class
 void Thruster::setValues(int HC, int MC, int LC, int HAC, int MAC, int LAC)
 {
     clock_.High = HC;
@@ -32,6 +31,7 @@ void Thruster::setValues(int HC, int MC, int LC, int HAC, int MAC, int LAC)
     anticlock_.Low = LAC;
 }
 
+// classifies the obtained pwm variable to given specified speed modes
 void Thruster::calibration(int PWM, int M)
 {
     bool positive = true;
