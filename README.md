@@ -6,7 +6,7 @@ This repository contains the code for our second underwater vehicle `Hyperion`.
 
 | S. No. 	| Operating System 	|  ROS Version 	| Build Status 	|
 |:------:	|:----------------:	|:------------:	|:------------:	|
-| 1.     	| [Ubuntu 16.04 LTS](http://releases.ubuntu.com/16.04/) 	| [Kinetic Kame](http://wiki.ros.org/kinetic) 	|  [![Build Status](https://travis-ci.org/AUV-IITK/auv2018.svg?branch=master)](https://travis-ci.org/AUV-IITK/auv2018)|
+| 1.     	| [Ubuntu 16.04 LTS](http://releases.ubuntu.com/16.04/) 	| [Kinetic Kame](http://wiki.ros.org/kinetic) 	|  [![Build Status](https://travis-ci.org/AUV-IITK/auv2018.svg?branch=master)](https://travis-ci.org/AUV-IITK/Hyperion-Software)|
 
 ## How to build the repository?
 
@@ -22,7 +22,7 @@ catkin_make
 2. **Clone this repository to your catkin workspace**
 ```bash
 cd ~/catkin_ws/src
-git clone https://github.com/AUV-IITK/auv2018.git
+git clone https://github.com/AUV-IITK/Hyperion-Software.git
 ```
 
 3. **Install all dependency packages to run the repository**
