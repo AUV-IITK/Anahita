@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-<<<<<<< HEAD
 project(vision_layer)
-=======
-project(task_buoy)
->>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -13,15 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-<<<<<<< HEAD
   message_generation
-=======
-  actionlib
-  actionlib_msgs
-  message_generation
-  task_commons
-  motion_commons
->>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
   cv_bridge
   sensor_msgs
   image_transport
@@ -154,67 +142,31 @@ include_directories(include
   ${OpenCV_INCLUDE_DIRS}
 )
 
-<<<<<<< HEAD
-add_library(fusion SHARED include/fusion.cpp include/fusion.hpp)
-target_link_libraries(fusion ${OpencvLIBRARIES})
-
-add_library(laplacian_blending SHARED include/laplacian_blending.cpp include/laplacian_blending.hpp)
-target_link_libraries(laplacian_blending ${OpencvLIBRARIES})
-
-add_library(color_constancy SHARED include/color_constancy.cpp include/color_conctancy.hpp)
-target_link_libraries(color_constancy ${OpenCVLIBRARIES})
-
-add_library(thresholding SHARED include/thresholding.cpp include/thresholding.hpp)
-target_link_libraries(thresholding ${OpencvLIBRARIES})
-
-add_library(edge_detectors SHARED include/edge_detectors.cpp include/edge_detectors.hpp)
-target_link_libraries(edge_detectors ${OpencvLIBRARIES})
-
-add_library(color_converter SHARED include/color_converter.cpp include/color_converter.hpp)
-target_link_libraries(color_converter ${OpencvLIBRARIES})
-
-add_library(noise_reduction SHARED include/noise_reduction.cpp include/noise_reduction.hpp)
-target_link_libraries(noise_reduction ${OpencvLIBRARIES})
-
-add_executable(buoy_detection src/buoy_detection.cpp)
-add_executable(gate_detection src/gate_detection.cpp)
-add_executable(line_detection src/line_detection.cpp)
-add_executable(line_angle src/line_angle.cpp)
-add_executable(line_centralize src/line_centralize.cpp)
-
-
-target_link_libraries(buoy_detection ${OpenCV_LIBS} )
-target_link_libraries(buoy_detection ${catkin_LIBRARIES})
-
-target_link_libraries(gate_detection ${OpenCV_LIBS} )
-target_link_libraries(gate_detection ${catkin_LIBRARIES})
-
-target_link_libraries(line_detection ${OpenCV_LIBS} )
-target_link_libraries(line_detection ${catkin_LIBRARIES})
-
-target_link_libraries(line_angle ${OpenCV_LIBS} )
-target_link_libraries(line_angle ${catkin_LIBRARIES})
-
-target_link_libraries(line_centralize ${OpenCV_LIBS} )
-target_link_libraries(line_centralize ${catkin_LIBRARIES})
-
-=======
-add_library(lib SHARED src/lib.cpp include/lib.hpp)
+add_library(lib SHARED include/lib.cpp include/lib.hpp)
 target_link_libraries(lib ${OpencvLIBRARIES})
-add_library(pre_processing SHARED src/pre_processing.cpp include/pre_processing.h)
+add_library(pre_processing SHARED include/pre_processing.cpp include/pre_processing.h)
 target_link_libraries(pre_processing ${OpencvLIBRARIES})
 target_link_libraries(pre_processing lib)
 
 add_executable(buoy_detection src/buoy_detection.cpp)
-add_executable(buoy_server src/buoy_server.cpp)
-add_executable(buoy_client src/buoy_client.cpp)
+add_executable(gate_detection src/gate_detection.cpp)
+add_executable(line_detection src/line_detection.cpp)
+
 target_link_libraries(buoy_detection ${OpenCV_LIBS} )
 target_link_libraries(buoy_detection ${catkin_LIBRARIES})
-target_link_libraries(buoy_server ${catkin_LIBRARIES})
-target_link_libraries(buoy_client ${catkin_LIBRARIES})
 target_link_libraries(buoy_detection pre_processing)
 target_link_libraries(buoy_detection lib)
->>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
+
+target_link_libraries(gate_detection ${OpenCV_LIBS} )
+target_link_libraries(gate_detection ${catkin_LIBRARIES})
+target_link_libraries(gate_detection pre_processing)
+target_link_libraries(gate_detection lib)
+
+target_link_libraries(line_detection ${OpenCV_LIBS} )
+target_link_libraries(line_detection ${catkin_LIBRARIES})
+target_link_libraries(line_detection pre_processing)
+target_link_libraries(line_detection lib)
+
 ## Declare a C++ library
 # add_library(task_buoy
 #   src/${PROJECT_NAME}/task_buoy.cpp
