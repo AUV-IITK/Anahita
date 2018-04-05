@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
+<<<<<<< HEAD
 project(vision_layer)
+=======
+project(task_buoy)
+>>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -9,7 +13,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+<<<<<<< HEAD
   message_generation
+=======
+  actionlib
+  actionlib_msgs
+  message_generation
+  task_commons
+  motion_commons
+>>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
   cv_bridge
   sensor_msgs
   image_transport
@@ -142,6 +154,7 @@ include_directories(include
   ${OpenCV_INCLUDE_DIRS}
 )
 
+<<<<<<< HEAD
 add_library(fusion SHARED include/fusion.cpp include/fusion.hpp)
 target_link_libraries(fusion ${OpencvLIBRARIES})
 
@@ -185,6 +198,23 @@ target_link_libraries(line_angle ${catkin_LIBRARIES})
 target_link_libraries(line_centralize ${OpenCV_LIBS} )
 target_link_libraries(line_centralize ${catkin_LIBRARIES})
 
+=======
+add_library(lib SHARED src/lib.cpp include/lib.hpp)
+target_link_libraries(lib ${OpencvLIBRARIES})
+add_library(pre_processing SHARED src/pre_processing.cpp include/pre_processing.h)
+target_link_libraries(pre_processing ${OpencvLIBRARIES})
+target_link_libraries(pre_processing lib)
+
+add_executable(buoy_detection src/buoy_detection.cpp)
+add_executable(buoy_server src/buoy_server.cpp)
+add_executable(buoy_client src/buoy_client.cpp)
+target_link_libraries(buoy_detection ${OpenCV_LIBS} )
+target_link_libraries(buoy_detection ${catkin_LIBRARIES})
+target_link_libraries(buoy_server ${catkin_LIBRARIES})
+target_link_libraries(buoy_client ${catkin_LIBRARIES})
+target_link_libraries(buoy_detection pre_processing)
+target_link_libraries(buoy_detection lib)
+>>>>>>> b842f1cf893bfb75274f34f1e403e26ff511366d
 ## Declare a C++ library
 # add_library(task_buoy
 #   src/${PROJECT_NAME}/task_buoy.cpp
