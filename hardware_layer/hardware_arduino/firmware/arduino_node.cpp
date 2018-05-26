@@ -1,172 +1,175 @@
+/*#if (ARDUINO >= 100)
+    #include <Arduino.h>
+#else
+    #include <WProgram.h>
+#endif*/
+
+#include "ros.h"
 #include <Arduino.h>
-#include <Wire.h>
-
-#include <ros.h>
-#include <ros/time.h>
 #include <std_msgs/Int32.h>
-#include <underwater_sensor_msgs/Pressure.h>
-// #include <hyperion_msgs/Depth.h>
-
+#include <std_msgs/Float64.h>
+#include <math.h>
+#include <Wire.h>
 #include "../include/MS5837.h"
-#include "../include/Thruster.h"
+#include "../include/ArduinoThrust.h"
 #include "../include/ArduinoConfig.h"
+#include "../include/ESC.h"
 
-// define rate at which sensor data should be published (in Hz)
-#define PRESSURE_PUBLISH_RATE 10
+//declaration of pressure sensor
+MS5837 sensor;
 
-// pressure sensor
-MS5837 pressure_sensor;
+//declaration of ESCs of T200 thrusters through the constructors
+ESC TEAST(servoPinEast,1100,1900,1500);
+ESC TWEST(servoPinWest,1100,1900,1500);
+ESC TNORTHSWAY(servoPinNorthSway,1100,1900,1500);
+ESC TSOUTHSWAY(servoPinSouthSway,1100,1900,1500);
 
-/*
-ROBOT ORIENTATION
-          FRONT
-          -----
-          SWAY1
-          HEAVE1
-            -
-  SURGE1           SURGE2
-            -
-          HEAVE2
-          SWAY2
-          -----
-          BACK
-*/
-Thruster surge1(SURGE1_PWM, SURGE1_IN_A, SURGE1_IN_B);
-Thruster surge2(SURGE2_PWM, SURGE2_IN_A, SURGE2_IN_B);
-Thruster heave1(HEAVE1_PWM, HEAVE1_IN_A, HEAVE1_IN_B);
-Thruster heave2(HEAVE2_PWM, HEAVE2_IN_A, HEAVE2_IN_B);
-Thruster sway1(SWAY1_PWM, SWAY1_IN_A, SWAY1_IN_B);
-Thruster sway2(SWAY2_PWM, SWAY2_IN_A, SWAY2_IN_B);
+//declaration of ohther upward thrusters
+ArduinoThrust ANWUP;
+ArduinoThrust ASWUP;
+ArduinoThrust ANEUP;
+ArduinoThrust ASEUP;
 
-// function declration to puboish pressure sensor data
-void publish_pressure_data();
-
-// callback function for thrsuters
-void surge1_callback(const std_msgs::Int32& msg);
-void surge2_callback(const std_msgs::Int32& msg);
-void heave1_callback(const std_msgs::Int32& msg);
-void heave2_callback(const std_msgs::Int32& msg);
-void sway1_callback(const std_msgs::Int32& msg);
-void sway2_callback(const std_msgs::Int32& msg);
-
-// defining rosnode handle
+float last_pressure_sensor_value, pressure_sensor_value;
+std_msgs::Float64 voltage;
 ros::NodeHandle nh;
 
-// declare subscribers
-ros::Subscriber<std_msgs::Int32> surge1_pwm_pub("/thruster/surge1/pwm", &surge1_callback);
-ros::Subscriber<std_msgs::Int32> surge2_pwm_pub("/thruster/surge2/pwm", &surge2_callback);
-ros::Subscriber<std_msgs::Int32> heave1_pwm_pub("/thruster/heave1/pwm", &heave1_callback);
-ros::Subscriber<std_msgs::Int32> heave2_pwm_pub("/thruster/heave2/pwm", &heave2_callback);
-ros::Subscriber<std_msgs::Int32> sway1_pwm_pub("/thruster/sway1/pwm", &sway1_callback);
-ros::Subscriber<std_msgs::Int32> sway2_pwm_pub("/thruster/sway1/pwm", &sway2_callback);
+//declaration of callback functions for all thrusters
+void TEastCb(const std_msgs::Int32& msg);
+void TWestCb(const std_msgs::Int32& msg);
+void TNorthSwayCb(const std_msgs::Int32& msg);
+void TSouthSwayCb(const std_msgs::Int32& msg);
+void TNEUpCb(const std_msgs::Int32& msg);
+void TNWUpCb(const std_msgs::Int32& msg);
+void TSEUpCb(const std_msgs::Int32& msg);
+void TSWUpCb(const std_msgs::Int32& msg);
 
-// declare publishers
-underwater_sensor_msgs::Pressure pressure_msg;
-ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
-// hyperion_msgs::Pressure depth_msg;
-// ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
+//declaration of all subscribers and publishers
+ros::Subscriber<std_msgs::Int32> subPwmEast("/ard/east", &TEastCb);
+ros::Subscriber<std_msgs::Int32> subPwmWest("/ard/west", &TWestCb);
+ros::Subscriber<std_msgs::Int32> subPwmNorthSway("/ard/northsway", &TNorthSwayCb);
+ros::Subscriber<std_msgs::Int32> subPwmSouthSway("/ard/southsway", &TSouthSwayCb);
+ros::Subscriber<std_msgs::Int32> subPwmNorthEastUp("/ard/neup", &TNEUpCb);
+ros::Subscriber<std_msgs::Int32> subPwmNorthWestUp("/ard/nwup", &TNWUpCb);
+ros::Subscriber<std_msgs::Int32> subPwmSouthEastUp("/ard/seup", &TSEUpCb);
+ros::Subscriber<std_msgs::Int32> subPwmSouthWestUp("/ard/swup", &TSWUpCb);
+ros::Publisher ps_voltage("/varun/sensors/pressure_sensor/depth", &voltage);
 
 void setup()
 {
-    //setting up thruster pins
-    surge1.setup();
-    surge2.setup();
-    heave1.setup();
-    heave2.setup();
-    sway1.setup();
-    sway2.setup();
-
-    // setting up pressure sensor
-    Wire.begin();
-    // We can't continue with the rest of the program unless we can initialize the sensor
-    while (!pressure_sensor.init())
-    {
-        nh.loginfo("Init failed!");
-        nh.loginfo("Are SDA/SCL connected correctly?");
-        nh.loginfo("Blue Robotics Bar30: White=SDA, Green=SCL");
-        nh.loginfo("\n\n");
-        delay(5000);
-    }
-    pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)
-
-    // initialize ROS node
     nh.initNode();
+    Wire.begin();
+    
+    sensor.init();
+    
+    sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)
+    
+    //setting the pins to output mode
+    ANEUP.setPins(pwmPinNorthEastUp,directionPinNorthEastUp1,directionPinNorthEastUp2);
+    ASEUP.setPins(pwmPinSouthEastUp,directionPinSouthEastUp1,directionPinSouthEastUp2);
+    ANWUP.setPins(pwmPinNorthWestUp,directionPinNorthWestUp1,directionPinNorthWestUp2);
+    ASWUP.setPins(pwmPinSouthWestUp,directionPinSouthWestUp1,directionPinSouthWestUp2);
+    
+    //calibrating the ESC modules and LED switching shows, when the process is complete
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+    TEAST.calibrate();
+    TWEST.calibrate();
+    TNORTHSWAY.calibrate();
+    TSOUTHSWAY.calibrate();
+    digitalWrite(LED_BUILTIN, LOW);
+    
     nh.getHardware()->setBaud(57600);
-    // subscribers
-    nh.subscribe(surge1_pwm_pub);
-    nh.subscribe(surge2_pwm_pub);
-    nh.subscribe(heave1_pwm_pub);
-    nh.subscribe(heave2_pwm_pub);
-    nh.subscribe(sway1_pwm_pub);
-    nh.subscribe(sway2_pwm_pub);
-    // publisher
-    nh.advertise(ps_pressure_pub);
-    // nh.advertise(ps_depth_pub);
 
+    nh.subscribe(subPwmEast);
+    nh.subscribe(subPwmWest);
+    nh.subscribe(subPwmNorthSway);
+    nh.subscribe(subPwmSouthSway);
+    nh.subscribe(subPwmNorthEastUp);
+    nh.subscribe(subPwmNorthWestUp);
+    nh.subscribe(subPwmSouthEastUp);
+    nh.subscribe(subPwmSouthWestUp);
+    nh.advertise(ps_voltage);
+    
     while (!nh.connected())
     {
         nh.spinOnce();
     }
-    nh.loginfo("Hyperion CONNECTED");
+    Serial.begin(57600);
+    
+    //sending initial message to all thrusters to stop
+    std_msgs::Int32 v;
+    v.data = 1500;
+    TEastCb(v);
+    TWestCb(v);
+    TNorthSwayCb(v);
+    TSouthSwayCb(v);
+    
+    v.data = 0;
+    TNEUpCb(v);
+    TNWUpCb(v);
+    TSEUpCb(v);
+    TSWUpCb(v);
+    
+    sensor.read();
+    last_pressure_sensor_value = -(sensor.depth() * 100);
 }
 
 void loop()
 {
-    static unsigned long prev_pressure_time = 0;
-
-    //this block publishes the pressure sensor data based on defined rate
-    if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
+    sensor.read();
+    // voltage.data made -ve because pressure sensor data should increase going up
+    pressure_sensor_value = -(sensor.depth() * 100);
+    // to avoid random high values
+    if (abs(last_pressure_sensor_value - pressure_sensor_value) < 100)
     {
-        publish_pressure_data();
-        prev_pressure_time = millis();
+        voltage.data = 0.7 * pressure_sensor_value + 0.3 * last_pressure_sensor_value;
+        ps_voltage.publish(&voltage);
+        last_pressure_sensor_value = pressure_sensor_value;
     }
-
+    delay(200);
     nh.spinOnce();
 }
 
-// function definition for publish_pressure_data
-void publish_pressure_data()
+//definition of callback functions
+void TEastCb(const std_msgs::Int32& msg)
 {
-    pressure_sensor.read();
-    pressure_msg.header.frame_id = "pressure_sensor_link";
-    pressure_msg.header.stamp = nh.now();
-    pressure_msg.pressure = pressure_sensor.pressure(100);
-
-    // depth_msg.header.frame_id = "depth_sensor_link"
-    // depth_msg.header.stamp = pressure_sensor.header.time;
-    // depth_msg.depth = pressure_sensor.depth();
-
-    // ps_depth_pub.publish(depth);
-    ps_pressure_pub.publish(&pressure_msg);
+    TEAST.speed(msg.data);
 }
 
-// function definitions for callback
-void surge1_callback(const std_msgs::Int32& msg)
+
+void TWestCb(const std_msgs::Int32& msg)
 {
-   surge1.spin(msg.data);
+    TWEST.speed(msg.data);
 }
 
-void surge2_callback(const std_msgs::Int32& msg)
+void TNorthSwayCb(const std_msgs::Int32& msg)
 {
-    surge2.spin(msg.data);
+   TNORTHSWAY.speed(msg.data);
 }
 
-void heave1_callback(const std_msgs::Int32& msg)
+void TSouthSwayCb(const std_msgs::Int32& msg)
 {
-   heave1.spin(msg.data);
+    TSOUTHSWAY.speed(msg.data);
 }
 
-void heave2_callback(const std_msgs::Int32& msg)
+void TNEUpCb(const std_msgs::Int32& msg)
 {
-    heave2.spin(msg.data);
+    ANEUP.ON(msg.data);
 }
 
-void sway1_callback(const std_msgs::Int32& msg)
+void TSEUpCb(const std_msgs::Int32& msg)
 {
-   sway1.spin(msg.data);
+    ASEUP.ON(msg.data);
 }
 
-void sway2_callback(const std_msgs::Int32& msg)
+void TNWUpCb(const std_msgs::Int32& msg)
 {
-    sway2.spin(msg.data);
+    ANWUP.ON(msg.data);
 }
+
+void TSWUpCb(const std_msgs::Int32& msg)
+{
+    ASWUP.ON(msg.data);
+}
+

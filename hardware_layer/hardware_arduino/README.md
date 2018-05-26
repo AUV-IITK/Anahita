@@ -10,6 +10,8 @@ The hardware used are as follows:
 * [Arduino MEGA](https://store.arduino.cc/usa/arduino-mega-2560-rev3)
 * [8V-28V, 5Amp Dual DC Motor Driver with Current Sensor](http://www.nex-robotics.com/products/motor-drivers/8v-28v-5amp-dual-dc-motor-driver-with-current-sense.html)
 * [Pressure Sensor](https://www.bluerobotics.com/store/electronics/bar30-sensor-r1/)
+* [Basic ESC](http://docs.bluerobotics.com/bescr3/)
+* [T200 Thrusters](http://docs.bluerobotics.com/thrusters/t200/)
 
 
 ## Setting up Arduino
@@ -18,16 +20,6 @@ The hardware used are as follows:
 
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics),
 - Following ROS Packages: [rosserial](http://wiki.ros.org/rosserial), [rosserial_arduino](http://wiki.ros.org/rosserial_arduino)
-
-### Setting up the Udev rules for arduino
-
-Run the following command to copy the udev rules specified for the Arduino port:
-```
-cd ~/catkin_ws/src/auv2018/utils
-sudo bash clone_udev.sh
-```
-
-__NOTE:__ This connects the arduino always to the port named `/dev/arduino`.
 
 ### Preparing the Serial Port
 Arduino will likely connect to computer as port `/dev/arduino`. The easiest way to make the determination is to unplug all other USB devices, plug in your Arduino, then run the command:
@@ -66,34 +58,13 @@ Run the following command:
 cd ~/catkin_ws
 catkin_make --pkg hardware_arduino
 ```
+### Setting up the Udev rules for arduino
 
-### Uploading code to Arduino
 Run the following command:
 ```
-cd ~/catkin_ws
-source devel/setup.zsh
-catkin_make hardware_arduino_firmware_arduino_node    
-catkin_make hardware_arduino_firmware_arduino_node-upload     
+cd ~/catkin_ws/src/auv2018/utils
+sudo bash clone_udev.sh
 ```
-
-## Robot Orientation
-
-```
-          FRONT
-          -----
-          SWAY1
-          HEAVE1
-            -
-  SURGE1           SURGE2
-            -
-          HEAVE2
-          SWAY2
-          -----
-          BACK
-```
-
-For technical definition of terms, refer to documentation [here](https://en.wikipedia.org/wiki/Ship_motions).
-
 ## Usage
 
 To connect to the arduino, run:
@@ -107,18 +78,18 @@ First upload the code on arduino through Arduino IDE.
 ### arduino_node
 Subscribes to topics with PWM data and actuate the thrusters with that duty cycle, and also publishes the data obtained from pressure sensor
 
-__NOTE:__ Pins configurations are specified in the [ArduinoConfig.h](include/ArduinoConfig.h) file.
-
 #### Subscribed Topics
-* **`/thruster/surge1/pwm`** ([std_msgs/Int32])
-* **`/thruster/surge2/pwm`** ([std_msgs/Int32])
-* **`/thruster/heave1/pwm`** ([std_msgs/Int32])
-* **`/thruster/heave2/pwm`** ([std_msgs/Int32])
-* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
-* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
+* **`/ard/east`** ([std_msgs/Int32])
+* **`/ard/west`** ([std_msgs/Int32])
+* **`/ard/northsway`** ([std_msgs/Int32])
+* **`/ard/southsway`** ([std_msgs/Int32])
+* **`/ard/neup`** ([std_msgs/Int32])
+* **`/ard/seup`** ([std_msgs/Int32])
+* **`/ard/nwup`** ([std_msgs/Int32])
+* **`/ard/swup`** ([std_msgs/Int32])
 
 #### Published Topics
-* **`/pressure_sensor/pressure`** ([underwater_sensor_msgs/Pressure]): Pressure sensor data (in Pascals)
+* **`/varun/sensors/pressure_sensor/depth`** ([std_msgs/Int32])
 
 
 ## Bugs & Feature Requests
@@ -126,4 +97,3 @@ __NOTE:__ Pins configurations are specified in the [ArduinoConfig.h](include/Ard
 Please report bugs and request features using the [Issue Tracker](https://github.com/AUV-IITK/auv2017/issues).
 
 [std_msgs/Int32]: http://docs.ros.org/api/std_msgs/html/msg/Int32.html
-[underwater_sensor_msgs/Pressure]: http://docs.ros.org/hydro/api/underwater_sensor_msgs/html/msg/Pressure.html
