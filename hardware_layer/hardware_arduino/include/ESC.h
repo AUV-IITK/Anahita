@@ -8,7 +8,7 @@
     #include "WProgram.h"
 #endif
 
-#include <Servo.h>                // Including the Servo library
+#include <Servo.h>
 #define calib_delay_ 7000    // Calibration delay (milisecond)
 
 class ESC

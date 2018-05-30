@@ -1,25 +1,25 @@
 #ifndef ArduinoConfig_H
 #define ArduinoConfig_H
 
-#define servoPinEast        // pin definitions for forward thrusters
-#define servoPinWest
+#define servoPinEast 2       // pin definitions for forward thrusters
+#define servoPinWest 3
 
-#define servoPinNorthSway
-#define servoPinSouthSway
+#define servoPinNorthSway 4
+#define servoPinSouthSway 5
 
-#define pwmPinNorthWestUp      // pin definitions for upward east side thrusters
-#define pwmPinSouthWestUp
-#define directionPinNorthWestUp1
-#define directionPinNorthWestUp2
-#define directionPinSouthWestUp1
-#define directionPinSouthWestUp2
+#define pwmPinNorthWestUp 6     // pin definitions for upward east side thrusters
+#define pwmPinSouthWestUp 7
+#define directionPinNorthWestUp1 8 
+#define directionPinNorthWestUp2 9
+#define directionPinSouthWestUp1 10
+#define directionPinSouthWestUp2 11
 
-#define pwmPinNorthEastUp      // pin definitions for upward west side thrusters
-#define pwmPinSouthEastUp
-#define directionPinNorthEastUp1
-#define directionPinNorthEastUp2
-#define directionPinSouthEastUp1
-#define directionPinSouthEastUp2
+#define pwmPinNorthEastUp 12      // pin definitions for upward west side thrusters
+#define pwmPinSouthEastUp 13
+#define directionPinNorthEastUp1 14
+#define directionPinNorthEastUp2 15
+#define directionPinSouthEastUp1 16
+#define directionPinSouthEastUp2 17
 
 #define analogPinPressureSensor A0      //pin definition for depth sensor
 
