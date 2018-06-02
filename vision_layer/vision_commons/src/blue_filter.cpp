@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
 #include "opencv2/xphoto/white_balance.hpp"
+#include "opencv2/photo/photo.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
@@ -12,7 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-image_transport::Publisher blue_filtered_pub;
+image_transport::Publisher white_balanced_pub;
+image_transport::Publisher noise_reduced_pub;
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 	cv_bridge::CvImagePtr cv_img_ptr;
@@ -20,13 +22,35 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 		cv_img_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image = cv_img_ptr->image;
 		if(!image.empty()){
-			cv::Mat blue_filtered;
-			cv::xphoto::createGrayworldWB()->balanceWhite(image, blue_filtered);
-			cv_bridge::CvImage image_ptr;
-			image_ptr.header = msg->header;
-			image_ptr.encoding = msg->encoding;
-			image_ptr.image = blue_filtered;
-			blue_filtered_pub.publish(image_ptr.toImageMsg());
+
+			cv::Mat white_balanced;
+			cv::xphoto::createGrayworldWB()->balanceWhite(image, white_balanced);
+			cv_bridge::CvImage white_balanced_ptr;
+			white_balanced_ptr.header = msg->header;
+			white_balanced_ptr.encoding = msg->encoding;
+			white_balanced_ptr.image = white_balanced;
+
+			cv::Mat noise_reduced;
+			cv::fastNlMeansDenoisingColored(image, noise_reduced, 10.0, 10.0, 5, 11);
+			cv::Mat lab_image;
+			cv::cvtColor(noise_reduced, lab_image, CV_BGR2Lab);
+			std::vector<cv::Mat> lab_planes(3);
+			cv::split(lab_image, lab_planes);
+			cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(16, cv::Size(5, 5));
+			clahe->setClipLimit(8);
+			cv::Mat ldst;
+			clahe->apply(lab_planes[0], ldst);
+			ldst.copyTo(lab_planes[0]);
+			cv::merge(lab_planes, lab_image);
+			cv::Mat fina;
+			cv::cvtColor(lab_image, fina, CV_Lab2BGR);
+			cv_bridge::CvImage noise_reduced_ptr;
+			noise_reduced_ptr.header = msg->header;
+			noise_reduced_ptr.encoding = msg->encoding;
+			noise_reduced_ptr.image = fina;
+
+			white_balanced_pub.publish(white_balanced_ptr.toImageMsg());
+			noise_reduced_pub.publish(noise_reduced_ptr.toImageMsg());
 		}
 	}
 	catch(cv_bridge::Exception& e) {
@@ -41,7 +65,8 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "blue_filter");
 	ros::NodeHandle nh;
 	image_transport::ImageTransport it(nh);
-	blue_filtered_pub = it.advertise("/blue_filtered", 1);
+	white_balanced_pub = it.advertise("/white_balanced", 1);
+	noise_reduced_pub = it.advertise("/noise_reduced", 1);
 	image_transport::Subscriber image_raw_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
