@@ -33,7 +33,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 			inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
 			cv_bridge::CvImage thresholded_ptr;
 			thresholded_ptr.header = msg->header;
-			thresholded_ptr.encoding = "HSV";
+			thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
 			thresholded_ptr.image = image_thresholded;
 
 			thresholded_HSV_pub.publish(thresholded_ptr.toImageMsg());
@@ -49,13 +49,11 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 
 int main(int argc, char **argv){
 	cv::Mat image;
-	image = cv::imread("/home/ayush/GOT.jpg", CV_LOAD_IMAGE_COLOR);
-	cv::imshow("src", image);
 	ros::init(argc, argv, "thresholded");
 	ros::NodeHandle nh;
 	image_transport::ImageTransport it(nh);
 	thresholded_HSV_pub = it.advertise("/thresholded", 1);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/kraken/front_camera", 1, imageCallback);
 	ros::spin();
 	return 0;
 }

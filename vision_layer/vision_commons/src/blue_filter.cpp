@@ -67,8 +67,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
 int main(int argc, char **argv) {
 	cv::Mat image;
-	image = cv::imread("/home/ayush/GOT.jpg", CV_LOAD_IMAGE_COLOR);
-	cv::imshow("src", image);
 	ros::init(argc, argv, "blue_filter");
 	ros::NodeHandle nh;
 	image_transport::ImageTransport it(nh);
