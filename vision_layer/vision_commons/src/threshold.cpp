@@ -107,7 +107,7 @@
 							cv::ellipse(image_marked, minEllipse, cv::Scalar(255,255,0), 2, 8 );
 						}
 
-						cv::circle(image_marked, cv::Point(buoy_point_message.point.x, buoy_point_message.point.y), 10, cv::Scalar(255,100,100), 8, 0);
+						cv::circle(image_marked, cv::Point(buoy_point_message.point.x + image.size().width/2, buoy_point_message.point.y + image.size().height/2), 10, cv::Scalar(255,100,100), 8, 0);
 						cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 10, cv::Scalar(255,100, 50), 2, 8, 0);
 
 						cv_bridge::CvImage marked_ptr;
