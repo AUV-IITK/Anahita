@@ -155,7 +155,12 @@ include_directories(
 # )
 
 add_executable(blue_filter src/blue_filter.cpp)
+add_executable(threshold src/threshold.cpp)
 target_link_libraries(blue_filter
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+target_link_libraries(threshold
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
