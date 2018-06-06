@@ -52,6 +52,12 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
 				inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
+<<<<<<< HEAD
+=======
+				cv::Mat opening_closing_kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3), cv::Point(1, 1));
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 1);
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 1);
+>>>>>>> b5cb8f939a2d10c197d65c7bc363971eb72c1fb7
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
