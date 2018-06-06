@@ -53,20 +53,16 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 			white_balanced_ptr.encoding = msg->encoding;
 			white_balanced_ptr.image = white_balanced;
 
+			cv::Mat noise_free;
+			cv::bilateralFilter(white_balanced, noise_free, 1, 2.0, 0.5);
 			cv::Mat lab_image;
-			cv::cvtColor(image, lab_image, CV_BGR2Lab);
+			cv::cvtColor(noise_free, lab_image, CV_BGR2Lab);
 			std::vector<cv::Mat> lab_planes(3);
 			cv::split(lab_image, lab_planes);
 			cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clipLimit, cv::Size(tileGridSize, tileGridSize));
 			cv::Mat l0dst;
 			clahe->apply(lab_planes[0], l0dst);
-//			cv::Mat l1dst;
-//			clahe->apply(lab_planes[1], l1dst);
-//			cv::Mat l2dst;
-//			clahe->apply(lab_planes[2], l2dst);
 			l0dst.copyTo(lab_planes[0]);
-//			l1dst.copyTo(lab_planes[1]);
-//			l2dst.copyTo(lab_planes[2]);
 			cv::merge(lab_planes, lab_image);
 			cv::Mat histogram_equalized;
 			cv::cvtColor(lab_image, histogram_equalized, CV_Lab2BGR);
@@ -78,7 +74,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
 			cv::Mat blue_filtered;
 			cv::addWeighted(white_balanced, whiteBalanceWeight, histogram_equalized, 1.0-whiteBalanceWeight, 0.0, blue_filtered);
-			cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, h, hColor, templateWindowSize, searchWindowSize);
+//			cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, h, hColor, templateWindowSize, searchWindowSize);
 			cv_bridge::CvImage blue_filtered_ptr;
 			blue_filtered_ptr.header = msg->header;
 			blue_filtered_ptr.encoding = msg->encoding;
