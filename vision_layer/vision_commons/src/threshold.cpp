@@ -52,6 +52,9 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
 				inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
+				cv::Mat opening_closing_kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3), cv::Point(1, 1));
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 1);
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 1);
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
@@ -124,7 +127,7 @@ int main(int argc, char **argv){
 	thresholded_HSV_pub = it.advertise("/thresholded", 1);
 	marked_pub = it.advertise("/marked",1);
 	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_processing/buoy_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/blue_filtered", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
