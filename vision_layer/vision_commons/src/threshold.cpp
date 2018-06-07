@@ -20,8 +20,6 @@ int low_v = 2;
 int high_h = 255;
 int high_s = 255;
 int high_v = 255;
-float focal_length = 10;
-float known_width = 25;
 std::string camera_frame = "front_cam_link";
 
 image_transport::Publisher thresholded_HSV_pub;
@@ -52,24 +50,27 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
 				inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
-<<<<<<< HEAD
-=======
+				
 				cv::Mat opening_closing_kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3), cv::Point(1, 1));
-				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 1);
-				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 1);
->>>>>>> b5cb8f939a2d10c197d65c7bc363971eb72c1fb7
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 2);
+				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 2);
+				
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
 				thresholded_ptr.image = image_thresholded;
 				thresholded_HSV_pub.publish(thresholded_ptr.toImageMsg());
+
 				std::vector<std::vector<cv::Point> > contours;
 				std::vector<cv::Vec4i> hierarchy;
 				cv::findContours(image_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 				ROS_INFO("contours size = %d", contours.size());
+
 				if (contours.size() != 0){
 					int index = -1;
+					int index2 = -1;
 					float max_area = 0.0;
+					float max2_area = 0.0;
 					float area = 0.0;
 					for( int i = 0; i< contours.size(); i++ ){
 						area = cv::contourArea(contours[i]);
@@ -77,26 +78,40 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 							index = i;
 							max_area =area;
 						}
+						else if(area>=max2_area){
+							index2 = i;
+							max2_area = area;
+						}
 					}
+
+
 					// Find the convex hull object for each contour
    					std::vector<std::vector<cv::Point> >hull( contours.size() );
 					for( int i = 0; i < contours.size(); i++ ){
 						  cv::convexHull( cv::Mat(contours[i]), hull[i], false ); 
 					}
 
-					
 					// calculating center of mass of contour using moments
 					std::vector<cv::Moments> mu(1);
 					mu[0] = moments(contours[index], false);
 					std::vector<cv::Point2f> mc(1);
 					mc[0] = cv::Point2f( mu[0].m10/mu[0].m00 , mu[0].m01/mu[0].m00 );
+					
 					cv::Rect bounding_rectangle = cv::boundingRect(cv::Mat(contours[index]));
+					if(index2!=-1)
+						cv::Rect bounding_rectangle2 = cv::boundingRect(cv::Mat(contours[index2]));
+
+					std::vector<cv::Point2f>center(1);
+        			std::vector<float>radius(1);
+					cv::minEnclosingCircle(contours[index],center[0],radius[0]); 
+					cv::circle(image_marked, center[0], (int)radius[0], cv::Scalar(180,180,180), 2, 8, 0);
+					
 
 					// publish coordinates message
 					geometry_msgs::PointStamped buoy_point_message;
 					buoy_point_message.header.stamp = ros::Time();
 					buoy_point_message.header.frame_id = camera_frame.c_str();
-					buoy_point_message.point.x = (known_width * focal_length) / (bounding_rectangle.br().x + bounding_rectangle.tl().x);
+					buoy_point_message.point.x = pow(radius[0]/7526.5,-.92678);
 					buoy_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2 - (image.size().width)/2;
 					buoy_point_message.point.z = ((float)image.size().height)/2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
@@ -108,16 +123,15 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 						minEllipse = cv::fitEllipse(cv::Mat(contours[index]));
 						cv::ellipse(image_marked, minEllipse, cv::Scalar(255,255,0), 2, 8 );
 					}
-					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 10, cv::Scalar(255,100,100), 8, 0);
-					cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 10, cv::Scalar(255,100, 50), 2, 8, 0);
+					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 1, cv::Scalar(255,100,100), 8, 0);
+					cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(255,100, 50), 8, 0);
 					
 					for( int i = 0; i< contours.size(); i++ )
 				    {
-        				cv::Scalar color = cv::Scalar(100,100,100);
+        				cv::Scalar color = cv::Scalar(255,255,100);
         				cv::drawContours( image_marked, contours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
-        				cv::drawContours( image_marked, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
+        			    cv::drawContours( image_marked, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
       				}
-
 
 					cv_bridge::CvImage marked_ptr;
 					marked_ptr.header = msg->header;
@@ -147,7 +161,7 @@ int main(int argc, char **argv){
 	thresholded_HSV_pub = it.advertise("/thresholded", 1);
 	marked_pub = it.advertise("/marked",1);
 	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/threshold/center_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/blue_filtered", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
