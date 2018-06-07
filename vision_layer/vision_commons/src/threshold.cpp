@@ -50,22 +50,18 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
 				inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
-				
 				cv::Mat opening_closing_kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3), cv::Point(1, 1));
 				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 2);
 				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 2);
-				
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
 				thresholded_ptr.image = image_thresholded;
 				thresholded_HSV_pub.publish(thresholded_ptr.toImageMsg());
-
 				std::vector<std::vector<cv::Point> > contours;
 				std::vector<cv::Vec4i> hierarchy;
 				cv::findContours(image_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 				ROS_INFO("contours size = %d", contours.size());
-
 				if (contours.size() != 0){
 					int index = -1;
 					int index2 = -1;
@@ -78,17 +74,18 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 							index = i;
 							max_area =area;
 						}
-						else if(area>=max2_area){
+					}
+					for(int i = 0 ; i< contours.size() ; i++) {
+						area = cv::contourArea(contours[i]);
+						if(area >= max2_area && area < max_area){
 							index2 = i;
 							max2_area = area;
 						}
 					}
-
-
 					// Find the convex hull object for each contour
-   					std::vector<std::vector<cv::Point> >hull( contours.size() );
+					std::vector<std::vector<cv::Point> >hull( contours.size() );
 					for( int i = 0; i < contours.size(); i++ ){
-						  cv::convexHull( cv::Mat(contours[i]), hull[i], false ); 
+						cv::convexHull( cv::Mat(contours[i]), hull[i], false );
 					}
 
 					// calculating center of mass of contour using moments
@@ -96,17 +93,18 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 					mu[0] = moments(contours[index], false);
 					std::vector<cv::Point2f> mc(1);
 					mc[0] = cv::Point2f( mu[0].m10/mu[0].m00 , mu[0].m01/mu[0].m00 );
-					
 					cv::Rect bounding_rectangle = cv::boundingRect(cv::Mat(contours[index]));
-					if(index2!=-1)
+					if(contours.size() > 1 && index2 != -1) {
 						cv::Rect bounding_rectangle2 = cv::boundingRect(cv::Mat(contours[index2]));
-
+						if((bounding_rectangle2.br().y + bounding_rectangle2.tl().y) > (bounding_rectangle.br().y + bounding_rectangle.tl().y)) {
+							index = index2;
+							bounding_rectangle = bounding_rectangle2;
+						}
+					}
 					std::vector<cv::Point2f>center(1);
-        			std::vector<float>radius(1);
+					std::vector<float>radius(1);
 					cv::minEnclosingCircle(contours[index],center[0],radius[0]); 
 					cv::circle(image_marked, center[0], (int)radius[0], cv::Scalar(180,180,180), 2, 8, 0);
-					
-
 					// publish coordinates message
 					geometry_msgs::PointStamped buoy_point_message;
 					buoy_point_message.header.stamp = ros::Time();
@@ -116,7 +114,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 					buoy_point_message.point.z = ((float)image.size().height)/2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
 					coordinates_pub.publish(buoy_point_message);
-					
+
 					cv::RotatedRect minEllipse;
 					cv::cvtColor(image_marked, image_marked, cv::COLOR_BGR2HSV);
 					if(contours[index].size()>=5){
@@ -125,7 +123,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 					}
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 1, cv::Scalar(255,100,100), 8, 0);
 					cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(255,100, 50), 8, 0);
-					
+
 					for( int i = 0; i< contours.size(); i++ )
 				    {
         				cv::Scalar color = cv::Scalar(255,255,100);
