@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vision_commons)
+project(vision_tasks)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,16 +8,16 @@ project(vision_commons)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   roscpp
   rospy
+  sensor_msgs
   std_msgs
 )
 
-roslint_cpp()
-
 ## System dependencies are found with CMake's conventions
-## find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV)
+# find_package(Boost REQUIRED COMPONENTS system)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -42,6 +42,7 @@ find_package(OpenCV)
 ##   * add "message_generation" and every package in MSG_DEP_SET to
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
+##     catkin_package(CATKIN_DEPENDS ...)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
@@ -71,7 +72,7 @@ find_package(OpenCV)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -89,6 +90,10 @@ find_package(OpenCV)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
+# generate_dynamic_reconfigure_options(
+#   cfg/DynReconf1.cfg
+#   cfg/DynReconf2.cfg
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -99,15 +104,12 @@ find_package(OpenCV)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(CATKIN_DEPENDS opencv3
-	INCLUDE_DIRS include
-	LIBRARIES vision_commons)
-#catkin_package(
- # INCLUDE_DIRS include
-#  LIBRARIES vision_commons
-#CATKIN_DEPENDS cv_bridge image_transport opencv3 roscpp rospy std_msgs
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES vision_tasks
+#  CATKIN_DEPENDS cv_bridge roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
-#)
+)
 
 ###########
 ## Build ##
@@ -116,24 +118,24 @@ catkin_package(CATKIN_DEPENDS opencv3
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+# include
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
 ## Declare a C++ library
-add_library(vision_commons src/contour.cpp src/morph.cpp src/threshold.cpp)
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/vision_tasks.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-#add_dependencies(threshold ${PROJECT_NAME}_gencfg)
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-## add_executable(${PROJECT_NAME}_node src/vision_commons_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/vision_tasks_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -143,21 +145,12 @@ add_library(vision_commons src/contour.cpp src/morph.cpp src/threshold.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-## add_dependencies(blue_filter ${PROJECT_NAME}_gencfg)
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
-
-# add_executable(blue_filter src/blue_filter.cpp)
-# add_executable(threshold src/threshold.cpp)
-# target_link_libraries(blue_filter
-#  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
-#)
-#target_link_libraries(threshold
-#  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
-#)
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -181,11 +174,11 @@ target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
 # )
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/vision_commons/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
-)
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -199,7 +192,7 @@ install(DIRECTORY include/vision_commons/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_vision_commons.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_vision_tasks.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
