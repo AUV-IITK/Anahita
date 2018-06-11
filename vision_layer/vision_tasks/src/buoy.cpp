@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string>
 
-#include <vision_tasks/rangeConfig.h>
+#include <vision_tasks/buoyRangeConfig.h>
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
@@ -24,7 +24,7 @@ image_transport::Publisher marked_pub;
 ros::Publisher coordinates_pub;
 std::string camera_frame = "auv-iitk";
 
-void callback(vision_tasks::rangeConfig &config, double level){
+void callback(vision_tasks::buoyRangeConfig &config, double level){
 	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_h, config.low_s, config.low_v, config.high_h, config.high_s, config.high_v);
 	low_h = config.low_h;
 	low_s = config.low_s;
@@ -123,8 +123,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 int main(int argc, char **argv){
 	ros::init(argc, argv, "buoy_task");
 	ros::NodeHandle nh;
-	dynamic_reconfigure::Server<vision_tasks::rangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::rangeConfig>::CallbackType f;
+	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
 	f = boost::bind(&callback, _1, _2);
 	server.setCallback(f);
 	image_transport::ImageTransport it(nh);
