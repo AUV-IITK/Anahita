@@ -13,11 +13,15 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  dynamic_reconfigure
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+find_package(OpenCV REQUIRED)
+find_package(vision_commons REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -75,6 +79,7 @@ find_package(catkin REQUIRED COMPONENTS
 #   sensor_msgs#   std_msgs
 # )
 
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -90,10 +95,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/range.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -104,9 +108,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES vision_tasks
+catkin_package( 
+  #INCLUDE_DIRS include
+  LIBRARIES vision_commons
 #  CATKIN_DEPENDS cv_bridge roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
@@ -120,6 +124,8 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake 
+  ${vision_commons_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -135,7 +141,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/vision_tasks_node.cpp)
+add_executable(buoy_task src/buoy.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,9 +154,8 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 
 #############
 ## Install ##

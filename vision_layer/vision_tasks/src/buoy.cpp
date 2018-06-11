@@ -8,26 +8,23 @@
 #include <image_transport/image_transport.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PointStamped.h>
-#include <vision_commons/rangeConfig.h>
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
 
-int low_h = 0;
-int low_s = 1;
-int low_v = 2;
-int high_h = 255;
-int high_s = 255;
-int high_v = 255;
-std::string camera_frame = "front_cam_link";
+#include <vision_tasks/rangeConfig.h>
+#include <vision_commons/contour.h>
+#include <vision_commons/morph.h>
+#include <vision_commons/threshold.h>
 
+int low_h, low_s, low_v, high_h, high_s, high_v;
 image_transport::Publisher thresholded_HSV_pub;
 image_transport::Publisher marked_pub;
 ros::Publisher coordinates_pub;
+std::string camera_frame = "auv-iitk";
 
-
-void callback(vision_commons::rangeConfig &config, double level){
+void callback(vision_tasks::rangeConfig &config, double level){
 	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_h, config.low_s, config.low_v, config.high_h, config.high_s, config.high_v);
 	low_h = config.low_h;
 	low_s = config.low_s;
@@ -39,55 +36,38 @@ void callback(vision_commons::rangeConfig &config, double level){
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 	cv_bridge::CvImagePtr cv_img_ptr;
-	try{
+	try{	
 		cv_img_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
+		
 		if(!image.empty()){
+		
 			cv::Mat image_hsv;
 			cv::Mat image_thresholded;
 			cv::cvtColor(image, image_hsv, cv::COLOR_BGR2HSV);
+		
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
+		
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
-				inRange(image_hsv, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), image_thresholded);
-				cv::Mat opening_closing_kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3), cv::Point(1, 1));
-				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_OPEN, opening_closing_kernel, cv::Point(-1, -1), 2);
-				cv::morphologyEx(image_thresholded, image_thresholded, cv::MORPH_CLOSE, opening_closing_kernel, cv::Point(-1, -1), 2);
+		
+				image_thresholded = vision_commons::Threshold::threshold(image, low_h, low_s, low_v, high_h, high_s, high_v);
+
+				image_thresholded = vision_commons::Morph::open(image_thresholded, 3, 1, 1, 2);
+				image_thresholded = vision_commons::Morph::close(image_thresholded, 3, 1, 1, 2);
+				
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
 				thresholded_ptr.image = image_thresholded;
 				thresholded_HSV_pub.publish(thresholded_ptr.toImageMsg());
-				std::vector<std::vector<cv::Point> > contours;
-				std::vector<cv::Vec4i> hierarchy;
-				cv::findContours(image_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+				
+				std::vector<std::vector<cv::Point> > contours = vision_commons::Contour::getBestX(image_thresholded, 2);
+
 				ROS_INFO("contours size = %d", contours.size());
 				if (contours.size() != 0){
-					int index = -1;
-					int index2 = -1;
-					float max_area = 0.0;
-					float max2_area = 0.0;
-					float area = 0.0;
-					for( int i = 0; i< contours.size(); i++ ){
-						area = cv::contourArea(contours[i]);
-						if(area >= max_area){
-							index = i;
-							max_area =area;
-						}
-					}
-					for(int i = 0 ; i< contours.size() ; i++) {
-						area = cv::contourArea(contours[i]);
-						if(area >= max2_area && area < max_area){
-							index2 = i;
-							max2_area = area;
-						}
-					}
-					// Find the convex hull object for each contour
-					std::vector<std::vector<cv::Point> >hull( contours.size() );
-					for( int i = 0; i < contours.size(); i++ ){
-						cv::convexHull( cv::Mat(contours[i]), hull[i], false );
-					}
-
+					int index = 0; 
+					int index2 = 1;
 					// calculating center of mass of contour using moments
 					std::vector<cv::Moments> mu(1);
 					mu[0] = moments(contours[index], false);
@@ -128,7 +108,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 				    {
         				cv::Scalar color = cv::Scalar(255,255,100);
         				cv::drawContours( image_marked, contours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
-        			    cv::drawContours( image_marked, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
+        			   // cv::drawContours( image_marked, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
       				}
 
 					cv_bridge::CvImage marked_ptr;
@@ -149,10 +129,10 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 }
 
 int main(int argc, char **argv){
-	ros::init(argc, argv, "thresholded");
+	ros::init(argc, argv, "buoy_task");
 	ros::NodeHandle nh;
-	dynamic_reconfigure::Server<vision_commons::rangeConfig> server;
-	dynamic_reconfigure::Server<vision_commons::rangeConfig>::CallbackType f;
+	dynamic_reconfigure::Server<vision_tasks::rangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::rangeConfig>::CallbackType f;
 	f = boost::bind(&callback, _1, _2);
 	server.setCallback(f);
 	image_transport::ImageTransport it(nh);

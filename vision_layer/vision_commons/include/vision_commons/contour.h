@@ -1,5 +1,5 @@
-#ifndef morph_H
-#define morph_H
+#ifndef contour_H
+#define contour_H
 
 #include "opencv2/core/core.hpp"
 

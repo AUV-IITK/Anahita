@@ -11,13 +11,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  image_transport
 )
 
 roslint_cpp()
 
 ## System dependencies are found with CMake's conventions
 ## find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -99,7 +100,7 @@ find_package(OpenCV)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(CATKIN_DEPENDS opencv3
+catkin_package(CATKIN_DEPENDS 
 	INCLUDE_DIRS include
 	LIBRARIES vision_commons)
 #catkin_package(
