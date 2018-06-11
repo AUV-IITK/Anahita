@@ -53,8 +53,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 		
 				image_thresholded = vision_commons::Threshold::threshold(image, low_h, low_s, low_v, high_h, high_s, high_v);
 
-				image_thresholded = vision_commons::Morph::open(image_thresholded, 3, 1, 1, 2);
-				image_thresholded = vision_commons::Morph::close(image_thresholded, 3, 1, 1, 2);
+				//image_thresholded = vision_commons::Morph::open(image_thresholded, 3, 1, 1, 2);
+				//image_thresholded = vision_commons::Morph::close(image_thresholded, 3, 1, 1, 2);
 				
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
@@ -119,7 +119,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 				}
 			}
 		}
-	}
+	}	
 	catch(cv_bridge::Exception &e){
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 	}
