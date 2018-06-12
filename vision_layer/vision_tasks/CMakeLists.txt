@@ -98,6 +98,7 @@ find_package(vision_commons REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/buoyRange.cfg
   cfg/gateRange.cfg
+  cfg/lineRange.cfg
 )
 
 ###################################
@@ -144,7 +145,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(buoy_task src/buoy.cpp)
 add_executable(gate_task src/gate.cpp)
-
+add_executable(line_task src/line.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -159,7 +160,7 @@ add_executable(gate_task src/gate.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(gate_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
+target_link_libraries(line_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 #############
 ## Install ##
