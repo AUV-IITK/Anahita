@@ -8,20 +8,14 @@
 std::vector<std::vector<cv::Point> > vision_commons::Contour::getBestX(cv::Mat raw, int x) {
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
-	std::cout << "Finding contours..." << std::endl;
 	cv::findContours(raw, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-	std::cout << "Found contours." << std::endl;
 	if (contours.size() != 0){
 		std::vector<float> areas;
 		for(int i = 0 ; i < contours.size() ; i++) {
 			float area = cv::contourArea(contours[i]);
 			if(area == 0.0) contours.erase(contours.begin() + i--);
-			else {
-				areas.push_back(cv::contourArea(contours[i]));
-				std::cout << areas[i] << " ";
-			}
+			else areas.push_back(cv::contourArea(contours[i]));
 		}
-		std::cout << "Sorting..." << std::endl;
 		float max_area = 0.0f;
 		int max_index = 0;
 		float area = 0.0f;
@@ -46,7 +40,6 @@ std::vector<std::vector<cv::Point> > vision_commons::Contour::getBestX(cv::Mat r
 				area = 0.0;
 				max_index = 0;
 			}
-			std::cout << std::endl << "Sorted. Cutting vector..." << std::endl;
 			std::vector<std::vector<cv::Point> > topX(contours.begin(), contours.begin() + x);
 			return topX;
 		}
