@@ -5,7 +5,7 @@ using namespace std;
 
 class Thruster
 {
-public:
+  public:
     // constructors
     Thruster(int pwm_pin, int thruster_pinA, int thruster_pinB);
     Thruster(int pwm_pin, int thruster_pinA, int thruster_pinB, int current_sensor_pin);
@@ -19,7 +19,7 @@ public:
     // set the thruster to motion depending on pwm input
     void spin(int pwm);
 
-private:
+  private:
     int val_;                    // current sensor output
     int pwm_pin_;                // pwm pin number
     int current_sensor_pin_;     // current sensor pin number
