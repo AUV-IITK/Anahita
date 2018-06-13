@@ -5,7 +5,7 @@
 #include <math.h>
 
 //instances of the class Thruster defined in header file
-Thruster TEAST, TWEST, TNORTHUP, TSOUTHUP, TNORTHSWAY, TSOUTHSWAY;
+Thruster TEAST,TWEST,TNORTHUP,TSOUTHUP,TNORTHSWAY,TSOUTHSWAY;
 
 bool isMovingForward = false; //variable to distinguish for turning with forward or sideward Thrusters
 
@@ -62,7 +62,7 @@ void TurnCB(const std_msgs::Int32& msg)
 {
     int pwm = msg.data;
     std_msgs::Int32 v;
-    if (!isMovingForward)   //checking if forward Thrusters are not preoccupied
+    if(!isMovingForward)    //checking if forward Thrusters are not preoccupied
     {
         TEAST.calibration(pwm, TEAST.mode(abs(pwm)));
         TWEST.calibration(-pwm, TWEST.mode(abs(pwm)));
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     //Topics receiving pwm values from the motion library
     ros::Subscriber subPwmForward = nh.subscribe("/pwm/forward", 1000, ForwardCB);
     ros::Subscriber subPwmSideward = nh.subscribe("/pwm/sideward", 1000, SidewardCB);
-    ros::Subscriber subPwmUpward = nh.subscribe("/pwm/upward", 1000, UpwardCB);
+    ros::Subscriber subPwmUpward= nh.subscribe("/pwm/upward", 1000, UpwardCB);
     ros::Subscriber subPwmTurn = nh.subscribe("/pwm/turn", 1000, TurnCB);
 
     ros::spin();

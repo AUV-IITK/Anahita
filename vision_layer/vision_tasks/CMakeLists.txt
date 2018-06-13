@@ -9,6 +9,7 @@ project(vision_tasks)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
+  roslint
   roscpp
   rospy
   sensor_msgs
@@ -17,6 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
+
+roslint_cpp()
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -144,6 +147,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(buoy_task src/buoy.cpp)
 add_executable(gate_task src/gate.cpp)
+add_executable(blue_filter src/blue_filter.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -159,6 +163,7 @@ add_executable(gate_task src/gate.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(gate_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+target_link_libraries(blue_filter  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 
 #############

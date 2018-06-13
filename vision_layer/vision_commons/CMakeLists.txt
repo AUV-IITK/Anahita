@@ -10,6 +10,7 @@ project(vision_commons)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  roslint
   std_msgs
   image_transport
 )

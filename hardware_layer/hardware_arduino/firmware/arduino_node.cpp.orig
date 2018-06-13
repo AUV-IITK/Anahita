@@ -143,7 +143,7 @@ void publish_pressure_data()
 // function definitions for callback
 void surge1_callback(const std_msgs::Int32& msg)
 {
-    surge1.spin(msg.data);
+   surge1.spin(msg.data);
 }
 
 void surge2_callback(const std_msgs::Int32& msg)
@@ -153,7 +153,7 @@ void surge2_callback(const std_msgs::Int32& msg)
 
 void heave1_callback(const std_msgs::Int32& msg)
 {
-    heave1.spin(msg.data);
+   heave1.spin(msg.data);
 }
 
 void heave2_callback(const std_msgs::Int32& msg)
@@ -163,7 +163,7 @@ void heave2_callback(const std_msgs::Int32& msg)
 
 void sway1_callback(const std_msgs::Int32& msg)
 {
-    sway1.spin(msg.data);
+   sway1.spin(msg.data);
 }
 
 void sway2_callback(const std_msgs::Int32& msg)
