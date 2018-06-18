@@ -158,7 +158,7 @@ int main(int argc, char **argv){
 	blue_filtered_pub = it.advertise("/blue_filtered", 1);
 	thresholded_HSV_pub = it.advertise("/thresholded", 1);
 	marked_pub = it.advertise("/marked",1);
-	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
+	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/threshold/center_coordinates", 1000);
 	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
