@@ -1,108 +1,113 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Image.h"
-#include "opencv2/xphoto/white_balance.hpp"
 #include "opencv2/photo/photo.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <sensor_msgs/image_encodings.h>
-#include <dynamic_reconfigure/server.h>
-#include <vision_commons/blue_filterConfig.h>
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "vision_commons/blue_filter.h"
 
-image_transport::Publisher white_balanced_pub;
-image_transport::Publisher histogram_equalized_pub;
-image_transport::Publisher blue_filtered_pub;
+void balance_white(cv::Mat mat) {
+  double discard_ratio = 0.05;
+  int hists[3][256];
+  memset(hists, 0, 3*256*sizeof(int));
 
-double clipLimit;
-int tileGridSize;
-double whiteBalanceWeight;
-double h;
-double hColor;
-int templateWindowSize;
-int searchWindowSize;
+  for (int y = 0; y < mat.rows; ++y) {
+    uchar* ptr = mat.ptr<uchar>(y);
+    for (int x = 0; x < mat.cols; ++x) {
+      for (int j = 0; j < 3; ++j) {
+        hists[j][ptr[x * 3 + j]] += 1;
+      }
+    }
+  }
 
-void paramCallback(vision_commons::blue_filterConfig &config, uint32_t level) {
-	clipLimit = config.clipLimit;
-	tileGridSize = config.tileGridSize;
-	whiteBalanceWeight = config.whiteBalanceWeight;
-	h = config.h;
-	hColor = config.hColor;
-	templateWindowSize = config.templateWindowSize;
-	searchWindowSize = config.searchWindowSize;
+  // cumulative hist
+  int total = mat.cols*mat.rows;
+  int vmin[3], vmax[3];
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 255; ++j) {
+      hists[i][j + 1] += hists[i][j];
+    }
+    vmin[i] = 0;
+    vmax[i] = 255;
+    while (hists[i][vmin[i]] < discard_ratio * total)
+      vmin[i] += 1;
+    while (hists[i][vmax[i]] > (1 - discard_ratio) * total)
+      vmax[i] -= 1;
+    if (vmax[i] < 255 - 1)
+      vmax[i] += 1;
+  }
+
+
+  for (int y = 0; y < mat.rows; ++y) {
+    uchar* ptr = mat.ptr<uchar>(y);
+    for (int x = 0; x < mat.cols; ++x) {
+      for (int j = 0; j < 3; ++j) {
+        int val = ptr[x * 3 + j];
+        if (val < vmin[j])
+          val = vmin[j];
+        if (val > vmax[j])
+          val = vmax[j];
+        ptr[x * 3 + j] = static_cast<uchar>((val - vmin[j]) * 255.0 / (vmax[j] - vmin[j]));
+      }
+    }
+  }
 }
 
-void imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
-	cv_bridge::CvImagePtr cv_img_ptr;
-	try {
-		cv_img_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-		cv::Mat image = cv_img_ptr->image;
-		if(!image.empty()){
+cv::Mat vision_commons::BlueFilter::filter(
+	cv::Mat image,
+	double clahe_clip,
+	int clahe_grid_size,
+	int clahe_bilateral_iter,
+	int balanced_bilateral_iter,
+	double denoise_h
+) {
 
-			cv::resize(image, image, cv::Size(640, 480));
-			cv::cvtColor(image, image, cv::COLOR_HSV2BGR);
-			cv::Mat white_balanced;
-			cv::xphoto::createGrayworldWB()->balanceWhite(image, white_balanced);
-			cv_bridge::CvImage white_balanced_ptr;
-			white_balanced_ptr.header = msg->header;
-			white_balanced_ptr.encoding = msg->encoding;
-			white_balanced_ptr.image = white_balanced;
-
-			cv::Mat noise_free;
-			cv::bilateralFilter(white_balanced, noise_free, 1, 2.0, 0.5);
-			cv::Mat lab_image;
-			cv::cvtColor(noise_free, lab_image, CV_BGR2Lab);
-			std::vector<cv::Mat> lab_planes(3);
-			cv::split(lab_image, lab_planes);
-			cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clipLimit, cv::Size(tileGridSize, tileGridSize));
-			cv::Mat l0dst;
-			clahe->apply(lab_planes[0], l0dst);
-			l0dst.copyTo(lab_planes[0]);
-			cv::merge(lab_planes, lab_image);
-			cv::Mat histogram_equalized;
-			cv::cvtColor(lab_image, histogram_equalized, CV_Lab2BGR);
-
-			cv_bridge::CvImage histogram_equalized_ptr;
-			histogram_equalized_ptr.header = msg->header;
-			histogram_equalized_ptr.encoding = msg->encoding;
-			histogram_equalized_ptr.image = histogram_equalized;
-
-			cv::Mat blue_filtered;
-			cv::addWeighted(white_balanced, whiteBalanceWeight, histogram_equalized, 1.0-whiteBalanceWeight, 0.0, blue_filtered);
-//			cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, h, hColor, templateWindowSize, searchWindowSize);
-			cv_bridge::CvImage blue_filtered_ptr;
-			blue_filtered_ptr.header = msg->header;
-			blue_filtered_ptr.encoding = msg->encoding;
-			blue_filtered_ptr.image = blue_filtered;
-
-			white_balanced_pub.publish(white_balanced_ptr.toImageMsg());
-			histogram_equalized_pub.publish(histogram_equalized_ptr.toImageMsg());
-			blue_filtered_pub.publish(blue_filtered_ptr.toImageMsg());
+	if(!image.empty()){
+		cv::Mat lab_image;
+		cv::cvtColor(image, lab_image, CV_BGR2Lab);
+		std::vector<cv::Mat> lab_planes(3);
+		cv::split(lab_image, lab_planes);
+		cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clahe_clip, cv::Size(clahe_grid_size, clahe_grid_size));
+		cv::Mat l0dst;
+		clahe->apply(lab_planes[0], l0dst);
+		l0dst.copyTo(lab_planes[0]);
+		cv::merge(lab_planes, lab_image);
+		cv::Mat blue_filtered;
+		cv::cvtColor(lab_image, blue_filtered, CV_Lab2BGR);
+		cv::Mat temp;
+		for(int i = 0 ; i < clahe_bilateral_iter/2 ; i++) {
+			cv::bilateralFilter(blue_filtered, temp, 6, 8.0, 8.0);
+			cv::bilateralFilter(temp, blue_filtered, 6, 8.0, 8.0);
 		}
-	}
-	catch(cv_bridge::Exception& e) {
-		ROS_ERROR("cv_bridge exception: %s", e.what());
-		return;
-	}
-}
+		balance_white(blue_filtered);
+		for(int i = 0 ; i < balanced_bilateral_iter/2 ; i++) {
+			cv::bilateralFilter(blue_filtered, temp, 6, 8.0, 8.0);
+			cv::bilateralFilter(temp, blue_filtered, 6, 8.0, 8.0);
+		}
+		cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, denoise_h, denoise_h, 3, 5);
 
-int main(int argc, char **argv) {
-	ros::init(argc, argv, "blue_filter");
-	dynamic_reconfigure::Server<vision_commons::blue_filterConfig> server;
-	dynamic_reconfigure::Server<vision_commons::blue_filterConfig>::CallbackType f;
-	f = boost::bind(&paramCallback, _1, _2);
-	server.setCallback(f);
-	ros::NodeHandle nh;
-	image_transport::ImageTransport it(nh);
-	white_balanced_pub = it.advertise("/input1", 1);
-	histogram_equalized_pub = it.advertise("/input2", 1);
-	blue_filtered_pub = it.advertise("/blue_filtered", 1);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
-	ros::spin();
-	return 0;
+		// cv::Mat noise_free;
+		// cv::bilateralFilter(image, noise_free, 1, 2.0, 0.5);
+		// cv::Mat lab_image;
+		// cv::cvtColor(noise_free, lab_image, CV_BGR2Lab);
+		// std::vector<cv::Mat> lab_planes(3);
+		// cv::split(lab_image, lab_planes);
+		// cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(claheClip, cv::Size(claheGridSize, claheGridSize));
+		// cv::Mat l0dst;
+		// clahe->apply(lab_planes[0], l0dst);
+		// l0dst.copyTo(lab_planes[0]);
+		// cv::merge(lab_planes, lab_image);
+		// cv::Mat histogram_equalized;
+		// cv::cvtColor(lab_image, histogram_equalized, CV_Lab2BGR);
+		// cv::Mat white_balanced;
+		// white_balanced = whiteBalance(image);
+		// cv::Mat blue_filtered;
+		// cv::addWeighted(white_balanced, whiteBalanceWeight, histogram_equalized, 1.0-whiteBalanceWeight, 0.0, blue_filtered);
+		// cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, denoiseH, denoiseH, 3, 5);
+		return blue_filtered;
+	}
+	else
+		return image;
 }

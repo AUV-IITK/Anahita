@@ -14,11 +14,24 @@
 #include <string>
 
 #include <vision_tasks/buoyRangeConfig.h>
+#include <vision_commons/blue_filter.h>
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
 
-int low_h, low_s, low_v, high_h, high_s, high_v, opening_closing_mat_point, opening_iter, closing_iter;
+double clahe_clip = 4.0;
+int clahe_grid_size = 8;
+int clahe_bilateral_iter = 8;
+int balanced_bilateral_iter = 4;
+double denoise_h = 10.0;
+int low_h = 10;
+int high_h = 90;
+int low_s = 0;
+int high_s = 255;
+int low_v = 0;
+int high_v = 255;
+int opening_closing_mat_point, opening_iter, closing_iter;
+image_transport::Publisher blue_filtered_pub;
 image_transport::Publisher thresholded_HSV_pub;
 image_transport::Publisher marked_pub;
 ros::Publisher coordinates_pub;
@@ -26,6 +39,11 @@ std::string camera_frame = "auv-iitk";
 
 void callback(vision_tasks::buoyRangeConfig &config, double level){
 	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_h, config.low_s, config.low_v, config.high_h, config.high_s, config.high_v);
+	clahe_clip = config.clahe_clip;
+	clahe_grid_size = config.clahe_grid_size;
+	clahe_bilateral_iter = config.clahe_bilateral_iter;
+	balanced_bilateral_iter = config.balanced_bilateral_iter;
+	denoise_h = config.denoise_h;
 	low_h = config.low_h;
 	low_s = config.low_s;
 	low_v = config.low_v;
@@ -43,16 +61,25 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv_img_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
-
 		if(!image.empty()){
 			cv::Mat image_hsv;
 			cv::Mat image_thresholded;
-			cv::cvtColor(image, image_hsv, cv::COLOR_BGR2HSV);
+			// cv::cvtColor(image, image, CV_HSV2BGR);
+			cv::Mat blue_filtered = vision_commons::BlueFilter::filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
 			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
+//			cv::cvtColor(blue_filtered, blue_filtered, CV_HSV2BGR);
+			cv_bridge::CvImage blue_filtered_ptr;
+			blue_filtered_ptr.header = msg->header;
+			blue_filtered_ptr.encoding = sensor_msgs::image_encodings::RGB8;
+			blue_filtered_ptr.image = blue_filtered;
+			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
 			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
-				image_thresholded = vision_commons::Threshold::threshold(image, low_h, low_s, low_v, high_h, high_s, high_v);
+				ROS_INFO("Thresholding...");
+				image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_h, low_s, low_v, high_h, high_s, high_v);
+				ROS_INFO("Thresholded. Morphing...");
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, opening_iter);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, closing_iter);
+				ROS_INFO("Morphed.");
 				cv_bridge::CvImage thresholded_ptr;
 				thresholded_ptr.header = msg->header;
 				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
@@ -128,6 +155,7 @@ int main(int argc, char **argv){
 	f = boost::bind(&callback, _1, _2);
 	server.setCallback(f);
 	image_transport::ImageTransport it(nh);
+	blue_filtered_pub = it.advertise("/blue_filtered", 1);
 	thresholded_HSV_pub = it.advertise("/thresholded", 1);
 	marked_pub = it.advertise("/marked",1);
 	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
