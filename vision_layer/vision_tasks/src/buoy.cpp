@@ -24,32 +24,33 @@ int clahe_grid_size = 8;
 int clahe_bilateral_iter = 8;
 int balanced_bilateral_iter = 4;
 double denoise_h = 10.0;
-int low_h = 10;
-int high_h = 90;
-int low_s = 0;
-int high_s = 255;
-int low_v = 0;
-int high_v = 255;
+int low_b = 0;
+int high_b = 130;
+int low_g = 0;
+int high_g = 123;
+int low_r = 95;
+int high_r = 255;
 int opening_closing_mat_point, opening_iter, closing_iter;
 image_transport::Publisher blue_filtered_pub;
-image_transport::Publisher thresholded_HSV_pub;
+image_transport::Publisher thresholded_pub;
 image_transport::Publisher marked_pub;
 ros::Publisher coordinates_pub;
 std::string camera_frame = "auv-iitk";
+geometry_msgs::PointStamped buoy_point_message;
 
 void callback(vision_tasks::buoyRangeConfig &config, double level){
-	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_h, config.low_s, config.low_v, config.high_h, config.high_s, config.high_v);
+	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_b, config.low_g, config.low_r, config.high_b, config.high_g, config.high_r);
 	clahe_clip = config.clahe_clip;
 	clahe_grid_size = config.clahe_grid_size;
 	clahe_bilateral_iter = config.clahe_bilateral_iter;
 	balanced_bilateral_iter = config.balanced_bilateral_iter;
 	denoise_h = config.denoise_h;
-	low_h = config.low_h;
-	low_s = config.low_s;
-	low_v = config.low_v;
-	high_h = config.high_h;
-	high_s = config.high_s;
-	high_v = config.high_v;
+	low_b = config.low_b;
+	low_g = config.low_g;
+	low_r = config.low_r;
+	high_b = config.high_b;
+	high_g = config.high_g;
+	high_r = config.high_r;
 	opening_closing_mat_point = config.opening_closing_mat_point;
 	opening_iter = config.opening_iter;
 	closing_iter = config.closing_iter;
@@ -62,33 +63,15 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
 		if(!image.empty()){
-			cv::Mat image_hsv;
-			cv::Mat image_thresholded;
-			// cv::cvtColor(image, image, CV_HSV2BGR);
 			cv::Mat blue_filtered = vision_commons::BlueFilter::filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
-			ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", low_h, low_s, low_v, high_h, high_s, high_v);
-//			cv::cvtColor(blue_filtered, blue_filtered, CV_HSV2BGR);
-			cv_bridge::CvImage blue_filtered_ptr;
-			blue_filtered_ptr.header = msg->header;
-			blue_filtered_ptr.encoding = sensor_msgs::image_encodings::RGB8;
-			blue_filtered_ptr.image = blue_filtered;
-			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
-			if(!(high_h<=low_h || high_s<=low_s || high_v<=low_v)) {
-				ROS_INFO("Thresholding...");
-				image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_h, low_s, low_v, high_h, high_s, high_v);
-				ROS_INFO("Thresholded. Morphing...");
+			blue_filtered_pub.publish(cv_bridge::CvImage(msg->header, "bgr8", blue_filtered).toImageMsg());
+			if(!(high_b<=low_b || high_g<=low_g || high_r<=low_r)) {
+				cv::Mat image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_b, low_g, low_r, high_b, high_g, high_r);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, opening_iter);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, closing_iter);
-				ROS_INFO("Morphed.");
-				cv_bridge::CvImage thresholded_ptr;
-				thresholded_ptr.header = msg->header;
-				thresholded_ptr.encoding = sensor_msgs::image_encodings::MONO8;
-				thresholded_ptr.image = image_thresholded;
-				thresholded_HSV_pub.publish(thresholded_ptr.toImageMsg());
+				thresholded_pub.publish(cv_bridge::CvImage(msg->header, "mono8", image_thresholded).toImageMsg());
 				std::vector<std::vector<cv::Point> > contours = vision_commons::Contour::getBestX(image_thresholded, 2);
-				ROS_INFO("contours size = %d", contours.size());
 				if (contours.size() != 0){
-					// calculating center of mass of contour using moments
 					std::vector<cv::Moments> mu(1);
 					mu[0] = moments(contours[0], false);
 					std::vector<cv::Point2f> mc(1);
@@ -106,8 +89,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 					std::vector<float>radius(1);
 					cv::minEnclosingCircle(contours[index], center[0], radius[0]);
 					cv::circle(image_marked, center[0], (int)radius[0], cv::Scalar(180,180,180), 2, 8, 0);
-					// publish coordinates message
-					geometry_msgs::PointStamped buoy_point_message;
 					buoy_point_message.header.stamp = ros::Time();
 					buoy_point_message.header.frame_id = camera_frame.c_str();
 					buoy_point_message.point.x = pow(radius[0]/7526.5,-.92678);
@@ -123,18 +104,21 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 					}
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 1, cv::Scalar(255,100,100), 8, 0);
 					cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(255,100, 50), 8, 0);
-
 					for( int i = 0; i< contours.size(); i++ ) {
 						cv::Scalar color = cv::Scalar(255,255,100);
 						cv::drawContours( image_marked, contours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
-						// cv::drawContours( image_marked, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
 					}
-
-					cv_bridge::CvImage marked_ptr;
-					marked_ptr.header = msg->header;
-					marked_ptr.encoding = sensor_msgs::image_encodings::RGB8;
-					marked_ptr.image = image_marked;
-					marked_pub.publish(marked_ptr.toImageMsg());
+					marked_pub.publish(cv_bridge::CvImage(msg->header, "rgb8", image_marked).toImageMsg());
+				}
+				else{
+					if(buoy_point_message.header.frame_id=="auv-iitk"){
+						ROS_INFO("Could not find buoy, publishing last known information...");
+						ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
+						coordinates_pub.publish(buoy_point_message);
+					}
+					else{
+						ROS_INFO("No buoy found yet, move the bot in the expected direction...");
+					}
 				}
 			}
 		}
@@ -155,11 +139,11 @@ int main(int argc, char **argv){
 	f = boost::bind(&callback, _1, _2);
 	server.setCallback(f);
 	image_transport::ImageTransport it(nh);
-	blue_filtered_pub = it.advertise("/blue_filtered", 1);
-	thresholded_HSV_pub = it.advertise("/thresholded", 1);
-	marked_pub = it.advertise("/marked",1);
-	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/threshold/center_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
+	blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
+	thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
+	marked_pub = it.advertise("/buoy_task/marked",1);
+	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
