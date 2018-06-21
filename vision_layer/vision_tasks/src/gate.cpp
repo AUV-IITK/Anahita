@@ -17,7 +17,7 @@
 #include <vision_commons/morph.h>
 #include <vision_commons/contour.h>
 #include <vision_commons/threshold.h>
-#include <vision_commons/blue_filter.h>
+#include <vision_commons/filter.h>
 
 double front_clahe_clip = 4.0;
 int front_clahe_grid_size = 8;
@@ -96,7 +96,7 @@ void imageFrontCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
 		if(!image.empty()){
-			cv::Mat blue_filtered = vision_commons::BlueFilter::filter(image, front_clahe_clip, front_clahe_grid_size, front_clahe_bilateral_iter, front_balanced_bilateral_iter, front_denoise_h);
+			cv::Mat blue_filtered = vision_commons::Filter::blue_filter(image, front_clahe_clip, front_clahe_grid_size, front_clahe_bilateral_iter, front_balanced_bilateral_iter, front_denoise_h);
   		blue_filtered_front_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
   		cv::Mat image_thresholded;
   		ROS_INFO("Thresholding Values: (%d %d %d) - (%d %d %d): ", front_low_b, front_low_g, front_low_r, front_high_b, front_high_g, front_high_r);
@@ -147,7 +147,7 @@ void imageBottomCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
 		if(!image.empty()){
-      cv::Mat blue_filtered = vision_commons::BlueFilter::filter(image, bottom_clahe_clip, bottom_clahe_grid_size, bottom_clahe_bilateral_iter, bottom_balanced_bilateral_iter, bottom_denoise_h);
+      cv::Mat blue_filtered = vision_commons::Filter::blue_filter(image, bottom_clahe_clip, bottom_clahe_grid_size, bottom_clahe_bilateral_iter, bottom_balanced_bilateral_iter, bottom_denoise_h);
   		blue_filtered_bottom_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
   		cv::Mat image_thresholded;
   		if(!(front_high_b<=front_low_b || front_high_g<=front_low_g || front_high_r<=front_low_r)) {

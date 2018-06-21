@@ -14,7 +14,7 @@
 #include <string>
 
 #include <vision_tasks/buoyRangeConfig.h>
-#include <vision_commons/blue_filter.h>
+#include <vision_commons/filter.h>
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
@@ -63,7 +63,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
 		if(!image.empty()){
-			cv::Mat blue_filtered = vision_commons::BlueFilter::filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
+			cv::Mat blue_filtered = vision_commons::Filter::blue_filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
 			blue_filtered_pub.publish(cv_bridge::CvImage(msg->header, "bgr8", blue_filtered).toImageMsg());
 			if(!(high_b<=low_b || high_g<=low_g || high_r<=low_r)) {
 				cv::Mat image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_b, low_g, low_r, high_b, high_g, high_r);
@@ -143,7 +143,8 @@ int main(int argc, char **argv){
 	thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	marked_pub = it.advertise("/buoy_task/marked",1);
 	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
+	//image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
