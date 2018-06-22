@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   image_transport
   geometry_msgs
-  message_generation
+##  message_generation
 )
 
 roslint_cpp()
@@ -51,11 +51,11 @@ find_package(OpenCV REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-   FILES
-   Pose2DStamped.msg
+## add_message_files(
+##   FILES
+##   Pose2DStamped.msg
 #   Message2.msg
-)
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -72,11 +72,11 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-   DEPENDENCIES
-   std_msgs
-   geometry_msgs
-)
+## generate_messages(
+##    DEPENDENCIES
+##    std_msgs
+##    geometry_msgs
+## )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,7 +103,7 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(CATKIN_DEPENDS message_runtime
+catkin_package(
 	INCLUDE_DIRS include
 	LIBRARIES vision_commons)
 #catkin_package(
