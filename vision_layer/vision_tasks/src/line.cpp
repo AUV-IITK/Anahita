@@ -13,6 +13,7 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
+#include <math.h>
 
 #include <vision_tasks/lineRangeConfig.h>
 #include <vision_commons/contour.h>
@@ -46,6 +47,30 @@ void callback(vision_tasks::lineRangeConfig &config, double level){
 	closing_iter = config.closing_iter;
 }
 
+double computeMode(std::vector<double> &newAngles) {
+	double minDeviation = 5.0;
+	double mode = newAngles[0];
+	int freq = 1;
+	int tempFreq;
+	double diff;
+	for (int i = 0; i < newAngles.size(); i++) {
+		tempFreq = 1;
+		for (int j = i + 1; j < newAngles.size(); j++) {
+			diff = newAngles[j] - newAngles[i] > 0.0 ? newAngles[j] - newAngles[i] : newAngles[i] - newAngles[j];
+			if (diff <= minDeviation) {
+				tempFreq++;
+				newAngles.erase(newAngles.begin() + j);
+				j = j - 1;
+			}
+		}
+		if (tempFreq >= freq){
+			mode = newAngles[i];
+			freq = tempFreq;
+		}
+	}
+	return mode;
+}
+
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try{
@@ -62,16 +87,31 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, closing_iter);
 				thresholded_pub.publish(cv_bridge::CvImage(msg->header, "mono8", image_thresholded).toImageMsg());
 				std::vector<std::vector<cv::Point> > contours = vision_commons::Contour::getBestX(image_thresholded, 1);
+				cv::Mat edges(image_thresholded.rows, image_thresholded.cols, CV_8UC1, cv::Scalar::all(0));
+				std::vector<cv::Vec4i> hierarchy;
+				cv::Scalar color(255, 255, 255);
+				cv::drawContours(edges, contours, 0, color, 2, 8, hierarchy);
 				if (contours.size() != 0){
-					std::vector<cv::Moments> mu(1);
-					mu[0] = moments(contours[0], false);
-					std::vector<cv::Point2f> mc(1);
-					mc[0] = cv::Point2f( mu[0].m10/mu[0].m00 , mu[0].m01/mu[0].m00 );
 					cv::RotatedRect bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
+					std::vector<cv::Vec4i> lines;
+					cv::HoughLinesP(edges, lines, 1, CV_PI/180, 60, 70, 10 );
+					std::vector<double> angles;
+					for(int i = 0; i < lines.size(); i++) {
+						cv::Vec4i l = lines[i];
+						if ((l[2] == l[0]) || (l[1] == l[3]))
+							continue;
+						angles.push_back(atan(static_cast<double>(l[2] - l[0]) / (l[1] - l[3]))*180.0/3.14159);
+						cv::line(image_marked, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 1, CV_AA );
+					}
 					geometry_msgs::Pose2D line_point_message;
 					line_point_message.x = (image.size().height)/2 - bounding_rectangle.center.y;
 					line_point_message.y = bounding_rectangle.center.x - (image.size().width)/2;
-					line_point_message.theta = bounding_rectangle.angle;
+					if(angles.size() > 0) {
+						float angle = computeMode(angles);
+						if(angle > 90.0) line_point_message.theta = angle - 90.0;
+						else line_point_message.theta = angle;
+					}
+					else line_point_message.theta = 0.0;
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", line_point_message.x, line_point_message.y, line_point_message.theta);
 					coordinates_pub.publish(line_point_message);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, cv::Scalar(0, 255, 255), 8, 0);
@@ -108,7 +148,7 @@ int main(int argc, char **argv){
 	thresholded_pub = it.advertise("/line_task/thresholded", 1);
 	marked_pub = it.advertise("/line_task/marked", 1);
 	coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
