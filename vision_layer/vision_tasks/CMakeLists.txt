@@ -97,7 +97,8 @@ find_package(vision_commons REQUIRED)
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
   cfg/buoyRange.cfg
-  cfg/gateRange.cfg
+  cfg/gateBottomRange.cfg
+  cfg/gateFrontRange.cfg
   cfg/lineRange.cfg
 )
 
@@ -144,7 +145,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(buoy_task src/buoy.cpp)
-add_executable(gate_task src/gate.cpp)
+add_executable(gate_task_bottom src/gate_bottom.cpp)
+add_executable(gate_task_front src/gate_front.cpp)
 add_executable(line_task src/line.cpp)
 
 ## Rename C++ executable without prefix
@@ -159,7 +161,8 @@ add_executable(line_task src/line.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-target_link_libraries(gate_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+target_link_libraries(gate_task_bottom ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+target_link_libraries(gate_task_front ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(line_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 #############
