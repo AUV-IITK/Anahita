@@ -41,7 +41,6 @@ std::string camera_frame = "auv-iitk";
 geometry_msgs::PointStamped buoy_point_message;
 
 void callback(vision_tasks::buoyRangeConfig &config, double level){
-	ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_b, config.low_g, config.low_r, config.high_b, config.high_g, config.high_r);
 	clahe_clip = config.clahe_clip;
 	clahe_grid_size = config.clahe_grid_size;
 	clahe_bilateral_iter = config.clahe_bilateral_iter;
@@ -65,10 +64,6 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
 		cv::Mat image = cv_img_ptr->image;
 		cv::Mat image_marked = cv_img_ptr->image;
 		if(!image.empty()){
-			cv::Mat clahe = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
-			clahe_pub.publish(cv_bridge::CvImage(msg->header, "bgr8", clahe).toImageMsg());
-			cv::Mat white_balanced = vision_commons::Filter::balance_white(clahe);
-			white_balanced_pub.publish(cv_bridge::CvImage(msg->header, "bgr8", white_balanced).toImageMsg());
 			cv::Mat blue_filtered = vision_commons::Filter::blue_filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
 			blue_filtered_pub.publish(cv_bridge::CvImage(msg->header, "bgr8", blue_filtered).toImageMsg());
 			if(!(high_b<=low_b || high_g<=low_g || high_r<=low_r)) {
@@ -145,14 +140,11 @@ int main(int argc, char **argv){
 	f = boost::bind(&callback, _1, _2);
 	server.setCallback(f);
 	image_transport::ImageTransport it(nh);
-	clahe_pub = it.advertise("/buoy_task/clahe", 1);
-	white_balanced_pub = it.advertise("/buoy_task/white_balanced", 1);
 	thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
 	marked_pub = it.advertise("/buoy_task/marked",1);
 	coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
-	image_transport::Subscriber image_raw_sub = it.subscribe("/hardware_camera/cam_lifecam/image_raw", 1, imageCallback);
-	//image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
 	ros::spin();
 	return 0;
 }
