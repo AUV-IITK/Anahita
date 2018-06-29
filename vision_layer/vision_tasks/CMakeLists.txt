@@ -100,6 +100,7 @@ generate_dynamic_reconfigure_options(
   cfg/gateBottomRange.cfg
   cfg/gateFrontRange.cfg
   cfg/lineRange.cfg
+  cfg/torpedoRange.cfg
 )
 
 ###################################
@@ -148,6 +149,7 @@ add_executable(buoy_task src/buoy.cpp)
 add_executable(gate_task_bottom src/gate_bottom.cpp)
 add_executable(gate_task_front src/gate_front.cpp)
 add_executable(line_task src/line.cpp)
+add_executable(torpedo_task src/torpedo.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -164,6 +166,7 @@ target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_c
 target_link_libraries(gate_task_bottom ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(gate_task_front ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(line_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+target_link_libraries(torpedo_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 #############
 ## Install ##

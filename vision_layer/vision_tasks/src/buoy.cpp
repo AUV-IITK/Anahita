@@ -134,11 +134,8 @@ int main(int argc, char **argv){
 			}
 			blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
-			if(buoy_point_message.header.frame_id=="auv-iitk") {
-				coordinates_pub.publish(buoy_point_message);
-				ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
-			}
-			else ROS_INFO("No buoy found yet, move the bot in the expected direction...");
+			coordinates_pub.publish(buoy_point_message);
+			ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
 			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "rgb8", image_marked).toImageMsg());
 			loop_rate.sleep();
 		}
