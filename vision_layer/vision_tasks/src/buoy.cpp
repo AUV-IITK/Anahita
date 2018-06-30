@@ -34,12 +34,7 @@ int opening_closing_mat_point, opening_iter, closing_iter;
 
 cv::Mat image;
 
-image_transport::Publisher blue_filtered_pub;
-image_transport::Publisher thresholded_pub;
-image_transport::Publisher marked_pub;
-ros::Publisher coordinates_pub;
 std::string camera_frame = "auv-iitk";
-geometry_msgs::PointStamped buoy_point_message;
 
 void callback(vision_tasks::buoyRangeConfig &config, double level){
 	clahe_clip = config.clahe_clip;
@@ -89,7 +84,6 @@ int main(int argc, char **argv){
 	geometry_msgs::PointStamped buoy_point_message;
 	buoy_point_message.header.frame_id = camera_frame.c_str();
 	cv::RotatedRect minEllipse;
-	ros::Rate loop_rate(5);
 
 	while(ros::ok()) {
 		if(!image.empty()){
@@ -137,7 +131,6 @@ int main(int argc, char **argv){
 			coordinates_pub.publish(buoy_point_message);
 			ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
 			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "rgb8", image_marked).toImageMsg());
-			loop_rate.sleep();
 		}
 		else ROS_INFO("Image empty");
 		ros::spinOnce();
