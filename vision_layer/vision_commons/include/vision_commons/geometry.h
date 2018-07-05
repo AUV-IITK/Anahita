@@ -1,5 +1,5 @@
-#ifndef blue_filter_H
-#define blue_filter_H
+#ifndef geometry_H
+#define geometry_H
 
 #include "opencv2/core/core.hpp"
 

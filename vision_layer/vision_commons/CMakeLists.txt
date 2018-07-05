@@ -127,7 +127,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(vision_commons src/filter.cpp src/contour.cpp src/morph.cpp src/threshold.cpp)
+add_library(vision_commons src/filter.cpp src/contour.cpp src/geometry.cpp src/morph.cpp src/threshold.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
