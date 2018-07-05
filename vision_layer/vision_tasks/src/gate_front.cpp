@@ -13,6 +13,7 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
+#include <cmath>
 #include <std_msgs/Bool.h>
 #include <vision_tasks/gateFrontRangeConfig.h>
 #include <vision_commons/morph.h>
@@ -20,54 +21,42 @@
 #include <vision_commons/threshold.h>
 #include <vision_commons/filter.h>
 
-//cv::Mat horizontalkern = (cv::Mat_<float>(3,3) << 1,1,1,0,0,0,1,1,1)/(float)(9);
-//cv::Mat verticalkern = (cv::Mat_<float>(3,3) << 1,0,1,1,0,1,1,0,1)/(float)(9);
-cv::Mat kern = (cv::Mat_<float>(3,3) << 1, 0, 0, 1, 0, 0, 1, 1, 1)/(float)(9);
-
 double clahe_clip = 4.0;
 int clahe_grid_size = 8;
 int clahe_bilateral_iter = 8;
 int balanced_bilateral_iter = 4;
 double denoise_h = 10.0;
-int canny_threshold_low = 0;
-int canny_threshold_high = 0;
 int hough_threshold = 0;
 int hough_minline = 0;
 int hough_maxgap = 0;
-int low_b = 10;
-int low_g = 0;
-int low_r = 0;
-int high_b = 90;
-int high_g= 255;
-int high_r = 255;
+double hough_angle_tolerance = 0.0;
+int low_h= 0;
+int high_h = 255;
+int low_s = 0;
+int high_s = 255;
+int low_v = 0;
+int high_v = 255;
 int closing_mat_point = 1;
 int closing_iter = 1;
-
-cv::SimpleBlobDetector::Params params;
-cv::Ptr<cv::SimpleBlobDetector> detector;
+double gate_angle_tolerance = 0.0;
 image_transport::Publisher blue_filtered_pub;
-//image_transport::Publisher thresholded_pub;
-//image_transport::Publisher convolved_pub;
-image_transport::Publisher blobs_pub;
+image_transport::Publisher thresholded_pub;
 image_transport::Publisher marked_pub;
-//image_transport::Publisher lines_pub;
+image_transport::Publisher lines_pub;
 ros::Publisher coordinates_pub;
 
 std::string camera_frame = "auv-iitk";
 
-float angleWrtY(const cv::Point2f &v1, const cv::Point2i &v2)
-{
+double angleWrtY(const cv::Point2i &v1, const cv::Point2i &v2) {
   cv::Point2f v3;
   v3.x = v1.x - v2.x;
   v3.y = v1.y - v2.y;
-  float angle = atan2(v3.y, v3.x);
-  return angle*180/CV_PI;
+  double angle = atan2(v3.y, v3.x);
+  return abs(angle*180/CV_PI);
 }
 
-cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle)
-{
-  if(v1.x > v2.x)
-  {
+cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle) {
+  if(v1.x > v2.x) {
     cv::Point2i v3 = v1 - v2;
     cv::Point2i finalVertex;
     finalVertex.x = v3.x * cos(angle) - v3.y * sin(angle);
@@ -75,8 +64,7 @@ cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angl
     finalVertex = finalVertex + v2;
     return finalVertex;
   }
-  else
-  {
+  else {
     cv::Point2i v3 = v2 - v1;
     cv::Point2i finalVertex;
     finalVertex.x = v3.x * cos(angle) - v3.y * sin(angle);
@@ -86,6 +74,9 @@ cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angl
   }
 }
 
+double distance(const cv::Point2i &v1, const cv::Point2i &v2) {
+  return sqrt((v2.x-v1.x)*(v2.x-v1.x) + (v2.y-v1.y)*(v2.y-v1.y));
+}
 
 void callback(vision_tasks::gateFrontRangeConfig &config, double level){
   clahe_clip = config.clahe_clip;
@@ -93,38 +84,19 @@ void callback(vision_tasks::gateFrontRangeConfig &config, double level){
   clahe_bilateral_iter = config.clahe_bilateral_iter;
   balanced_bilateral_iter = config.balanced_bilateral_iter;
   denoise_h = config.denoise_h;
-  canny_threshold_low = config.canny_threshold_low;
-  canny_threshold_high = config.canny_threshold_high;
   hough_threshold = config.hough_threshold;
   hough_minline = config.hough_minline;
   hough_maxgap = config.hough_maxgap;
-  low_b = config.low_b;
-  low_g = config.low_g;
-  low_r = config.low_r;
-  high_b = config.high_b;
-  high_g = config.high_g;
-  high_r = config.high_r;
+  hough_angle_tolerance = config.hough_angle_tolerance;
+  low_h = config.low_h;
+  high_h = config.high_h;
+  low_s = config.low_s;
+  high_s = config.high_s;
+  low_v = config.low_v;
+  high_v = config.high_v;
   closing_mat_point = config.closing_mat_point;
   closing_iter = config.closing_iter;
-
-  params.filterByArea = config.filterByArea;
-  params.filterByCircularity = config.filterByCircularity;
-  params.filterByColor = config.filterByColor;
-  params.filterByConvexity = config.filterByConvexity;
-  params.filterByInertia = config.filterByInertia;
-  params.minThreshold = config.minThreshold;
-  params.maxThreshold = config.maxThreshold;
-  params.thresholdStep = config.thresholdStep;
-  params.minArea = config.minArea;
-  params.maxArea = config.maxArea;
-  params.minCircularity = config.minCircularity;
-  params.maxCircularity = config.maxCircularity;
-  params.minConvexity = config.minConvexity;
-  params.maxConvexity = config.maxConvexity;
-  params.minInertiaRatio = config.minInertiaRatio;
-  params.maxInertiaRatio = config.maxInertiaRatio;
-  params.minDistBetweenBlobs = config.minDistBetweenBlobs;
-  detector = cv::SimpleBlobDetector::create(params);
+  gate_angle_tolerance = config.gate_angle_tolerance;
 }
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
@@ -136,138 +108,124 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
     if(!image.empty()){
       cv::Mat blue_filtered = vision_commons::Filter::blue_filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
       blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
-      if(canny_threshold_high > canny_threshold_low) {
-        //std::vector<cv::Mat> horizontal_planes(3);
-        //std::vector<cv::Mat> vertical_planes(3);
-        //cv::split(blue_filtered, horizontal_planes);
-        //cv::split(blue_filtered, vertical_planes);
-        //cv::Mat horizontal, vertical;
-        //for(int j = 0; j<3; j++){
-        //for(int i = 0; i<3; i++)
-        //cv::filter2D(horizontal_planes[j], horizontal_planes[j], horizontal_planes[j].depth(), horizontalkern);
-        //for(int i = 0; i<3; i++)
-        //cv::filter2D(vertical_planes[j], vertical_planes[j], vertical_planes[j].depth(), verticalkern);
-        //}
-        //merge(horizontal_planes, horizontal);
-        //merge(vertical_planes, vertical);
-        //std::vector<cv::Mat> planes(3);
-        //cv::split(blue_filtered, planes);
-        //for(int j = 0 ; j < 3 ; j++) {
-        //for(int i = 0 ; i < 3 ; i++) cv::filter2D(planes[j], planes[j], planes[j].depth(), kern);
-        //}
-        //cv::Mat convolved;
-        //merge(planes, convolved);
-        //cv::addWeighted(horizontal, 0.5, vertical, 0.5, 0.0,  convolved);
-        //cv::Mat copy;
-        //convolved.copyTo(copy);
-        //copy.convertTo(convolved, -1, 5.0, 0.0);
-        //convolved = vision_commons::Filter::clahe(convolved, 4.0, 11);
-        //convolved_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", convolved).toImageMsg());
-        std::vector<cv::KeyPoint> keypoints;
-        detector->detect(blue_filtered, keypoints);
-        if(keypoints.size() > 0) {
-          cv::Mat image_keypoints;
-          cv::drawKeypoints(blue_filtered, keypoints, image_keypoints, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-          blobs_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_keypoints).toImageMsg());
-          int iter = keypoints.size();
-          if(iter > 20) iter = 20;
-          float max_size = 0.0f;
-          int max_index = 0;
-          float size = 0.0f;
-          for(int i = 0 ; i < iter ; i++) {
-            max_size = keypoints[i].size;
-            max_index = i;
-            for(int j = i+1 ; j < keypoints.size() ; j++) {
-              size = keypoints[j].size;
-              if(size > max_size) {
-                max_size = size;
-                max_index = j;
-              }
-            }
-            cv::KeyPoint temp = keypoints[i];
-            keypoints[i] = keypoints[max_index];
-            keypoints[max_index] = temp;
-            max_size = 0.0;
-            max_index = 0;
-            size = 0.0;
-          }
-          //std::vector<cv::Vec4i> lines;
-          //cv::Mat image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_r, low_g, low_b, high_r, high_g, high_b);
-          //image_thresholded = vision_commons::Morph::close(image_thresholded, 2*closing_mat_point+1, closing_mat_point, closing_mat_point, closing_iter);
-          //thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
-
-          //cv::Mat image_lines = image_thresholded;
-          //cv::Canny(convolved, image_lines, canny_threshold_low, canny_threshold_high);
-          //lines_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_lines).toImageMsg());
-
-          //cv::HoughLinesP(image_thresholded, lines, 1, CV_PI/180, hough_threshold, hough_minline, hough_maxgap);
-
-          //cv::Point2i coordinate[4], rodB;
-          //for(int i = 0;i<lines.size(); i++)
-          //{
-          /*
-           *          cv::line(image_marked, cv::Point2i(lines[i][0], lines[i][1]), cv::Point2i(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 0), 3, 8, 0);
-           *          if(i==0)
-           *          {
-           *            coordinate[0].x = lines[i][0]; coordinate[0].y = lines[i][1];//taking y corresponding to min x
-           *            coordinate[1].x = lines[i][2]; coordinate[1].y = lines[i][3];//taking y corresponding to max x
-           *            coordinate[2].x = lines[i][0]; coordinate[2].y = lines[i][1];//taking min y
-           *            coordinate[3].x = lines[i][2]; coordinate[3].y = lines[i][3];//taking max y
-           *          }
-           *          else
-           *          {
-           *            if(lines[i][0] < coordinate[0].x)
-           *              coordinate[0].x = lines[i][0]; coordinate[0].y = lines[i][1];
-           *            if(lines[i][2] > coordinate[1].x)
-           *              coordinate[1].x = lines[i][2]; coordinate[1].y = lines[i][3];
-           *            if(lines[i][0] > coordinate[1].x)
-           *              coordinate[1].x = lines[i][0]; coordinate[1].y = lines[i][1];
-           *            if(lines[i][2] < coordinate[0].x)
-           *              coordinate[0].x = lines[i][2]; coordinate[0].y = lines[i][3];
-           *            if(lines[i][1] < coordinate[2].y)
-           *              coordinate[2].x = lines[i][0]; coordinate[2].y = lines[i][1];
-           *            if(lines[i][3] > coordinate[3].y)
-           *              coordinate[3].x = lines[i][2]; coordinate[3].y = lines[i][3];
-           *            if(lines[i][1] > coordinate[3].y)
-           *              coordinate[3].x = lines[i][0]; coordinate[3].y = lines[i][1];
-           *            if(lines[i][3] < coordinate[2].y)
-           *              coordinate[2].x = lines[i][2]; coordinate[2].y = lines[i][3];
-           *          }
-           *        }
-           *        float angle = angleWrtY(coordinate[0], coordinate[2]);
-           *        if((angle < 25) ||(angle > 155) ) // Check the angle range
-           *          coordinate[2] = rotatePoint(coordinate[0], coordinate[2], -CV_PI/4);
-           *
-           *        cv::line(image_marked, coordinate[0], coordinate[2], cv::Scalar(255,0,0), 3, 8);
-           */
-          float y_total = 0.0f;
-          float z_total = 0.0f;
-          float total = 0.0f;
-          for(int i = 0 ; i < iter ; i++) {
-            y_total += keypoints[i].pt.x * keypoints[i].size;
-            z_total += keypoints[i].pt.y * keypoints[i].size;
-            total += keypoints[i].size;
-          }
-          geometry_msgs::PointStamped gate_point_message;
-          gate_point_message.header.stamp = ros::Time();
-          gate_point_message.header.frame_id = camera_frame.c_str();
-          gate_point_message.point.x = 0.0;
-          //gate_point_message.point.y = (coordinate[0].x + coordinate[2].x)/2;
-          //gate_point_message.point.z = (coordinate[0].y + coordinate[2].y)/2;
-          gate_point_message.point.y = y_total/total - image.size().width/2;
-          gate_point_message.point.z = image.size().height/2 - z_total/total;
-          ROS_INFO("Gate Center (y, z) = (%.2f, %.2f)", gate_point_message.point.y, gate_point_message.point.z);
-          coordinates_pub.publish(gate_point_message);
-          cv::circle(image_marked, cv::Point(y_total/total, z_total/total), 1, cv::Scalar(0,155,155), 8, 0);
-          cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(0,155, 205), 8, 0);
-
-          cv_bridge::CvImage marked_ptr;
-          marked_ptr.header = msg->header;
-          marked_ptr.encoding = sensor_msgs::image_encodings::BGR8;
-          marked_ptr.image = image_marked;
-          marked_pub.publish(marked_ptr.toImageMsg());
+      cv::Mat hsv;
+      cv::cvtColor(blue_filtered, hsv, CV_BGR2HSV);
+      cv::Mat image_thresholded = vision_commons::Threshold::threshold(hsv, low_h, low_s, low_v, high_h, high_s, high_v);
+      image_thresholded = vision_commons::Morph::close(image_thresholded, 2*closing_mat_point+1, closing_mat_point, closing_mat_point, closing_iter);
+      thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
+      cv::Mat image_lines = blue_filtered;
+      std::vector<cv::Vec4i> lines;
+      cv::HoughLinesP(image_thresholded, lines, 1, CV_PI/180, hough_threshold, hough_minline, hough_maxgap);
+      std::vector<cv::Vec4i> lines_filtered;
+      std::vector<double> angles;
+      double angle = 0.0;
+      for(int i = 0 ; i < lines.size() ; i++) {
+        cv::Point2i p1(lines[i][0], lines[i][1]);
+        cv::Point2i p2(lines[i][2], lines[i][3]);
+        angle = angleWrtY(p1, p2);
+        if(angle < hough_angle_tolerance || abs(angle - 90.0) < hough_angle_tolerance || abs(180.0 - angle) < hough_angle_tolerance) {
+          cv::line(image_lines, p1, p2, cv::Scalar(0, 120, 255), 3, CV_AA);
+          lines_filtered.push_back(lines[i]);
+          angles.push_back(angle);
+        }
+        else {
+          cv::line(image_lines, p1, p2, cv::Scalar(255, 120, 0), 3, CV_AA);
         }
       }
+      lines_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_lines).toImageMsg());
+      int found = 0;
+      cv::Point2i pi1;
+      cv::Point2i pi2;
+      cv::Point2i pj1;
+      cv::Point2i pj2;
+      cv::Point2i horizontal1(0, 0);
+      cv::Point2i horizontal2(0, 0);
+      cv::Point2i vertical1(0, 0);
+      cv::Point2i vertical2(0, 0);
+      cv::Point2i longest1(0, 0);
+      cv::Point2i longest2(0, 0);
+      for(int i = 0 ; i < lines_filtered.size() ; i++) {
+        pi1.x = lines_filtered[i][0];
+        pi1.y = lines_filtered[i][1];
+        pi2.x = lines_filtered[i][2];
+        pi2.y = lines_filtered[i][3];
+        if(distance(pi1, pi2) > distance(longest1, longest2)) {
+          longest1.x = pi1.x;
+          longest1.y = pi1.y;
+          longest2.x = pi2.x;
+          longest2.y = pi2.y;
+        }
+        for(int j = i+1 ; j < lines_filtered.size() ; j++) {
+          pj1.x = lines_filtered[j][0];
+          pj1.y = lines_filtered[j][1];
+          pj2.x = lines_filtered[j][2];
+          pj2.y = lines_filtered[j][3];
+          if(abs(angles[i]-angles[j] - 90.0) < gate_angle_tolerance) {
+            double distance1 = distance(pi1, pj1);
+            double distance2 = distance(pi1, pj2);
+            double distance3 = distance(pi2, pj1);
+            double distance4 = distance(pi2, pj2);
+            if(distance1 < hough_maxgap || distance2 < hough_maxgap || distance3 < hough_maxgap || distance4 < hough_maxgap) {
+              ROS_INFO("Angle j: %f, i: %f", angles[j], angles[i]);
+              if(abs(angles[j] - 90.0) < abs(angles[i] - 90.0) && (distance(pj1, pj2) > distance(horizontal1, horizontal2) || distance(pi1, pi2) > distance(vertical1, vertical2))) {
+                ROS_INFO("In j\n\n");
+                horizontal1.x = pi1.x;
+                horizontal1.y = pi1.y;
+                horizontal2.x = pi2.x;
+                horizontal2.y = pi2.y;
+                vertical1.x = pj1.x;
+                vertical1.y = pj1.y;
+                vertical2.x = pj2.x;
+                vertical2.y = pj2.y;
+                found = 1;
+              }
+              else if(abs(angles[j] - 90.0) > abs(angles[i] - 90.0) && (distance(pi1, pi2) > distance(horizontal1, horizontal2) || distance(pj1, pj2) > distance(vertical1, vertical2))) {
+                ROS_INFO("In i\n\n");
+                horizontal1.x = pj1.x;
+                horizontal1.y = pj1.y;
+                horizontal2.x = pj2.x;
+                horizontal2.y = pj2.y;
+                vertical1.x = pi1.x;
+                vertical1.y = pi1.y;
+                vertical2.x = pi2.x;
+                vertical2.y = pi2.y;
+                found = 1;
+              }
+            }
+          }
+        }
+      }
+      geometry_msgs::PointStamped gate_point_message;
+      gate_point_message.header.stamp = ros::Time();
+      gate_point_message.header.frame_id = camera_frame.c_str();
+      gate_point_message.point.x = 0.0;
+      if(found) {
+        gate_point_message.point.y = (horizontal1.x + horizontal2.x)/2 - image.size().width/2;
+        gate_point_message.point.z = image.size().height/2 - (vertical1.y + vertical2.y)/2;
+        ROS_INFO("Gate Center (y, z) = (%.2f, %.2f)", gate_point_message.point.y, gate_point_message.point.z);
+        cv::line(image_marked, horizontal1, horizontal2, cv::Scalar(0, 0, 0), 3, CV_AA);
+        cv::line(image_marked, vertical1, vertical2, cv::Scalar(255, 255, 255), 3, CV_AA);
+      }
+      else {
+        if(abs(angleWrtY(longest1, longest2) - 90.0) < hough_angle_tolerance) {
+          gate_point_message.point.z = image.size().height/2 - (longest1.y + longest2.y)/2;
+          gate_point_message.point.y = distance(longest1, longest2)/2 + (longest1.x + longest2.x)/2 - image.size().width/2;
+        }
+        else {
+          gate_point_message.point.y = (longest1.x + longest2.x)/2 - image.size().width/2;
+          gate_point_message.point.z = image.size().height/2 - (longest1.y + longest2.y)/2 + distance(longest1, longest2)/2;
+        }
+        cv::line(image_marked, longest1, longest2, cv::Scalar(0, 0, 255), 3, CV_AA);
+        ROS_INFO("Couldn't find gate, estimated gate center (y, z) = (%.2f, %.2f)", gate_point_message.point.y, gate_point_message.point.z);
+      }
+      coordinates_pub.publish(gate_point_message);
+      cv::circle(image_marked, cv::Point(gate_point_message.point.y + image.size().width/2, image.size().height/2 - gate_point_message.point.z), 1, cv::Scalar(0,155,155), 8, 0);
+      cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(0,155, 205), 8, 0);
+      cv_bridge::CvImage marked_ptr;
+      marked_ptr.header = msg->header;
+      marked_ptr.encoding = sensor_msgs::image_encodings::BGR8;
+      marked_ptr.image = image_marked;
+      marked_pub.publish(marked_ptr.toImageMsg());
     }
   }
   catch(cv_bridge::Exception &e){
@@ -287,13 +245,12 @@ int main(int argc, char **argv){
   server.setCallback(f);
   image_transport::ImageTransport it(nh);
   blue_filtered_pub = it.advertise("/gate_task/front/blue_filtered", 1);
-  //thresholded_pub = it.advertise("/gate_task/front/thresholded", 1);
-  //convolved_pub = it.advertise("/gate_task/front/convolved", 1);
-  blobs_pub = it.advertise("/gate_task/front/blobs", 1);
-  //lines_pub = it.advertise("/gate_task/front/lines",1);
+  thresholded_pub = it.advertise("/gate_task/front/thresholded", 1);
+  lines_pub = it.advertise("/gate_task/front/lines",1);
   marked_pub = it.advertise("/gate_task/front/marked", 1);
   coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/gate_task/front/gate_coordinates", 1000);
-  image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+  //image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+  image_transport::Subscriber front_image_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
   ros::spin();
   return 0;
 }
