@@ -20,6 +20,7 @@
 #include <vision_commons/contour.h>
 #include <vision_commons/threshold.h>
 #include <vision_commons/filter.h>
+#include <vision_commons/geometry.h>
 
 double clahe_clip = 4.0;
 int clahe_grid_size = 8;
@@ -166,9 +167,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
             double distance3 = distance(pi2, pj1);
             double distance4 = distance(pi2, pj2);
             if(distance1 < hough_maxgap || distance2 < hough_maxgap || distance3 < hough_maxgap || distance4 < hough_maxgap) {
-              ROS_INFO("Angle j: %f, i: %f", angles[j], angles[i]);
               if(abs(angles[j] - 90.0) < abs(angles[i] - 90.0) && (distance(pj1, pj2) > distance(horizontal1, horizontal2) || distance(pi1, pi2) > distance(vertical1, vertical2))) {
-                ROS_INFO("In j\n\n");
                 horizontal1.x = pi1.x;
                 horizontal1.y = pi1.y;
                 horizontal2.x = pi2.x;
@@ -198,25 +197,27 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
       geometry_msgs::PointStamped gate_point_message;
       gate_point_message.header.stamp = ros::Time();
       gate_point_message.header.frame_id = camera_frame.c_str();
-      gate_point_message.point.x = 0.0;
       if(found) {
+        gate_point_message.point.x = pow(sqrt(pow(vision_commons::Geometry::distance(horizontal1, horizontal2), 2) + pow(vision_commons::Geometry::distance(vertical1, vertical2), 2))/7526.5, -.92678);
         gate_point_message.point.y = (horizontal1.x + horizontal2.x)/2 - image.size().width/2;
         gate_point_message.point.z = image.size().height/2 - (vertical1.y + vertical2.y)/2;
-        ROS_INFO("Gate Center (y, z) = (%.2f, %.2f)", gate_point_message.point.y, gate_point_message.point.z);
+        ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
         cv::line(image_marked, horizontal1, horizontal2, cv::Scalar(0, 0, 0), 3, CV_AA);
         cv::line(image_marked, vertical1, vertical2, cv::Scalar(255, 255, 255), 3, CV_AA);
       }
       else {
         if(abs(angleWrtY(longest1, longest2) - 90.0) < hough_angle_tolerance) {
+          gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2)*2.848)/7526.5, -.92678);
+          gate_point_message.point.y = (longest1.x + longest2.x)/2 + 12*distance(longest1, longest2)/9 - image.size().width/2;
           gate_point_message.point.z = image.size().height/2 - (longest1.y + longest2.y)/2;
-          gate_point_message.point.y = distance(longest1, longest2)/2 + (longest1.x + longest2.x)/2 - image.size().width/2;
         }
         else {
+          gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2)*1.068)/7526.5, -.92678);
           gate_point_message.point.y = (longest1.x + longest2.x)/2 - image.size().width/2;
-          gate_point_message.point.z = image.size().height/2 - (longest1.y + longest2.y)/2 + distance(longest1, longest2)/2;
+          gate_point_message.point.z = image.size().height/2 - (longest1.y + longest2.y)/2 + 9*vision_commons::Geometry::distance(longest1, longest2)/48;
         }
         cv::line(image_marked, longest1, longest2, cv::Scalar(0, 0, 255), 3, CV_AA);
-        ROS_INFO("Couldn't find gate, estimated gate center (y, z) = (%.2f, %.2f)", gate_point_message.point.y, gate_point_message.point.z);
+        ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
       }
       coordinates_pub.publish(gate_point_message);
       cv::circle(image_marked, cv::Point(gate_point_message.point.y + image.size().width/2, image.size().height/2 - gate_point_message.point.z), 1, cv::Scalar(0,155,155), 8, 0);
