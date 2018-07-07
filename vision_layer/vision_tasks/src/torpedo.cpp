@@ -113,17 +113,14 @@ int main(int argc, char **argv){
 			cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[0]));
 			cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[1]));
 			cv::Rect bounding_rectangle3 = boundingRect(cv::Mat(contours[2]));
-			cv::Point center1 = cv::Point((bounding_rectangle1.tl().x + bounding_rectangle1.br().x)/2, (bounding_rectangle1.tl().y + bounding_rectangle1.br().y)/2);
-			cv::Point center2 = cv::Point((bounding_rectangle2.tl().x + bounding_rectangle2.br().x)/2, (bounding_rectangle2.tl().y + bounding_rectangle2.br().y)/2);
-			cv::Point center3 = cv::Point((bounding_rectangle3.tl().x + bounding_rectangle3.br().x)/2, (bounding_rectangle3.tl().y + bounding_rectangle3.br().y)/2);
-			double distance12 = vision_commons::Geometry::distance(center1, center2);
-			double distance23 = vision_commons::Geometry::distance(center2, center3);
-			double distance31 = vision_commons::Geometry::distance(center3, center1);
-			if(distance12 < distance23) {
-			    if(distance12 < distance31) bounding_rectangle = bounding_rectangle2;
-			    else bounding_rectangle = bounding_rectangle3;
+			if(bounding_rectangle1.contains(bounding_rectangle2.br()) && bounding_rectangle2.contains(bounding_rectangle2.tl())) {
+			    bounding_rectangle = bounding_rectangle2;
 			}
-			else bounding_rectangle = bounding_rectangle3;
+			else if((bounding_rectangle2.contains(bounding_rectangle3.br()) && bounding_rectangle2.contains(bounding_rectangle3.tl()))
+				|| (bounding_rectangle1.contains(bounding_rectangle3.br()) && bounding_rectangle1.contains(bounding_rectangle3.tl()))) {
+			    bounding_rectangle = bounding_rectangle3;
+			}
+			else bounding_rectangle = bounding_rectangle2;
 		    }
 		    else if(contours.size() == 4) {
 			cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[2]));
