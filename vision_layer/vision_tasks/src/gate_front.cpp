@@ -42,6 +42,7 @@ int hough_threshold = 0;
 int hough_minline = 0;
 int hough_maxgap = 0;
 double hough_angle_tolerance = 0.0;
+double gate_distance_tolerance = 50.0;
 double gate_angle_tolerance = 0.0;
 image_transport::Publisher blue_filtered_pub;
 image_transport::Publisher thresholded_pub;
@@ -92,6 +93,7 @@ void callback(vision_tasks::gateFrontRangeConfig &config, double level){
   hough_minline = config.hough_minline;
   hough_maxgap = config.hough_maxgap;
   hough_angle_tolerance = config.hough_angle_tolerance;
+  gate_distance_tolerance = config.gate_distance_tolerance;
   gate_angle_tolerance = config.gate_angle_tolerance;
 }
 
@@ -166,7 +168,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
             double distance2 = vision_commons::Geometry::distance(pi1, pj2);
             double distance3 = vision_commons::Geometry::distance(pi2, pj1);
             double distance4 = vision_commons::Geometry::distance(pi2, pj2);
-            if(distance1 < hough_maxgap || distance2 < hough_maxgap || distance3 < hough_maxgap || distance4 < hough_maxgap) {
+            if(distance1 < gate_distance_tolerance || distance2 < gate_distance_tolerance || distance3 < gate_distance_tolerance || distance4 < gate_distance_tolerance) {
               if(abs(angles[j] - 90.0) < abs(angles[i] - 90.0) && (vision_commons::Geometry::distance(pj1, pj2) > vision_commons::Geometry::distance(horizontal1, horizontal2) || vision_commons::Geometry::distance(pi1, pi2) > vision_commons::Geometry::distance(vertical1, vertical2))) {
                 horizontal1.x = pj1.x;
                 horizontal1.y = pj1.y;
