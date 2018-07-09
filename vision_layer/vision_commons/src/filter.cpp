@@ -82,17 +82,19 @@ cv::Mat vision_commons::Filter::blue_filter(
 
 	if(!image.empty()){
 		cv::Mat blue_filtered = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
-		cv::Mat temp;
-		for(int i = 0 ; i < clahe_bilateral_iter/2 ; i++) {
-			cv::bilateralFilter(blue_filtered, temp, 6, 8.0, 8.0);
-			cv::bilateralFilter(temp, blue_filtered, 6, 8.0, 8.0);
+		cv::Mat temp = blue_filtered.clone();
+		cv::Mat temp2;
+		for(int i = 0 ; i < clahe_bilateral_iter ; i++) {
+			cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
+			temp2.copyTo(temp);
 		}
-		blue_filtered = vision_commons::Filter::balance_white(blue_filtered);
+		blue_filtered = vision_commons::Filter::balance_white(temp);
+		temp = blue_filtered.clone();
 		for(int i = 0 ; i < balanced_bilateral_iter/2 ; i++) {
-			cv::bilateralFilter(blue_filtered, temp, 6, 8.0, 8.0);
-			cv::bilateralFilter(temp, blue_filtered, 6, 8.0, 8.0);
+			cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
+			temp2.copyTo(temp);
 		}
-		cv::fastNlMeansDenoisingColored(blue_filtered, blue_filtered, denoise_h, denoise_h, 3, 5);
+		cv::fastNlMeansDenoisingColored(temp, blue_filtered, denoise_h, denoise_h, 7, 11);
 		return blue_filtered;
 	}
 	else

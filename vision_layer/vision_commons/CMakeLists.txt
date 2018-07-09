@@ -8,11 +8,13 @@ project(vision_commons)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   roscpp
   rospy
   std_msgs
   image_transport
   geometry_msgs
+  dynamic_reconfigure
 ##  message_generation
 )
 
@@ -91,7 +93,9 @@ find_package(OpenCV REQUIRED)
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
-
+generate_dynamic_reconfigure_options(
+	cfg/blueFilterDemoRange.cfg
+)
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 
 ###################################
@@ -138,6 +142,7 @@ add_library(vision_commons src/filter.cpp src/contour.cpp src/geometry.cpp src/m
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 ## add_executable(${PROJECT_NAME}_node src/vision_commons_node.cpp)
+add_executable(blue_filter_demo src/blue_filter_demo.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -151,6 +156,7 @@ add_library(vision_commons src/filter.cpp src/contour.cpp src/geometry.cpp src/m
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
+target_link_libraries(blue_filter_demo ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 # add_executable(blue_filter src/blue_filter.cpp)
 # add_executable(threshold src/threshold.cpp)

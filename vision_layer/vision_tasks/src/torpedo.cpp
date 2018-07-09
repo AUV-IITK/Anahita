@@ -61,14 +61,9 @@ void callback(vision_tasks::torpedoRangeConfig &config, double level){
 
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
-    cv_bridge::CvImagePtr inputImagePtr;
-    try {
-	inputImagePtr = cv_bridge::toCvCopy(msg, "bgr8");
-    }
-    catch (cv_bridge::Exception& e) {
-	ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
-    }
-    image = inputImagePtr->image;
+    try { image = cv_bridge::toCvCopy(msg, "bgr8")->image; }
+    catch(cv_bridge::Exception &e) { ROS_ERROR("cv_bridge exception: %s", e.what()); }
+    catch(cv::Exception &e) { ROS_ERROR("cv exception: %s", e.what()); }
 }
 
 int main(int argc, char **argv){
@@ -86,16 +81,17 @@ int main(int argc, char **argv){
     image_transport::Publisher marked_pub = it.advertise("/torpedo_task/marked",1);
     ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
 
-    image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+    image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
 
     cv::Mat blue_filtered;
     cv::Mat image_thresholded;
+    cv::Mat image_marked;
     std::vector<std::vector<cv::Point> > contours;
     geometry_msgs::PointStamped torpedo_point_message;
     torpedo_point_message.header.frame_id = camera_frame.c_str();
-    ros::Rate loop_rate(5);
+
     while(ros::ok()){
-	cv::Mat image_marked = image;
+	image_marked = image.clone();
 	if(!image.empty()){
 	    blue_filtered = vision_commons::Filter::blue_filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
 	    if(!(high_b<=low_b || high_g<=low_g || high_r<=low_r)) {
@@ -120,7 +116,12 @@ int main(int argc, char **argv){
 				|| (bounding_rectangle1.contains(bounding_rectangle3.br()) && bounding_rectangle1.contains(bounding_rectangle3.tl()))) {
 			    bounding_rectangle = bounding_rectangle3;
 			}
-			else bounding_rectangle = bounding_rectangle2;
+			else {
+			    if(bounding_rectangle3.br().y + bounding_rectangle3.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y) {
+				bounding_rectangle = bounding_rectangle3;
+			    }
+			    else bounding_rectangle = bounding_rectangle2;
+			}
 		    }
 		    else if(contours.size() == 4) {
 			cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[2]));
@@ -128,12 +129,13 @@ int main(int argc, char **argv){
 			if(bounding_rectangle1.br().y + bounding_rectangle1.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y) bounding_rectangle = bounding_rectangle1;
 			else bounding_rectangle = bounding_rectangle2;
 		    }
-		    cv::drawContours( image_marked, contours, -1, cv::Scalar(255,255,0), 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
+		    for(int i = 0 ; i < contours.size() ; i++)
+			cv::drawContours( image_marked, contours, i, cv::Scalar(255,255,0), 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
 		    torpedo_point_message.header.stamp = ros::Time();
 		    torpedo_point_message.point.x = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x)/7526.5,-.92678);
 		    torpedo_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2 - (image.size().width)/2;
 		    torpedo_point_message.point.z = ((float)image.size().height)/2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
-		    cv::rectangle(image_marked, bounding_rectangle, cv::Scalar(255, 0, 0));
+		    cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), cv::Scalar(255, 0, 0));
 		    cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 1, cv::Scalar(255,100,100), 8, 0);
 		    cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(255,100, 50), 8, 0);
 		}
@@ -145,7 +147,6 @@ int main(int argc, char **argv){
 	    marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 	}
 	else ROS_INFO("Image empty");
-	loop_rate.sleep();
 	ros::spinOnce();
     }
 }

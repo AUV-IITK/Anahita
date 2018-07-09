@@ -110,10 +110,9 @@ int main(int argc, char **argv){
 					cv::circle(image_marked, center[0], (int)radius[0], cv::Scalar(180,180,180), 2, 8, 0);
 					buoy_point_message.header.stamp = ros::Time();
 					buoy_point_message.point.x = pow(radius[0]/7526.5,-.92678);
-					buoy_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2 - (image.size().width)/2;
-					buoy_point_message.point.z = ((float)image.size().height)/2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
+					buoy_point_message.point.y = center[0].x - ((float)image.size().width)/2;
+					buoy_point_message.point.z = ((float)image.size().height)/2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
-					cv::cvtColor(image_marked, image_marked, cv::COLOR_BGR2HSV);
 					if(contours[index].size()>=5){
 						minEllipse = cv::fitEllipse(cv::Mat(contours[index]));
 						cv::ellipse(image_marked, minEllipse, cv::Scalar(255,255,0), 2, 8 );
@@ -130,7 +129,7 @@ int main(int argc, char **argv){
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(buoy_point_message);
 			ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
-			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "rgb8", image_marked).toImageMsg());
+			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else ROS_INFO("Image empty");
 		ros::spinOnce();
