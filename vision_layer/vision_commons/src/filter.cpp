@@ -8,40 +8,47 @@
 #include <stdlib.h>
 #include "vision_commons/filter.h"
 
-cv::Mat vision_commons::Filter::clahe(cv::Mat image, double clahe_clip, int clahe_grid_size) {
-	cv::Mat lab_image;
-	cv::cvtColor(image, lab_image, CV_BGR2Lab);
-	std::vector<cv::Mat> lab_planes(3);
-	cv::split(lab_image, lab_planes);
-	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clahe_clip, cv::Size(clahe_grid_size, clahe_grid_size));
-	cv::Mat l0dst;
-	clahe->apply(lab_planes[0], l0dst);
-	l0dst.copyTo(lab_planes[0]);
-	cv::merge(lab_planes, lab_image);
-	cv::Mat clahed;
-	cv::cvtColor(lab_image, clahed, CV_Lab2BGR);
-	return clahed;
+cv::Mat vision_commons::Filter::clahe(cv::Mat &image, double clahe_clip, int clahe_grid_size)
+{
+  cv::Mat lab_image;
+  cv::cvtColor(image, lab_image, CV_BGR2Lab);
+  std::vector<cv::Mat> lab_planes(3);
+  cv::split(lab_image, lab_planes);
+  cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clahe_clip, cv::Size(clahe_grid_size, clahe_grid_size));
+  cv::Mat l0dst;
+  clahe->apply(lab_planes[0], l0dst);
+  l0dst.copyTo(lab_planes[0]);
+  cv::merge(lab_planes, lab_image);
+  cv::Mat clahed;
+  cv::cvtColor(lab_image, clahed, CV_Lab2BGR);
+  return clahed;
 }
 
-cv::Mat vision_commons::Filter::balance_white(cv::Mat mat) {
+cv::Mat vision_commons::Filter::balance_white(cv::Mat &mat)
+{
   double discard_ratio = 0.05;
   int hists[3][256];
-  memset(hists, 0, 3*256*sizeof(int));
+  memset(hists, 0, 3 * 256 * sizeof(int));
 
-  for (int y = 0; y < mat.rows; ++y) {
-    uchar* ptr = mat.ptr<uchar>(y);
-    for (int x = 0; x < mat.cols; ++x) {
-      for (int j = 0; j < 3; ++j) {
+  for (int y = 0; y < mat.rows; ++y)
+  {
+    uchar *ptr = mat.ptr<uchar>(y);
+    for (int x = 0; x < mat.cols; ++x)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
         hists[j][ptr[x * 3 + j]] += 1;
       }
     }
   }
 
   // cumulative hist
-  int total = mat.cols*mat.rows;
+  int total = mat.cols * mat.rows;
   int vmin[3], vmax[3];
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 255; ++j) {
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 255; ++j)
+    {
       hists[i][j + 1] += hists[i][j];
     }
     vmin[i] = 0;
@@ -54,11 +61,13 @@ cv::Mat vision_commons::Filter::balance_white(cv::Mat mat) {
       vmax[i] += 1;
   }
 
-
-  for (int y = 0; y < mat.rows; ++y) {
-    uchar* ptr = mat.ptr<uchar>(y);
-    for (int x = 0; x < mat.cols; ++x) {
-      for (int j = 0; j < 3; ++j) {
+  for (int y = 0; y < mat.rows; ++y)
+  {
+    uchar *ptr = mat.ptr<uchar>(y);
+    for (int x = 0; x < mat.cols; ++x)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
         int val = ptr[x * 3 + j];
         if (val < vmin[j])
           val = vmin[j];
@@ -72,31 +81,34 @@ cv::Mat vision_commons::Filter::balance_white(cv::Mat mat) {
 }
 
 cv::Mat vision_commons::Filter::blue_filter(
-	cv::Mat image,
-	double clahe_clip,
-	int clahe_grid_size,
-	int clahe_bilateral_iter,
-	int balanced_bilateral_iter,
-	double denoise_h
-) {
+    cv::Mat &image,
+    double clahe_clip,
+    int clahe_grid_size,
+    int clahe_bilateral_iter,
+    int balanced_bilateral_iter,
+    double denoise_h)
+{
 
-	if(!image.empty()){
-		cv::Mat blue_filtered = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
-		cv::Mat temp = blue_filtered.clone();
-		cv::Mat temp2;
-		for(int i = 0 ; i < clahe_bilateral_iter ; i++) {
-			cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
-			temp2.copyTo(temp);
-		}
-		blue_filtered = vision_commons::Filter::balance_white(temp);
-		temp = blue_filtered.clone();
-		for(int i = 0 ; i < balanced_bilateral_iter/2 ; i++) {
-			cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
-			temp2.copyTo(temp);
-		}
-		cv::fastNlMeansDenoisingColored(temp, blue_filtered, denoise_h, denoise_h, 7, 11);
-		return blue_filtered;
-	}
-	else
-		return image;
+  if (!image.empty())
+  {
+    cv::Mat blue_filtered = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
+    cv::Mat temp = blue_filtered.clone();
+    cv::Mat temp2;
+    for (int i = 0; i < clahe_bilateral_iter; i++)
+    {
+      cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
+      temp2.copyTo(temp);
+    }
+    blue_filtered = vision_commons::Filter::balance_white(temp);
+    temp = blue_filtered.clone();
+    for (int i = 0; i < balanced_bilateral_iter / 2; i++)
+    {
+      cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
+      temp2.copyTo(temp);
+    }
+    cv::fastNlMeansDenoisingColored(temp, blue_filtered, denoise_h, denoise_h, 7, 11);
+    return blue_filtered;
+  }
+  else
+    return image;
 }

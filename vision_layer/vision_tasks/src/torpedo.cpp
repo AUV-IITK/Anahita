@@ -20,134 +20,164 @@
 #include <vision_commons/threshold.h>
 #include <vision_commons/geometry.h>
 
-double clahe_clip = 4.0;
-int clahe_grid_size = 8;
-int clahe_bilateral_iter = 8;
-int balanced_bilateral_iter = 4;
-double denoise_h = 10.0;
-int low_b = 0;
-int high_b = 130;
-int low_g = 0;
-int high_g = 123;
-int low_r = 95;
-int high_r = 255;
-int opening_closing_mat_point, opening_iter, closing_iter;
+double clahe_clip_ = 0.15;
+int clahe_grid_size_ = 3;
+int clahe_bilateral_iter_ = 2;
+int balanced_bilateral_iter_ = 4;
+double denoise_h_ = 5.6;
+int low_h_ = 53;
+int high_h_ = 86;
+int low_s_ = 128;
+int high_s_ = 255;
+int low_v_ = 104;
+int high_v_ = 202;
+int opening_mat_point_ = 2;
+int opening_iter_ = 1;
+int closing_mat_point_ = 2;
+int closing_iter_ = 3;
 
-image_transport::Publisher blue_filtered_pub;
-image_transport::Publisher thresholded_pub;
-image_transport::Publisher marked_pub;
-ros::Publisher coordinates_pub;
+cv::Mat image_;
+
 std::string camera_frame = "auv-iitk";
-geometry_msgs::PointStamped torpedo_point_message;
-cv::Mat image;
 
-void callback(vision_tasks::torpedoRangeConfig &config, double level){
-    ROS_INFO("Reconfigure Request: (%d %d %d) - (%d %d %d): ", config.low_b, config.low_g, config.low_r, config.high_b, config.high_g, config.high_r);
-    clahe_clip = config.clahe_clip;
-    clahe_grid_size = config.clahe_grid_size;
-    clahe_bilateral_iter = config.clahe_bilateral_iter;
-    balanced_bilateral_iter = config.balanced_bilateral_iter;
-    denoise_h = config.denoise_h;
-    low_b = config.low_b;
-    low_g = config.low_g;
-    low_r = config.low_r;
-    high_b = config.high_b;
-    high_g = config.high_g;
-    high_r = config.high_r;
-    opening_closing_mat_point = config.opening_closing_mat_point;
-    opening_iter = config.opening_iter;
-    closing_iter = config.closing_iter;
+void callback(vision_tasks::torpedoRangeConfig &config, double level)
+{
+	clahe_clip_ = config.clahe_clip;
+	clahe_grid_size_ = config.clahe_grid_size;
+	clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	denoise_h_ = config.denoise_h;
+	low_h_ = config.low_h;
+	high_h_ = config.high_h;
+	low_s_ = config.low_s;
+	high_s_ = config.high_s;
+	low_v_ = config.low_v;
+	high_v_ = config.high_v;
+	opening_mat_point_ = config.opening_mat_point;
+	opening_iter_ = config.opening_iter;
+	closing_mat_point_ = config.closing_mat_point;
+	closing_iter_ = config.closing_iter;
 }
 
-
-void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
-    try { image = cv_bridge::toCvCopy(msg, "bgr8")->image; }
-    catch(cv_bridge::Exception &e) { ROS_ERROR("cv_bridge exception: %s", e.what()); }
-    catch(cv::Exception &e) { ROS_ERROR("cv exception: %s", e.what()); }
-}
-
-int main(int argc, char **argv){
-    ros::init(argc, argv, "torpedo_task");
-    ros::NodeHandle nh;
-
-    dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
-    dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
-    f = boost::bind(&callback, _1, _2);
-    server.setCallback(f);
-
-    image_transport::ImageTransport it(nh);
-    image_transport::Publisher blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
-    image_transport::Publisher thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
-    image_transport::Publisher marked_pub = it.advertise("/torpedo_task/marked",1);
-    ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
-
-    image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
-
-    cv::Mat blue_filtered;
-    cv::Mat image_thresholded;
-    cv::Mat image_marked;
-    std::vector<std::vector<cv::Point> > contours;
-    geometry_msgs::PointStamped torpedo_point_message;
-    torpedo_point_message.header.frame_id = camera_frame.c_str();
-
-    while(ros::ok()){
-	image_marked = image.clone();
-	if(!image.empty()){
-	    blue_filtered = vision_commons::Filter::blue_filter(image, clahe_clip, clahe_grid_size, clahe_bilateral_iter, balanced_bilateral_iter, denoise_h);
-	    if(!(high_b<=low_b || high_g<=low_g || high_r<=low_r)) {
-		image_thresholded = vision_commons::Threshold::threshold(blue_filtered, low_b, low_g, low_r, high_b, high_g, high_r);
-		image_thresholded = vision_commons::Morph::open(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, opening_iter);
-		image_thresholded = vision_commons::Morph::close(image_thresholded, 2*opening_closing_mat_point+1, opening_closing_mat_point, opening_closing_mat_point, closing_iter);
-		contours = vision_commons::Contour::getBestX(image_thresholded, 4);
-		if (contours.size() != 0){
-		    ROS_INFO("Contours size = %d", contours.size());
-		    cv::Rect bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
-		    if(contours.size() == 2) {
-			bounding_rectangle = cv::boundingRect(cv::Mat(contours[1]));
-		    }
-		    else if(contours.size() == 3) {
-			cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[0]));
-			cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[1]));
-			cv::Rect bounding_rectangle3 = boundingRect(cv::Mat(contours[2]));
-			if(bounding_rectangle1.contains(bounding_rectangle2.br()) && bounding_rectangle2.contains(bounding_rectangle2.tl())) {
-			    bounding_rectangle = bounding_rectangle2;
-			}
-			else if((bounding_rectangle2.contains(bounding_rectangle3.br()) && bounding_rectangle2.contains(bounding_rectangle3.tl()))
-				|| (bounding_rectangle1.contains(bounding_rectangle3.br()) && bounding_rectangle1.contains(bounding_rectangle3.tl()))) {
-			    bounding_rectangle = bounding_rectangle3;
-			}
-			else {
-			    if(bounding_rectangle3.br().y + bounding_rectangle3.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y) {
-				bounding_rectangle = bounding_rectangle3;
-			    }
-			    else bounding_rectangle = bounding_rectangle2;
-			}
-		    }
-		    else if(contours.size() == 4) {
-			cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[2]));
-			cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[3]));
-			if(bounding_rectangle1.br().y + bounding_rectangle1.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y) bounding_rectangle = bounding_rectangle1;
-			else bounding_rectangle = bounding_rectangle2;
-		    }
-		    for(int i = 0 ; i < contours.size() ; i++)
-			cv::drawContours( image_marked, contours, i, cv::Scalar(255,255,0), 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point() );
-		    torpedo_point_message.header.stamp = ros::Time();
-		    torpedo_point_message.point.x = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x)/7526.5,-.92678);
-		    torpedo_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2 - (image.size().width)/2;
-		    torpedo_point_message.point.z = ((float)image.size().height)/2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
-		    cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), cv::Scalar(255, 0, 0));
-		    cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x)/2, (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2), 1, cv::Scalar(255,100,100), 8, 0);
-		    cv::circle(image_marked, cv::Point(image.size().width/2, image.size().height/2), 1, cv::Scalar(255,100, 50), 8, 0);
-		}
-	    }
-	    blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
-	    thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
-	    coordinates_pub.publish(torpedo_point_message);
-	    ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", torpedo_point_message.point.x, torpedo_point_message.point.y, torpedo_point_message.point.z);
-	    marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
+void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	try
+	{
+		image_ = cv_bridge::toCvCopy(msg, "bgr8")->image;
 	}
-	else ROS_INFO("Image empty");
-	ros::spinOnce();
-    }
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
 }
 
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "torpedo_task");
+	ros::NodeHandle nh;
+
+	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
+	f = boost::bind(&callback, _1, _2);
+	server.setCallback(f);
+
+	image_transport::ImageTransport it(nh);
+	image_transport::Publisher blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
+	image_transport::Publisher thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
+	image_transport::Publisher marked_pub = it.advertise("/torpedo_task/marked", 1);
+	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
+
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+
+	cv::Scalar torpedo_center_color(255, 255, 255);
+	cv::Scalar image_center_color(0, 0, 0);
+	cv::Scalar enclosing_rectangle_color(149, 255, 23);
+	cv::Scalar contour_color(255, 0, 0);
+
+	cv::Mat blue_filtered;
+	cv::Mat image_hsv;
+	cv::Mat image_thresholded;
+	cv::Mat image_marked;
+	std::vector<std::vector<cv::Point> > contours;
+	cv::Rect bounding_rectangle;
+	geometry_msgs::PointStamped torpedo_point_message;
+	torpedo_point_message.header.frame_id = camera_frame.c_str();
+
+	while (ros::ok())
+	{
+		if (!image_.empty())
+		{
+			image_.copyTo(image_marked);
+			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
+			{
+				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
+				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
+				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
+				contours = vision_commons::Contour::getBestX(image_thresholded, 4);
+				if (contours.size() != 0)
+				{
+					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
+					if (contours.size() == 2)
+					{
+						bounding_rectangle = cv::boundingRect(cv::Mat(contours[1]));
+					}
+					else if (contours.size() == 3)
+					{
+						cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[0]));
+						cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[1]));
+						cv::Rect bounding_rectangle3 = boundingRect(cv::Mat(contours[2]));
+						if (bounding_rectangle1.contains(bounding_rectangle2.br()) && bounding_rectangle2.contains(bounding_rectangle2.tl()))
+						{
+							bounding_rectangle = bounding_rectangle2;
+						}
+						else if ((bounding_rectangle2.contains(bounding_rectangle3.br()) && bounding_rectangle2.contains(bounding_rectangle3.tl())) || (bounding_rectangle1.contains(bounding_rectangle3.br()) && bounding_rectangle1.contains(bounding_rectangle3.tl())))
+						{
+							bounding_rectangle = bounding_rectangle3;
+						}
+						else
+						{
+							if (bounding_rectangle3.br().y + bounding_rectangle3.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y)
+							{
+								bounding_rectangle = bounding_rectangle3;
+							}
+							else
+								bounding_rectangle = bounding_rectangle2;
+						}
+					}
+					else if (contours.size() == 4)
+					{
+						cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[2]));
+						cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[3]));
+						if (bounding_rectangle1.br().y + bounding_rectangle1.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y)
+							bounding_rectangle = bounding_rectangle1;
+						else
+							bounding_rectangle = bounding_rectangle2;
+					}
+					torpedo_point_message.header.stamp = ros::Time();
+					torpedo_point_message.point.x = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x) / 7526.5, -.92678);
+					torpedo_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2 - (image_.size().width) / 2;
+					torpedo_point_message.point.z = ((float)image_.size().height) / 2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2;
+					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, torpedo_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+					cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), enclosing_rectangle_color);
+					for (int i = 0; i < contours.size(); i++)
+						cv::drawContours(image_marked, contours, i, contour_color, 1, 8);
+				}
+			}
+			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
+			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
+			coordinates_pub.publish(torpedo_point_message);
+			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", torpedo_point_message.point.x, torpedo_point_message.point.y, torpedo_point_message.point.z);
+			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
+		}
+		else
+			ROS_INFO("Image empty");
+		ros::spinOnce();
+	}
+}

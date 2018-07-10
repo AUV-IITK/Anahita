@@ -9,12 +9,14 @@
 #include <stdlib.h>
 #include "vision_commons/geometry.h"
 
-double vision_commons::Geometry::distance(cv::Point p1, cv::Point p2) {
-  double distance = sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
+double vision_commons::Geometry::distance(cv::Point &p1, cv::Point &p2)
+{
+  double distance = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
   return distance;
 }
 
-double vision_commons::Geometry::angleWrtY(cv::Point p1, cv::Point p2) {
+double vision_commons::Geometry::angleWrtY(cv::Point &p1, cv::Point &p2)
+{
   double angle = atan2(p1.x - p2.x, p1.y - p2.y);
-  return abs(angle*180/CV_PI);
+  return abs(angle * 180 / CV_PI);
 }
