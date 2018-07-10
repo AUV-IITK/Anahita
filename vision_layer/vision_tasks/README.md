@@ -4,7 +4,7 @@
 
 This is a ROS package for processing video feed provided by [`hardware_camera`](https://github.com/AUV-IITK/Hyperion-Software/tree/master/hardware_layer/hardware_camera) and publishing the coordinates of the object of interest in the camera's frame as a [geometry_msgs/PointStamped] or [geometry_msgs/Pose2D] to the other layers.
 
-The `vision_tasks` package has been tested under [ROS](http://www.ros.org) Kinetic and Ubuntu 16.04 LTS. The source code is released under a [BSD 3-Clause license](LICENSE.md).
+The `vision_tasks` package has been tested under [ROS](http://www.ros.org) Kinetic and Ubuntu 16.04 LTS. The source code is released under a [BSD 3-Clause license](../../LICENSE).
 
 The hardware used are as follows:
 * Front-facing Camera: [Logitech C930e](https://www.logitech.com/en-in/product/c930e-webcam)
