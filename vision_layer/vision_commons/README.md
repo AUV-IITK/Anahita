@@ -4,7 +4,7 @@
 
 This is a ROS package that abstracts common image processing operations and serves as a library for [`vision_tasks`](https://github.com/AUV-IITK/Hyperion-Software/tree/master/vision_layer/vision_tasks).
 
-The `vision_commons` package has been tested under [ROS](http://www.ros.org) Kinetic and Ubuntu 16.04 LTS. The source code is released under a [BSD 3-Clause license](LICENSE.md).
+The `vision_commons` package has been tested under [ROS](http://www.ros.org) Kinetic and Ubuntu 16.04 LTS. The source code is released under a [BSD 3-Clause license](../../LICENSE).
 
 ## Setting up vision_commons
 
