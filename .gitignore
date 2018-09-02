@@ -85,3 +85,5 @@ CATKIN_IGNORE
 *.exe
 *.out
 *.app
+
+.vscode/

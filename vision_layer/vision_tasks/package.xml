@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vision_tasks</name>
+  <version>1.0.0</version>
+  <description>The vision_tasks package</description>
+
+  <maintainer email="naishadh_parmar@live.com">Naishadh Parmar</maintainer>
+
+  <license>BSD 3-Clause license</license>
+
+  <author email="naishadh_parmar@live.com">Naishadh Parmar</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>OpenCV</build_depend>
+  <build_depend>vision_commons</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_export_depend>cv_bridge</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>OpenCV</build_export_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+  </export>
+  
+</package>
