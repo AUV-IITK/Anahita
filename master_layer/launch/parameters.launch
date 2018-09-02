@@ -1,0 +1,17 @@
+<launch>
+
+  <param name="/pwm_sideward_front_straight" value="0" type="int"/>
+  <param name="/pwm_sideward_back_straight" value="0" type="int" />
+
+  <param name="/pwm_sideward_back_turn" value="0" type="int" />
+  <param name="/pwm_sideward_front_turn" value="0" type="int" />
+
+  <param name="/pwm_forward_left" value="0" type="int" />
+  <param name="/pwm_forward_right" value="0" type="int" />
+
+  <param name="/pwm_upward_front" value="0" type="int" />
+  <param name="/pwm_upward_back" value="0" type="int" />
+
+  <param name="/current_task" value="NONE", type="string">
+
+</launch>

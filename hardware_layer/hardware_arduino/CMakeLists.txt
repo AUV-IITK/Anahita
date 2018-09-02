@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   rosserial_arduino
   rosserial_client
-  underwater_sensor_msgs
+  # underwater_sensor_msgs
   std_msgs
 )
 
@@ -29,7 +29,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hardware_arduino
-   CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs underwater_sensor_msgs
+   CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs 
+  #  underwater_sensor_msgs
 #  DEPENDS system_lib
 )
 
