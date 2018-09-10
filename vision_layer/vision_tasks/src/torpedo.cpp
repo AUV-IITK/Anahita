@@ -19,28 +19,29 @@
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
 #include <vision_commons/geometry.h>
+#include <torpedo.h>
 
-double clahe_clip_ = 0.15;
-int clahe_grid_size_ = 3;
-int clahe_bilateral_iter_ = 2;
-int balanced_bilateral_iter_ = 4;
-double denoise_h_ = 5.6;
-int low_h_ = 53;
-int high_h_ = 86;
-int low_s_ = 128;
-int high_s_ = 255;
-int low_v_ = 104;
-int high_v_ = 202;
-int opening_mat_point_ = 2;
-int opening_iter_ = 1;
-int closing_mat_point_ = 2;
-int closing_iter_ = 3;
-
+Torpedo::Torpedo(){
+	clahe_clip_ = 0.15;
+	clahe_grid_size_ = 3;
+	clahe_bilateral_iter_ = 2;
+	balanced_bilateral_iter_ = 4;
+	denoise_h_ = 5.6;
+	low_h_ = 53;
+	high_h_ = 86;
+	low_s_ = 128;
+	high_s_ = 255;
+	low_v_ = 104;
+	high_v_ = 202;
+	opening_mat_point_ = 2;
+	opening_iter_ = 1;
+	closing_mat_point_ = 2;
+	closing_iter_ = 3;
+	camera_frame = "auv-iitk";
+}
 cv::Mat image_;
 
-std::string camera_frame = "auv-iitk";
-
-void callback(vision_tasks::torpedoRangeConfig &config, double level)
+void Torpedo::callback(vision_tasks::torpedoRangeConfig &config, double level)
 {
 	clahe_clip_ = config.clahe_clip;
 	clahe_grid_size_ = config.clahe_grid_size;
@@ -59,7 +60,7 @@ void callback(vision_tasks::torpedoRangeConfig &config, double level)
 	closing_iter_ = config.closing_iter;
 }
 
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
@@ -75,8 +76,7 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-int main(int argc, char **argv)
-{
+int Torpedo::TaskHandling(){}
 	ros::init(argc, argv, "torpedo_task");
 	ros::NodeHandle nh;
 

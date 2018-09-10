@@ -18,47 +18,50 @@
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
+#include <buoy.h>
 
-double clahe_clip_ = 0.15;
-int clahe_grid_size_ = 3;
-int clahe_bilateral_iter_ = 2;
-int balanced_bilateral_iter_ = 4;
-double denoise_h_ = 10.0;
-int low_h_ = 0;
-int high_h_ = 10;
-int low_s_ = 251;
-int high_s_ = 255;
-int low_v_ = 160;
-int high_v_ = 255;
-int opening_mat_point_ = 1;
-int opening_iter_ = 0;
-int closing_mat_point_ = 1;
-int closing_iter_ = 0;
-
-cv::Mat image_;
-
-std::string camera_frame_ = "auv-iitk";
-
-void callback(vision_tasks::buoyRangeConfig &config, double level)
-{
-	clahe_clip_ = config.clahe_clip;
-	clahe_grid_size_ = config.clahe_grid_size;
-	clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	denoise_h_ = config.denoise_h;
-	low_h_ = config.low_h;
-	high_h_ = config.high_h;
-	low_s_ = config.low_s;
-	high_s_ = config.high_s;
-	low_v_ = config.low_v;
-	high_v_ = config.high_v;
-	opening_mat_point_ = config.opening_mat_point;
-	opening_iter_ = config.opening_iter;
-	closing_mat_point_ = config.closing_mat_point;
-	closing_iter_ = config.closing_iter;
+Buoy::Buoy(){
+	this->clahe_clip_ = 0.15;
+	this->clahe_grid_size_ = 3;
+	this->clahe_bilateral_iter_ = 2;
+	this->balanced_bilateral_iter_ = 4;
+	this->denoise_h_ = 10.0;
+	this->low_h_ = 0;
+	this->high_h_ = 10;
+	this->low_s_ = 251;
+	this->high_s_ = 255;
+	this->low_v_ = 160;
+	this->high_v_ = 255;
+	this->opening_mat_point_ = 1;
+	this->opening_iter_ = 0;
+	this->closing_mat_point_ = 1;
+	this->closing_iter_ = 0;
+	this->camera_frame_ = "auv-iitk";
 }
 
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+
+
+
+void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
+{
+	clahe_clip_ = config.clahe_clip;
+	Buoy::clahe_grid_size_ = config.clahe_grid_size;
+	Buoy::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	Buoy::balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	Buoy::denoise_h_ = config.denoise_h;
+	Buoy::low_h_ = config.low_h;
+	Buoy::high_h_ = config.high_h;
+	Buoy::low_s_ = config.low_s;
+	Buoy::high_s_ = config.high_s;
+	Buoy::low_v_ = config.low_v;
+	Buoy::high_v_ = config.high_v;
+	Buoy::opening_mat_point_ = config.opening_mat_point;
+	Buoy::opening_iter_ = config.opening_iter;
+	Buoy::closing_mat_point_ = config.closing_mat_point;
+	Buoy::closing_iter_ = config.closing_iter;
+};
+
+void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try
@@ -73,25 +76,17 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-}
+};
 
-int main(int argc, char **argv)
-{
-	ros::init(argc, argv, "buoy_task");
-	ros::NodeHandle nh;
 
-	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
-	f = boost::bind(&callback, _1, _2);
-	server.setCallback(f);
-
+void Buoy::TaskHandling(){
 	image_transport::ImageTransport it(nh);
 	image_transport::Publisher blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
 	image_transport::Publisher thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	image_transport::Publisher marked_pub = it.advertise("/buoy_task/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 
 	cv::Scalar buoy_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -110,7 +105,7 @@ int main(int argc, char **argv)
 	buoy_point_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
 
-	while (ros::ok())
+	while (1)
 	{
 		if (!image_.empty())
 		{
@@ -161,5 +156,4 @@ int main(int argc, char **argv)
 			ROS_INFO("Image empty");
 		ros::spinOnce();
 	}
-	return 0;
 }
