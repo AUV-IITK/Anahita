@@ -131,8 +131,8 @@ int main(int argc, char **argv)
 	image_transport::Publisher marked_pub = it.advertise("/gate_task/front/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/gate_task/front/gate_coordinates", 1000);
 
-//	image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
-	image_transport::Subscriber front_image_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+//	image_transport::Subscriber front_image_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
 
 	cv::Scalar gate_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);

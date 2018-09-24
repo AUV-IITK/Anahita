@@ -28,6 +28,16 @@ int main(int argc, char** argv) {
     int pwm_upward_back_;
     int pwm_upward_front_;
 
+    nh.setParam("/pwm_forward_left", 0);
+    nh.setParam("/pwm_forward_right", 0);
+    nh.setParam("/pwm_upward_front", 0);
+    nh.setParam("/pwm_upward_back", 0);
+    nh.setParam("/pwm_sideward_back_straight", 0);
+    nh.setParam("/pwm_sideward_front_straight", 0);
+    nh.setParam("/pwm_sideward_front_turn", 0);
+    nh.setParam("/pwm_sideward_back_turn", 0);
+
+
     while(ros::ok()) {
         nh.getParam("/pwm_forward_left", pwm_forward_left_);
         nh.getParam("/pwm_forward_right", pwm_forward_right_);

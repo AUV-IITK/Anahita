@@ -126,6 +126,9 @@ int main(int argc, char **argv)
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
 
+
+        ros::Rate loop_rate(20);
+
 	while (ros::ok())
 	{
 		if (!image_.empty())
@@ -179,6 +182,7 @@ int main(int argc, char **argv)
 		else
 			ROS_INFO("Image empty");
 		ros::spinOnce();
+		loop_rate.sleep();
 	}
 	return 0;
 }

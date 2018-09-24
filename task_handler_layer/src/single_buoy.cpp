@@ -34,9 +34,9 @@ void singleBuoy::setActive(bool status) {
     while(forward_distance_ >= 60) {
         continue;
     }
-    // move_forward_.setActive(false);
-    anglePIDClient.cancelGoal();
-    // move_straight_.setActive(true);
+    //move_forward_.setActive(false);
+    //anglePIDClient.cancelGoal();
+     //move_straight_.setActive(true);
     // ros::Duration(6).sleep();
     // move_straight_.setActive(false);
     // move_straight_.setActive(true);

@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 	image_transport::Publisher marked_pub = it.advertise("/buoy_task/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
 
 	cv::Scalar buoy_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
