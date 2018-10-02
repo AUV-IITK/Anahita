@@ -45,7 +45,7 @@ protected:
 	int closing_iter_;
 	void callback(vision_tasks::lineRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-    double computeMode(std::vector<double> &newAngles);
+    double computeMean(std::vector<double> &newAngles);
 
 public:
     Line();

@@ -49,33 +49,12 @@ void Line::callback(vision_tasks::lineRangeConfig &config, double level)
 	Line::closing_iter_ = config.closing_iter;
 };
 
-double Line::computeMode(std::vector<double> &newAngles)
+double Line::computeMean(std::vector<double> &newAngles)
 {
-	double minDeviation = 5.0;
-	double mode = newAngles[0];
-	int freq = 1;
-	int tempFreq;
-	double diff;
-	for (int i = 0; i < newAngles.size(); i++)
-	{
-		tempFreq = 1;
-		for (int j = i + 1; j < newAngles.size(); j++)
-		{
-			diff = newAngles[j] - newAngles[i] > 0.0 ? newAngles[j] - newAngles[i] : newAngles[i] - newAngles[j];
-			if (diff <= minDeviation)
-			{
-				tempFreq++;
-				newAngles.erase(newAngles.begin() + j);
-				j = j - 1;
-			}
-		}
-		if (tempFreq >= freq)
-		{
-			mode = newAngles[i];
-			freq = tempFreq;
-		}
-	}
-	return mode;
+	double sum = 0;
+	for(int  i =0; i < newAngles.size(); i++)
+		sum += newAngles[i];
+	return (double) sum/newAngles.size();
 }
 
 void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -114,7 +93,6 @@ void Line::TaskHandling()
   	std::vector<std::vector<cv::Point> > contours;
 	cv::RotatedRect bounding_rectangle;
 	std::vector<cv::Vec4i> lines;
-	std::vector<double> angles;
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
 
@@ -131,11 +109,14 @@ void Line::TaskHandling()
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
 				contours = vision_commons::Contour::getBestX(image_thresholded, 1);
 				cv::Mat edges(image_thresholded.rows, image_thresholded.cols, CV_8UC1, cv::Scalar::all(0));
+				std::vector<double> angles;
+
 				cv::drawContours(edges, contours, 0, edge_color, 1, 8);
 				if (contours.size() != 0)
 				{
 					bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
 					cv::HoughLinesP(edges, lines, 1, CV_PI / 180, 60, 70, 10);
+					ROS_INFO("HOugh lines number = %d", lines.size());
 					for (int i = 0; i < lines.size(); i++)
 					{
 						if ((lines[i][2] == lines[i][0]) || (lines[i][1] == lines[i][3]))
@@ -143,11 +124,12 @@ void Line::TaskHandling()
 						angles.push_back(atan(static_cast<double>(lines[i][2] - lines[i][0]) / (lines[i][1] - lines[i][3])) * 180.0 / 3.14159);
 						cv::line(image_marked, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), hough_line_color, 1, CV_AA);
 					}
+					ROS_INFO("Loop OVer");
 					line_point_message.x = (image_.size().height) / 2 - bounding_rectangle.center.y;
 					line_point_message.y = bounding_rectangle.center.x - (image_.size().width) / 2;
 					if (angles.size() > 0)
 					{
-						float angle = computeMode(angles);
+						double angle = computeMean(angles);
 						if (angle > 90.0)
 							line_point_message.theta = angle - 90.0;
 						else
