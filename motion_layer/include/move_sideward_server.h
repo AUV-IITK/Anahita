@@ -20,6 +20,7 @@ protected:
     motion_layer::anglePIDGoal angle_PID_goal;
     ros::Subscriber sub_;
     double angle;
+    bool flag;
     boost::thread* spin_thread;
 
 public:
