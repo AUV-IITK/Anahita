@@ -41,20 +41,20 @@ int main(int argc, char** argv) {
 
     // ros::Subscriber sub_;
     // sub_ = nh.subscribe("/varun/sensors/yaw", 1, &imuAngleCB);
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
-    motion_layer::anglePIDGoal angle_PID_goal;
+    //actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
+    //motion_layer::anglePIDGoal angle_PID_goal;
 
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
+    //ROS_INFO("Waiting for anglePID server to start.");
+    //anglePIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal.");
-    angle_PID_goal.target_angle = 90;
-    anglePIDClient.sendGoal(angle_PID_goal);
+    //ROS_INFO("anglePID server started, sending goal.");
+    //angle_PID_goal.target_angle = 90;
+    //anglePIDClient.sendGoal(angle_PID_goal);
 
-    //moveStraight move_straight_(100);
-    //move_straight_.setActive(true);
-    //ros::Duration(10).sleep();
-    //move_straight_.setActive(false);
+    moveStraight move_straight_(100);
+    move_straight_.setActive(true);
+    ros::Duration(10).sleep();
+    move_straight_.setActive(false);
 
     //actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
     //motion_layer::forwardPIDGoal forward_PID_goal;

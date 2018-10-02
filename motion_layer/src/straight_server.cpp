@@ -1,8 +1,9 @@
 #include <straight_server.h>
 
 moveStraight::moveStraight(int pwm_): anglePIDClient("turnPID") {
-    spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
-
+    //spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
+     
+    std::cout << "straight server pwm set to: " << pwm_ << std::endl;
     nh.setParam("/pwm_forward_right", pwm_);
     nh.setParam("/pwm_forward_left", pwm_);
 
@@ -10,7 +11,7 @@ moveStraight::moveStraight(int pwm_): anglePIDClient("turnPID") {
 }
 
 moveStraight::~moveStraight() {
-    spin_thread->join();
+    //spin_thread->join();
 }
 
 void moveStraight::setActive(bool status) {
@@ -20,6 +21,7 @@ void moveStraight::setActive(bool status) {
 
         ROS_INFO("anglePID server started, sending goal.");
         angle_PID_goal.target_angle = angle;
+        std::cout << "straight server goal set to: " << angle << std::endl;
         anglePIDClient.sendGoal(angle_PID_goal);
     }
 
@@ -28,10 +30,11 @@ void moveStraight::setActive(bool status) {
     }
 }   
 
-void moveStraight::spinThread() {
-    ros::spin();
-}
+//void moveStraight::spinThread() {
+    //ros::spin();
+//}
 
 void moveStraight::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
+    std::cout << "called back move straight" << std::endl;
     angle = _msg->data;
 }

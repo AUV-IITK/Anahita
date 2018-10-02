@@ -41,15 +41,15 @@ void anglePIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
+void anglePIDAction::callBack(const std_msgs::Float64::ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
     if (!as_.isActive()) {
-        std::cout << "hfksdh" << std::endl;
+        std::cout << "target cancelled" << std::endl;
         return;
     }
     
-    ROS_INFO("Calling");
+    ROS_INFO("angle server Callback");
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;
