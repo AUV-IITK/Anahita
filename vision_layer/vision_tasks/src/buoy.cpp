@@ -44,7 +44,7 @@ Buoy::Buoy(){
 
 void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 {
-	clahe_clip_ = config.clahe_clip;
+	Buoy::clahe_clip_ = config.clahe_clip;
 	Buoy::clahe_grid_size_ = config.clahe_grid_size;
 	Buoy::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
 	Buoy::balanced_bilateral_iter_ = config.balanced_bilateral_iter;

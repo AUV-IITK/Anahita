@@ -22,43 +22,42 @@
 #include <torpedo.h>
 
 Torpedo::Torpedo(){
-	clahe_clip_ = 0.15;
-	clahe_grid_size_ = 3;
-	clahe_bilateral_iter_ = 2;
-	balanced_bilateral_iter_ = 4;
-	denoise_h_ = 5.6;
-	low_h_ = 53;
-	high_h_ = 86;
-	low_s_ = 128;
-	high_s_ = 255;
-	low_v_ = 104;
-	high_v_ = 202;
-	opening_mat_point_ = 2;
-	opening_iter_ = 1;
-	closing_mat_point_ = 2;
-	closing_iter_ = 3;
-	camera_frame = "auv-iitk";
+	this->clahe_clip_ = 0.15;
+	this->clahe_grid_size_ = 3;
+	this->clahe_bilateral_iter_ = 2;
+	this->balanced_bilateral_iter_ = 4;
+	this->denoise_h_ = 5.6;
+	this->low_h_ = 53;
+	this->high_h_ = 86;
+	this->low_s_ = 128;
+	this->high_s_ = 255;
+	this->low_v_ = 104;
+	this->high_v_ = 202;
+	this->opening_mat_point_ = 2;
+	this->opening_iter_ = 1;
+	this->closing_mat_point_ = 2;
+	this->closing_iter_ = 3;
+	this->camera_frame_ = "auv-iitk";
 }
-cv::Mat image_;
 
 void Torpedo::callback(vision_tasks::torpedoRangeConfig &config, double level)
 {
-	clahe_clip_ = config.clahe_clip;
-	clahe_grid_size_ = config.clahe_grid_size;
-	clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	denoise_h_ = config.denoise_h;
-	low_h_ = config.low_h;
-	high_h_ = config.high_h;
-	low_s_ = config.low_s;
-	high_s_ = config.high_s;
-	low_v_ = config.low_v;
-	high_v_ = config.high_v;
-	opening_mat_point_ = config.opening_mat_point;
-	opening_iter_ = config.opening_iter;
-	closing_mat_point_ = config.closing_mat_point;
-	closing_iter_ = config.closing_iter;
-}
+	Torpedo::clahe_clip_ = config.clahe_clip;
+	Torpedo::clahe_grid_size_ = config.clahe_grid_size;
+	Torpedo::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	Torpedo::balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	Torpedo::denoise_h_ = config.denoise_h;
+	Torpedo::low_h_ = config.low_h;
+	Torpedo::high_h_ = config.high_h;
+	Torpedo::low_s_ = config.low_s;
+	Torpedo::high_s_ = config.high_s;
+	Torpedo::low_v_ = config.low_v;
+	Torpedo::high_v_ = config.high_v;
+	Torpedo::opening_mat_point_ = config.opening_mat_point;
+	Torpedo::opening_iter_ = config.opening_iter;
+	Torpedo::closing_mat_point_ = config.closing_mat_point;
+	Torpedo::closing_iter_ = config.closing_iter;
+};
 
 void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -76,22 +75,15 @@ void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-int Torpedo::TaskHandling(){}
-	ros::init(argc, argv, "torpedo_task");
-	ros::NodeHandle nh;
-
-	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
-	f = boost::bind(&callback, _1, _2);
-	server.setCallback(f);
-
+void Torpedo::TaskHandling()
+{
 	image_transport::ImageTransport it(nh);
 	image_transport::Publisher blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	image_transport::Publisher thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	image_transport::Publisher marked_pub = it.advertise("/torpedo_task/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
 
 	cv::Scalar torpedo_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -105,9 +97,9 @@ int Torpedo::TaskHandling(){}
 	std::vector<std::vector<cv::Point> > contours;
 	cv::Rect bounding_rectangle;
 	geometry_msgs::PointStamped torpedo_point_message;
-	torpedo_point_message.header.frame_id = camera_frame.c_str();
+	torpedo_point_message.header.frame_id = camera_frame_.c_str();
 
-	while (ros::ok())
+	while (1)
 	{
 		if (!image_.empty())
 		{

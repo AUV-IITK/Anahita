@@ -19,37 +19,37 @@
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
+#include <line.h>
 
-int low_h_ = 31;
-int high_h_ = 47;
-int low_s_ = 0;
-int high_s_ = 255;
-int low_v_ = 0;
-int high_v_ = 255;
-int opening_mat_point_ = 1;
-int opening_iter_ = 0;
-int closing_mat_point_ = 2;
-int closing_iter_ = 1;
-
-cv::Mat image_;
-
-std::string camera_frame_ = "auv-iitk";
-
-void callback(vision_tasks::lineRangeConfig &config, double level)
-{
-	low_h_ = config.low_h;
-	low_s_ = config.low_s;
-	low_v_ = config.low_v;
-	high_h_ = config.high_h;
-	high_s_ = config.high_s;
-	high_v_ = config.high_v;
-	opening_mat_point_ = config.opening_mat_point;
-	opening_iter_ = config.opening_iter;
-	closing_mat_point_ = config.closing_mat_point;
-	closing_iter_ = config.closing_iter;
+Line::Line(){
+	this->low_h_ = 31;
+	this->high_h_ = 47;
+	this->low_s_ = 0;
+	this->high_s_ = 255;
+	this->low_v_ = 0;
+	this->high_v_ = 255;
+	this->opening_mat_point_ = 1;
+	this->opening_iter_ = 0;
+	this->closing_mat_point_ = 2;
+	this->closing_iter_ = 1;
+	this->camera_frame_ = "auv-iitk";
 }
 
-double computeMode(std::vector<double> &newAngles)
+void Line::callback(vision_tasks::lineRangeConfig &config, double level)
+{
+	Line::low_h_ = config.low_h;
+	Line::low_s_ = config.low_s;
+	Line::low_v_ = config.low_v;
+	Line::high_h_ = config.high_h;
+	Line::high_s_ = config.high_s;
+	Line::high_v_ = config.high_v;
+	Line::opening_mat_point_ = config.opening_mat_point;
+	Line::opening_iter_ = config.opening_iter;
+	Line::closing_mat_point_ = config.closing_mat_point;
+	Line::closing_iter_ = config.closing_iter;
+};
+
+double Line::computeMode(std::vector<double> &newAngles)
 {
 	double minDeviation = 5.0;
 	double mode = newAngles[0];
@@ -78,7 +78,7 @@ double computeMode(std::vector<double> &newAngles)
 	return mode;
 }
 
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
@@ -94,22 +94,14 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-int main(int argc, char **argv)
+void Line::TaskHandling()
 {
-	ros::init(argc, argv, "line_task");
-	ros::NodeHandle nh;
-
-	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
-	f = boost::bind(&callback, _1, _2);
-	server.setCallback(f);
-
 	image_transport::ImageTransport it(nh);
 	image_transport::Publisher thresholded_pub = it.advertise("/line_task/thresholded", 1);
 	image_transport::Publisher marked_pub = it.advertise("/line_task/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 
 	cv::Scalar line_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -119,14 +111,14 @@ int main(int argc, char **argv)
 
 	cv::Mat image_hsv;
 	cv::Mat image_thresholded;
-  std::vector<std::vector<cv::Point> > contours;
+  	std::vector<std::vector<cv::Point> > contours;
 	cv::RotatedRect bounding_rectangle;
 	std::vector<cv::Vec4i> lines;
 	std::vector<double> angles;
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
 
-	while (ros::ok())
+	while (1)
 	{
 		if (!image_.empty())
 		{
@@ -180,5 +172,4 @@ int main(int argc, char **argv)
 			ROS_INFO("Image empty");
 		ros::spinOnce();
 	}
-	return 0;
 }

@@ -169,10 +169,10 @@ int main(int argc, char **argv)
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			//blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
-				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
 				cv::cvtColor(image_thresholded, image_gray, CV_GRAY2BGR);
