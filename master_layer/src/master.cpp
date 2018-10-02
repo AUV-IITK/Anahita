@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
 
     moveStraight move_straight_(100);
     move_straight_.setActive(true);
-    ros::Duration(10).sleep();
-    move_straight_.setActive(false);
+    //ros::Duration(10).sleep();
+    //move_straight_.setActive(false);
 
     //actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
     //motion_layer::forwardPIDGoal forward_PID_goal;

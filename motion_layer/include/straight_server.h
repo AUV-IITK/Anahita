@@ -21,8 +21,10 @@ protected:
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
     boost::thread* spin_thread;
+    bool flag;
     double angle;
     ros::Subscriber sub_;
+
 
 public:
 
@@ -31,6 +33,6 @@ public:
 
     void setActive(bool);
     void spinThread();
-    void imuAngleCB(const std_msgs::Float64Ptr &_msg);
+    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
 };
 #endif // STRAIGHT_SERVER_H

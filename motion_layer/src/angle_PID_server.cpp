@@ -18,6 +18,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     angle.setPID(2.4, 0, 0.5, 1);
 
     as_.start();
+    std::cout << "angle server started" << std::endl;
 }
 
 anglePIDAction::~anglePIDAction(void)
@@ -41,11 +42,10 @@ void anglePIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void anglePIDAction::callBack(const std_msgs::Float64::ConstPtr& msg)
+void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
     if (!as_.isActive()) {
-        std::cout << "target cancelled" << std::endl;
         return;
     }
     
