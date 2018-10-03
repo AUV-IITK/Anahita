@@ -10,6 +10,7 @@
 #include "../include/MS5837.h"
 #include "../include/Thruster.h"
 #include "../include/ArduinoConfig.h"
+#include "../include/ESC.h"
 
 // define rate at which sensor data should be published (in Hz)
 #define PRESSURE_PUBLISH_RATE 10
@@ -19,46 +20,56 @@ MS5837 pressure_sensor;
 
 /*
 ROBOT ORIENTATION
-          FRONT
-          -----
-          SWAY1
-          HEAVE1
-            -
-  SURGE1           SURGE2
-            -
-          HEAVE2
-          SWAY2
-          -----
-          BACK
+                       NORTH
+                    -----------
+       NORTH-WEST-UP|         |NORTH-EAST-UP
+                    |         |
+                    |    -    |
+               WEST |    -    | EAST
+                    |    -    |
+                    |         |
+       SOUTH-WEST-UP|         |SOUTH-EAST-UP
+                    -----------  
+                       SOUTH
 */
-Thruster surge1(SURGE1_PWM, SURGE1_IN_A, SURGE1_IN_B);
-Thruster surge2(SURGE2_PWM, SURGE2_IN_A, SURGE2_IN_B);
-Thruster heave1(HEAVE1_PWM, HEAVE1_IN_A, HEAVE1_IN_B);
-Thruster heave2(HEAVE2_PWM, HEAVE2_IN_A, HEAVE2_IN_B);
-Thruster sway1(SWAY1_PWM, SWAY1_IN_A, SWAY1_IN_B);
-Thruster sway2(SWAY2_PWM, SWAY2_IN_A, SWAY2_IN_B);
+
+// declaration of ESC objects for T200 thrusters 
+ESC T_EAST(servoPinEast,1100,1900,1500);
+ESC T_WEST(servoPinWest,1100,1900,1500);
+ESC T_NORTH(servoPinNorthSway,1100,1900,1500);
+ESC T_SOUTH(servoPinSouthSway,1100,1900,1500);
+
+// for upward thrusters
+Thruster T_NORTH_EAST_UP(pwmPinNorthEastUp, directionPinNorthEastUp1, directionPinNorthEastUp2);
+Thruster T_NORTH_WEST_UP(pwmPinNorthWestUp, directionPinNorthWestUp1, directionPinNorthWestUp2);
+Thruster T_SOUTH_WEST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
+Thruster T_SOUTH_EAST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
 
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
 
-// callback function for thrsuters
-void surge1_callback(const std_msgs::Int32& msg);
-void surge2_callback(const std_msgs::Int32& msg);
-void heave1_callback(const std_msgs::Int32& msg);
-void heave2_callback(const std_msgs::Int32& msg);
-void sway1_callback(const std_msgs::Int32& msg);
-void sway2_callback(const std_msgs::Int32& msg);
+// declaration of callback functions for all thrusters
+void TEastCb(const std_msgs::Int32& msg);
+void TWestCb(const std_msgs::Int32& msg);
+void TNorthCb(const std_msgs::Int32& msg);
+void TSouthCb(const std_msgs::Int32& msg);
+void TNEUpCb(const std_msgs::Int32& msg);
+void TNWUpCb(const std_msgs::Int32& msg);
+void TSEUpCb(const std_msgs::Int32& msg);
+void TSWUpCb(const std_msgs::Int32& msg);
 
 // defining rosnode handle
 ros::NodeHandle nh;
 
 // declare subscribers
-ros::Subscriber<std_msgs::Int32> surge1_pwm_pub("/thruster/surge1/pwm", &surge1_callback);
-ros::Subscriber<std_msgs::Int32> surge2_pwm_pub("/thruster/surge2/pwm", &surge2_callback);
-ros::Subscriber<std_msgs::Int32> heave1_pwm_pub("/thruster/heave1/pwm", &heave1_callback);
-ros::Subscriber<std_msgs::Int32> heave2_pwm_pub("/thruster/heave2/pwm", &heave2_callback);
-ros::Subscriber<std_msgs::Int32> sway1_pwm_pub("/thruster/sway1/pwm", &sway1_callback);
-ros::Subscriber<std_msgs::Int32> sway2_pwm_pub("/thruster/sway1/pwm", &sway2_callback);
+ros::Subscriber<std_msgs::Int32> TEast_PWM_Sub("/thruster/east/pwm", &TEastCb);
+ros::Subscriber<std_msgs::Int32> TWest_PWM_Sub("/thruster/west/pwm", &TWestCb);
+ros::Subscriber<std_msgs::Int32> TNorth_PWM_Sub("/thruster/north/pwm", &TNorthCb);
+ros::Subscriber<std_msgs::Int32> TSouth_PWM_Sub("/thruster/south/pwm", &TSouthCb);
+ros::Subscriber<std_msgs::Int32> TNW_PWM_Sub("/thruster/north-west/pwm", &TNWUpCb);
+ros::Subscriber<std_msgs::Int32> TNE_PWM_Sub("/thruster/north-east/pwm", &TNEUpCb);
+ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/thruster/south-east/pwm", &TSEUpCb)
+ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/thruster/south-west/pwm", &TSWUpCb)
 
 // declare publishers
 underwater_sensor_msgs::Pressure pressure_msg;
@@ -69,13 +80,17 @@ ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
 void setup()
 {
     //setting up thruster pins
-    surge1.setup();
-    surge2.setup();
-    heave1.setup();
-    heave2.setup();
-    sway1.setup();
-    sway2.setup();
+    T_NORTH_EAST_UP.setup();
+    T_NORTH_WEST_UP.setup();
+    T_SOUTH_EAST_UP.setup();
+    T_SOUTH_WEST_UP.setup();
 
+    // calibrating ESCs
+    TEAST.calibrate();
+    TWEST.calibrate();
+    TNORTHSWAY.calibrate();
+    TSOUTHSWAY.calibrate();
+ 
     // setting up pressure sensor
     Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
@@ -93,12 +108,29 @@ void setup()
     nh.initNode();
     nh.getHardware()->setBaud(57600);
     // subscribers
-    nh.subscribe(surge1_pwm_pub);
-    nh.subscribe(surge2_pwm_pub);
-    nh.subscribe(heave1_pwm_pub);
-    nh.subscribe(heave2_pwm_pub);
-    nh.subscribe(sway1_pwm_pub);
-    nh.subscribe(sway2_pwm_pub);
+    nh.subscribe(TEast_PWM_Sub);
+    nh.subscribe(TWest_PWM_Sub);
+    nh.subscribe(TNorth_PWM_Sub);
+    nh.subscribe(TSouth_PWM_Sub);
+    nh.subscribe(TNW_PWM_Sub);
+    nh.subscribe(TNE_PWM_Sub);
+    nh.subscribe(TSW_PWM_Sub);
+    nh.subscribe(TSE_PWM_Sub);
+
+    // sending initial message to all thrusters to stop
+    std_msgs::Int32 v;
+    v.data = 1500;
+    TEastCb(v);
+    TWestCb(v);
+    TNorthSwayCb(v);
+    TSouthSwayCb(v);
+    
+    v.data = 0;
+    TNEUpCb(v);
+    TNWUpCb(v);
+    TSEUpCb(v);
+    TSWUpCb(v);
+
     // publisher
     nh.advertise(ps_pressure_pub);
     // nh.advertise(ps_depth_pub);
@@ -140,33 +172,44 @@ void publish_pressure_data()
     ps_pressure_pub.publish(&pressure_msg);
 }
 
-// function definitions for callback
-void surge1_callback(const std_msgs::Int32& msg)
+// definition of callback functions
+void TEastCb(const std_msgs::Int32& msg)
 {
-   surge1.spin(msg.data);
+    T_EAST.speed(msg.data);
 }
 
-void surge2_callback(const std_msgs::Int32& msg)
+
+void TWestCb(const std_msgs::Int32& msg)
 {
-    surge2.spin(msg.data);
+    T_WEST.speed(msg.data);
 }
 
-void heave1_callback(const std_msgs::Int32& msg)
+void TNorthCb(const std_msgs::Int32& msg)
 {
-   heave1.spin(msg.data);
+   T_NORTH.speed(msg.data);
 }
 
-void heave2_callback(const std_msgs::Int32& msg)
+void TSouthCb(const std_msgs::Int32& msg)
 {
-    heave2.spin(msg.data);
+    T_SOUTH.speed(msg.data);
 }
 
-void sway1_callback(const std_msgs::Int32& msg)
+void TNEUpCb(const std_msgs::Int32& msg)
 {
-   sway1.spin(msg.data);
+    T_NORTH_EAST_UP.spin(msg.data);
 }
 
-void sway2_callback(const std_msgs::Int32& msg)
+void TSEUpCb(const std_msgs::Int32& msg)
 {
-    sway2.spin(msg.data);
+    T_NORTH_WEST_UP.spin(msg.data);
+}
+
+void TNWUpCb(const std_msgs::Int32& msg)
+{
+    T_SOUTH_WEST_UP.spin(msg.data);
+}
+
+void TSWUpCb(const std_msgs::Int32& msg)
+{
+    T_SOUTH_EAST_UP.spin(msg.data);
 }

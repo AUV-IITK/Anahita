@@ -7,8 +7,8 @@ class Thruster
 {
   public:
     // constructors
-    Thruster(int pwm_pin, int thruster_pinA, int thruster_pinB);
-    Thruster(int pwm_pin, int thruster_pinA, int thruster_pinB, int current_sensor_pin);
+    Thruster(int pwm_pin, int direction_pinA, int direction_pinB);
+    Thruster(int pwm_pin, int direction_pinA, int direction_pinB, int current_sensor_pin);
 
     //sets the direction and pwm pins for the thrusters
     void setup();
@@ -23,8 +23,8 @@ class Thruster
     int val_;                    // current sensor output
     int pwm_pin_;                // pwm pin number
     int current_sensor_pin_;     // current sensor pin number
-    int thruster_pinA_;          // direction pin 1
-    int thruster_pinB_;          // direction pin 2
+    int direction_pinA_;          // direction pin 1
+    int direction_pinB_;          // direction pin 2
 };
 
 #endif
