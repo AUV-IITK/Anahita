@@ -25,7 +25,6 @@
 class Buoy
 {
 protected:
-
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
@@ -57,7 +56,5 @@ public:
 	cv::Mat image_;
 	cv::Mat image_marked;
 	void TaskHandling();
-
-    
 };
 #endif // BUOY_TASK_H

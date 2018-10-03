@@ -58,8 +58,7 @@ public:
 	cv::Mat image_;
 	cv::Mat image_marked;
 	void BottomTaskHandling();
-
-    
+	void FrontTaskHandling();  
 };
 #endif // MARKERDROPPER_TASK_H
 

@@ -99,6 +99,7 @@ void callback(vision_tasks::gateFrontRangeConfig &config, double level)
 
 void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
+	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;

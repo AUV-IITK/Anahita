@@ -39,9 +39,6 @@ Buoy::Buoy(){
 	this->camera_frame_ = "auv-iitk";
 }
 
-
-
-
 void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 {
 	Buoy::clahe_clip_ = config.clahe_clip;
@@ -63,7 +60,6 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 
 void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
-	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
