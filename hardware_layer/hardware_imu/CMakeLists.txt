@@ -43,5 +43,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(yaw_publisher src/yaw_publisher.cpp)
-target_link_libraries(yaw_publisher ${catkin_LIBRARIES})
+add_executable(px4 src/px4.cpp)
+target_link_libraries(px4 ${catkin_LIBRARIES})
+
+add_executable(sparton src/sparton.cpp)
+target_link_libraries(sparton ${catkin_LIBRARIES})
