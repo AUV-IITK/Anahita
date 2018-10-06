@@ -4,8 +4,9 @@
 #include <ros.h>
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
-#include <underwater_sensor_msgs/Pressure.h>
+#include <std_msgs/Float32.h>
 // #include <hyperion_msgs/Depth.h>
+// #include <hyperion_msgs/Pressure.h>
 
 #include "../include/MS5837.h"
 #include "../include/Thruster.h"
@@ -68,11 +69,11 @@ ros::Subscriber<std_msgs::Int32> TNorth_PWM_Sub("/thruster/north/pwm", &TNorthCb
 ros::Subscriber<std_msgs::Int32> TSouth_PWM_Sub("/thruster/south/pwm", &TSouthCb);
 ros::Subscriber<std_msgs::Int32> TNW_PWM_Sub("/thruster/north-west/pwm", &TNWUpCb);
 ros::Subscriber<std_msgs::Int32> TNE_PWM_Sub("/thruster/north-east/pwm", &TNEUpCb);
-ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/thruster/south-east/pwm", &TSEUpCb)
-ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/thruster/south-west/pwm", &TSWUpCb)
+ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/thruster/south-east/pwm", &TSEUpCb);
+ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/thruster/south-west/pwm", &TSWUpCb);
 
 // declare publishers
-underwater_sensor_msgs::Pressure pressure_msg;
+std_msgs::Float32 pressure_msg;
 ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
 // hyperion_msgs::Pressure depth_msg;
 // ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
@@ -86,10 +87,10 @@ void setup()
     T_SOUTH_WEST_UP.setup();
 
     // calibrating ESCs
-    TEAST.calibrate();
-    TWEST.calibrate();
-    TNORTHSWAY.calibrate();
-    TSOUTHSWAY.calibrate();
+    T_EAST.calibrate();
+    T_WEST.calibrate();
+    T_NORTH.calibrate();
+    T_SOUTH.calibrate();
  
     // setting up pressure sensor
     Wire.begin();
@@ -122,8 +123,8 @@ void setup()
     v.data = 1500;
     TEastCb(v);
     TWestCb(v);
-    TNorthSwayCb(v);
-    TSouthSwayCb(v);
+    TNorthCb(v);
+    TSouthCb(v);
     
     v.data = 0;
     TNEUpCb(v);
@@ -160,9 +161,10 @@ void loop()
 void publish_pressure_data()
 {
     pressure_sensor.read();
-    pressure_msg.header.frame_id = "pressure_sensor_link";
-    pressure_msg.header.stamp = nh.now();
-    pressure_msg.pressure = pressure_sensor.pressure(100);
+    // pressure_msg.header.frame_id = "pressure_sensor_link";
+    // pressure_msg.header.stamp = nh.now();
+    pressure_msg.data = pressure_sensor.pressure(100);
+    // pressure_msg.fluid_pressure = pressure_sensor.pressure(100);
 
     // depth_msg.header.frame_id = "depth_sensor_link"
     // depth_msg.header.stamp = pressure_sensor.header.time;

@@ -9,7 +9,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&anglePIDAction::preemptCB, this));
     goal_ = 0;
 
-    std::cout << "calliing 1" << std::endl;
+    // std::cout << "calliing 1" << std::endl;
 
     // type = type_;
     
@@ -18,7 +18,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     angle.setPID(2.4, 0, 0.5, 1);
 
     as_.start();
-    std::cout << "angle server started" << std::endl;
+    std::cout << "Angle Server Initialised" << std::endl;
 }
 
 anglePIDAction::~anglePIDAction(void)
