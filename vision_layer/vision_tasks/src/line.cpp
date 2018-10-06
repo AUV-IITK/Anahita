@@ -81,7 +81,7 @@ void Line::TaskHandling()
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
 
 	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
-
+  
 	cv::Scalar line_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
 	cv::Scalar edge_color(255, 255, 255);
@@ -153,5 +153,6 @@ void Line::TaskHandling()
 		else
 			ROS_INFO("Image empty");
 		ros::spinOnce();
+		loop_rate.sleep();
 	}
 }

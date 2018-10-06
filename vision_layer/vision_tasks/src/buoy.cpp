@@ -85,7 +85,7 @@ void Buoy::TaskHandling(){
 	image_transport::Publisher thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	image_transport::Publisher marked_pub = it.advertise("/buoy_task/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
-
+  
 	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 
 	cv::Scalar buoy_center_color(255, 255, 255);

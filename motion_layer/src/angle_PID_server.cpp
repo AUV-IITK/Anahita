@@ -9,13 +9,16 @@ anglePIDAction::anglePIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&anglePIDAction::preemptCB, this));
     goal_ = 0;
 
+    std::cout << "calliing 1" << std::endl;
+
     // type = type_;
     
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/varun/yaw", 1, &anglePIDAction::callBack, this);
+    sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &anglePIDAction::callBack, this);
     angle.setPID(2.4, 0, 0.5, 1);
 
     as_.start();
+    std::cout << "angle server started" << std::endl;
 }
 
 anglePIDAction::~anglePIDAction(void)
@@ -39,12 +42,14 @@ void anglePIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void anglePIDAction::callBack(const std_msgs::Float32ConstPtr& msg)
+void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
-    if (!as_.isActive())
+    if (!as_.isActive()) {
         return;
+    }
     
+    ROS_INFO("angle server Callback");
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;

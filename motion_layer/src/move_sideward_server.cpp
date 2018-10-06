@@ -3,6 +3,7 @@
 moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID/sensor") {
     spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     sub_ = nh.subscribe("/varun/sensors/imu/yaw", 1, &moveSideward::imuAngleCB, this);
+    flag = false;
     
     nh.setParam("/pwm_sideward_front_straight", pwm_);
     nh.setParam("/pwm_sideward_back_straight", pwm_);
@@ -17,10 +18,8 @@ void moveSideward::setActive(bool status) {
     if (status == true) {
         ROS_INFO("Waiting for sidewardPID server to start.");
         anglePIDClient.waitForServer();
-
+	flag = true;
         ROS_INFO("sidewardPID server started, sending goal.");
-        angle_PID_goal.target_angle = angle;
-        anglePIDClient.sendGoal(angle_PID_goal);
     }
 
     if (status == false) {
@@ -33,5 +32,10 @@ void moveSideward::spinThread() {
 }
 
 void moveSideward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
-    angle = _msg->data;
+	angle = _msg->data;
+	if (flag) {
+	        angle_PID_goal.target_angle = angle;
+	        anglePIDClient.sendGoal(angle_PID_goal);
+		flag = false;	
+	}
 }
