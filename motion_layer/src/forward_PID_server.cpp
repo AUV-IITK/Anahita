@@ -12,7 +12,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     x_coord.setPID(7.5, 0, 2, 10);
     
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/varun/sensors/y_coordinate", 1, &forwardPIDAction::visionCB, this);
+    sub_ = nh_.subscribe("/varun/sensors/x_coordinate", 1, &forwardPIDAction::visionCB, this);
 
     as_.start();
 }

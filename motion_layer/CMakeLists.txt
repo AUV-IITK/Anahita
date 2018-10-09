@@ -146,15 +146,6 @@ target_link_libraries(forwardPIDServer errorToPWM ${catkin_LIBRARIES})
 add_library(sidewardPIDServer SHARED src/sideward_PID_server.cpp include/sideward_PID_server.h)
 target_link_libraries(sidewardPIDServer errorToPWM ${catkin_LIBRARIES})
 
-add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
-target_link_libraries(moveForward ${catkin_LIBRARIES})
-
-add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sideward_server.h)
-target_link_libraries(moveSideward ${catkin_LIBRARIES})
-
-add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
-target_link_libraries(moveStraight ${catkin_LIBRARIES})
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
