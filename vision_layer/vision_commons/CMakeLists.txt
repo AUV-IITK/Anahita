@@ -28,9 +28,10 @@ include_directories(
 )
 
 add_library(vision_commons src/filter.cpp src/contour.cpp src/geometry.cpp src/morph.cpp src/threshold.cpp)
+target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
 
 add_executable(blue_filter_demo src/blue_filter_demo.cpp)
-target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
+add_dependencies(blue_filter_demo ${vision_commons_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blue_filter_demo ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 install(DIRECTORY include/vision_commons/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

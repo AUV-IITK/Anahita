@@ -17,3 +17,4 @@ generate_arduino_firmware(arduino_node
   BOARD uno
   PORT /dev/arduino
 )
+
