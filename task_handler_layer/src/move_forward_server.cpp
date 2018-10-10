@@ -26,9 +26,11 @@ void moveForward::setActive(bool status) {
 
         ROS_INFO("Waiting for upwardPID server to start.");
         upwardPIDClient_.waitForServer();
+        depthGoalReceived = true;
 
         ROS_INFO("Waiting for anglePID server to start.");
-        anglePIDClient_.waitForServer(); 
+        anglePIDClient_.waitForServer();
+        angleGoalReceived = true; 
     }
 
     if (status == false) {
@@ -40,10 +42,12 @@ void moveForward::setActive(bool status) {
 
 void moveForward::setReferenceAngle(double angle_) {
     angle = angle_;
+    angleGoalReceived = true;
 }
 
 void moveForward::setReferenceDepth(double depth_) {
     depth = depth_;
+    depthGoalReceived = true;
 }
 
 void moveForward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
