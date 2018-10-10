@@ -65,12 +65,14 @@ find_package(Boost REQUIRED COMPONENTS system)
 # )
 
 ## Generate actions in the 'action' folder
-add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
+add_action_files(
+  DIRECTORY action 
+  FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  actionlib_msgs geometry_msgs std_msgs
+  DEPENDENCIES actionlib_msgs geometry_msgs std_msgs
 )
 
 ################################################
@@ -116,9 +118,8 @@ CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
-  include/
 )
 
 ## Declare a C++ library
@@ -135,15 +136,19 @@ target_link_libraries(errorToPWM ${catkin_LIBRARIES})
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_library(upwardPIDServer SHARED src/upward_PID_server.cpp include/upward_PID_server.h)
+add_dependencies(upwardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(upwardPIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(anglePIDServer SHARED src/angle_PID_server.cpp include/angle_PID_server.h)
+add_dependencies(anglePIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(anglePIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(forwardPIDServer SHARED src/forward_PID_server.cpp include/forward_PID_server.h)
+add_dependencies(forwardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(forwardPIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(sidewardPIDServer SHARED src/sideward_PID_server.cpp include/sideward_PID_server.h)
+add_dependencies(sidewardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(sidewardPIDServer errorToPWM ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
