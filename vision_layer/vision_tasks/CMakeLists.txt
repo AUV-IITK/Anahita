@@ -31,10 +31,15 @@ include_directories(
 )
 
 add_executable(buoy_task src/buoy.cpp)
+add_dependencies(buoy_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_executable(gate_task_bottom src/gate_bottom.cpp)
+add_dependencies(gate_task_bottom ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_executable(gate_task_front src/gate_front.cpp)
+add_dependencies(gate_task_front ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_executable(line_task src/line.cpp)
+add_dependencies(line_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_executable(torpedo_task src/torpedo.cpp)
+add_dependencies(torpedo_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 target_link_libraries(gate_task_bottom ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
