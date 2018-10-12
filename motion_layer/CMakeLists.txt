@@ -20,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -65,12 +64,14 @@ find_package(Boost REQUIRED COMPONENTS system)
 # )
 
 ## Generate actions in the 'action' folder
-add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
+add_action_files(
+  DIRECTORY action 
+  FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  actionlib_msgs geometry_msgs std_msgs
+  DEPENDENCIES actionlib_msgs geometry_msgs std_msgs
 )
 
 ################################################
@@ -103,10 +104,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES upwardPIDServer sidewardPIDServer forwardPIDServer anglePIDServer
+  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
+  # DEPENDS system_lib
 )
 
 ###########
@@ -116,9 +117,8 @@ CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
-  include/
 )
 
 ## Declare a C++ library
@@ -135,25 +135,20 @@ target_link_libraries(errorToPWM ${catkin_LIBRARIES})
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_library(upwardPIDServer SHARED src/upward_PID_server.cpp include/upward_PID_server.h)
+add_dependencies(upwardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(upwardPIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(anglePIDServer SHARED src/angle_PID_server.cpp include/angle_PID_server.h)
+add_dependencies(anglePIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(anglePIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(forwardPIDServer SHARED src/forward_PID_server.cpp include/forward_PID_server.h)
+add_dependencies(forwardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(forwardPIDServer errorToPWM ${catkin_LIBRARIES})
 
 add_library(sidewardPIDServer SHARED src/sideward_PID_server.cpp include/sideward_PID_server.h)
+add_dependencies(sidewardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(sidewardPIDServer errorToPWM ${catkin_LIBRARIES})
-
-add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
-target_link_libraries(moveForward ${catkin_LIBRARIES})
-
-add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sideward_server.h)
-target_link_libraries(moveSideward ${catkin_LIBRARIES})
-
-add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
-target_link_libraries(moveStraight ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -192,11 +187,11 @@ target_link_libraries(moveStraight ${catkin_LIBRARIES})
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

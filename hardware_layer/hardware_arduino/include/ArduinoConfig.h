@@ -3,47 +3,39 @@
 
 /*
 ROBOT ORIENTATION
-          FRONT
-          -----
-          SWAY1
-          HEAVE1
-            -
-  SURGE1           SURGE2
-            -
-          HEAVE2
-          SWAY2
-          -----
-          BACK
+                       NORTH
+                    -----------
+       NORTH-WEST-UP|         |NORTH-EAST-UP
+                    |         |
+                    |    -    |
+               WEST |    -    | EAST
+                    |    -    |
+                    |         |
+       SOUTH-WEST-UP|         |SOUTH-EAST-UP
+                    -----------  
+                       SOUTH
 */
 
-// for sway motion
-#define SWAY1_PWM 5
-#define SWAY1_IN_A 27
-#define SWAY1_IN_B 26
+#define servoPinEast 2       // pin definitions for forward thrusters
+#define servoPinWest 3
 
-#define SWAY2_PWM 4
-#define SWAY2_IN_A 29
-#define SWAY2_IN_B 28
+#define servoPinNorthSway 4   // pin definitions for sideward thrusters
+#define servoPinSouthSway 5
 
-// for surge motion
-#define SURGE1_PWM 3
-#define SURGE1_IN_A 32
-#define SURGE1_IN_B 33
+#define pwmPinNorthWestUp 6     // pin definitions for upward east side thrusters
+#define pwmPinSouthWestUp 7
+#define directionPinNorthWestUp1 8 
+#define directionPinNorthWestUp2 9
+#define directionPinSouthWestUp1 10
+#define directionPinSouthWestUp2 11
 
-#define SURGE2_PWM 2
-#define SURGE2_IN_A 30
-#define SURGE2_IN_B 31
+#define pwmPinNorthEastUp 12      // pin definitions for upward west side thrusters
+#define pwmPinSouthEastUp 13
+#define directionPinNorthEastUp1 14
+#define directionPinNorthEastUp2 15
+#define directionPinSouthEastUp1 16
+#define directionPinSouthEastUp2 17
 
-// for heave motion
-#define HEAVE1_PWM 6
-#define HEAVE1_IN_A 24
-#define HEAVE1_IN_B 25
-
-#define HEAVE2_PWM 7
-#define HEAVE2_IN_A 22
-#define HEAVE2_IN_B 23
-
-// for pressure sensor
-#define PRESSURE_SENSOR_PIN A0
+#define analogPinPressureSensor A0      //pin definition for depth sensor
 
 #endif

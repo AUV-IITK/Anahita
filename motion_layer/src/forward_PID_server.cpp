@@ -12,7 +12,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     x_coord.setPID(7.5, 0, 2, 10);
     
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &forwardPIDAction::visionCB, this);
+    sub_ = nh_.subscribe("/varun/sensors/x_coordinate", 1, &forwardPIDAction::visionCB, this);
 
     as_.start();
 }
@@ -38,17 +38,17 @@ void forwardPIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void forwardPIDAction::visionCB(const geometry_msgs::PointStampedConstPtr &msg) {
+void forwardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
     if (!as_.isActive())
         return;
     
-    x_coord.errorToPWM(msg->point.x);
+    x_coord.errorToPWM(msg->data);
 
-    feedback_.current_distance = msg->point.x;
+    feedback_.current_distance = msg->data;
 
     as_.publishFeedback(feedback_);
 
-    if (msg->point.x == goal_) {
+    if (msg->data == goal_) {
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         as_.setSucceeded(result_);

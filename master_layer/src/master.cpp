@@ -15,12 +15,6 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 
-// double angle = 0;
-
-// void imuAngleCB(const std_msgs::Float64Ptr &_msg) {
-//     angle = _msg->data;
-// }
-
 int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
     ros::NodeHandle nh;

@@ -8,17 +8,13 @@ anglePIDAction::anglePIDAction(std::string name) :
     as_.registerGoalCallback(boost::bind(&anglePIDAction::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&anglePIDAction::preemptCB, this));
     goal_ = 0;
-
-    std::cout << "calliing 1" << std::endl;
-
-    // type = type_;
     
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &anglePIDAction::callBack, this);
     angle.setPID(2.4, 0, 0.5, 1);
 
     as_.start();
-    std::cout << "angle server started" << std::endl;
+    std::cout << "Angle Server Initialised" << std::endl;
 }
 
 anglePIDAction::~anglePIDAction(void)
@@ -49,7 +45,6 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         return;
     }
     
-    ROS_INFO("angle server Callback");
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;
@@ -64,25 +59,6 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     nh_.setParam("/pwm_sideward_front_turn", angle.getPWM());
     nh_.setParam("/pwm_sideward_back_turn", -1*angle.getPWM());
 }
-
-// void anglePIDAction::visionCB(const geometry_msgs::Pose2DConstPtr &msg) {
-//     if (!as_.isActive())
-//         return;
-    
-//     angle.errorToPWM(msg->theta);
-
-//     feedback_.current_angle = msg->theta;
-//     as_.publishFeedback(feedback_);
-
-//     if (msg->theta == goal_) {
-//         ROS_INFO("%s: Succeeded", action_name_.c_str());
-//         // set the action state to succeeded
-//         as_.setSucceeded(result_);
-//     }
-
-//     nh_.setParam("/pwm_sideward_front_turn", angle.getPWM());
-//     nh_.setParam("/pwm_sideward_back_turn", -1*angle.getPWM());
-// }
 
 void anglePIDAction::setDataSource(std::string type_) {
     type = type_;

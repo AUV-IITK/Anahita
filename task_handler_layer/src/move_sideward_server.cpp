@@ -1,25 +1,23 @@
 #include <move_sideward_server.h>
 
-moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID/sensor") {
-    spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
+moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") {
     sub_ = nh.subscribe("/varun/sensors/imu/yaw", 1, &moveSideward::imuAngleCB, this);
-    flag = false;
+    goalReceived = false;
     
     nh.setParam("/pwm_sideward_front_straight", pwm_);
     nh.setParam("/pwm_sideward_back_straight", pwm_);
 }
 
 moveSideward::~moveSideward() {
-    spin_thread->join();
 }
 
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        ROS_INFO("Waiting for sidewardPID server to start.");
+        ROS_INFO("Waiting for turnPID server to start.");
         anglePIDClient.waitForServer();
-	flag = true;
-        ROS_INFO("sidewardPID server started, sending goal.");
+	    goalReceived = true;
+        ROS_INFO("turnPID server started, sending goal.");
     }
 
     if (status == false) {
@@ -27,15 +25,11 @@ void moveSideward::setActive(bool status) {
     }
 }   
 
-void moveSideward::spinThread() {
-    ros::spin();
-}
-
 void moveSideward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
 	angle = _msg->data;
-	if (flag) {
-	        angle_PID_goal.target_angle = angle;
-	        anglePIDClient.sendGoal(angle_PID_goal);
-		flag = false;	
+	if (goalReceived) {
+        angle_PID_goal.target_angle = angle;
+        anglePIDClient.sendGoal(angle_PID_goal);
+		goalReceived = false;	
 	}
 }

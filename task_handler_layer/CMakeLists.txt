@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(motion_layer REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -103,10 +104,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES singleBuoy buoy line gate moveForward moveSideward moveStraight
+  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs motion_layer
+  # DEPENDS system_lib
 )
 
 ###########
@@ -117,8 +118,7 @@ CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp 
 ## Your package locations should be listed before other locations
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ../motion_layer/include
-  ../../../devel/include
+  ${motion_layer_INCLUDE_DIRS}
   include
 )
 
@@ -136,16 +136,32 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
+add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(singleBuoy moveStraight moveForward moveSideward ${catkin_LIBRARIES})
 
 add_library(buoy SHARED src/buoy.cpp include/buoy.h)
+add_dependencies(buoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(buoy singleBuoy moveSideward ${catkin_LIBRARIES})
 
 add_library(line SHARED src/line.cpp include/line.h)
+add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
 
 add_library(gate SHARED src/gate.cpp include/gate.h)
+add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(gate moveStraight moveForward ${catkin_LIBRARIES})
+
+add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
+add_dependencies(moveForward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveForward ${catkin_LIBRARIES})
+
+add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sideward_server.h)
+add_dependencies(moveSideward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveSideward ${catkin_LIBRARIES})
+
+add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
+add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveStraight ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -184,11 +200,11 @@ target_link_libraries(gate moveStraight moveForward ${catkin_LIBRARIES})
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

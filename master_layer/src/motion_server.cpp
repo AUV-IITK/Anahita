@@ -9,13 +9,11 @@
 int main(int argc, char** argv) {
     ros::init(argc, argv, "motion");
 
-    //forwardPIDAction forward_motion("forwardPID");
-    //sidewardPIDAction sideward_motion("sidewardPID");
-    // upwardPIDAction upward_motion_vision("upwardPID/vision", "VISION");
-    // upwardPIDAction upward_motion_sensor("upwardPID/sensor", "SENSOR");
+    // forwardPIDAction forward_motion("forwardPID");
+    // sidewardPIDAction sideward_motion("sidewardPID");
+    // upwardPIDAction upward_motion("upwardPID");
     anglePIDAction turn_motion_vision("turnPID");
-    // anglePIDAction turn_motion_sensor("turnPID/sensor", "SENSOR");
-
+    
     ros::spin();
     return 0;
 }

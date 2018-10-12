@@ -18,10 +18,8 @@ class moveForward {
 protected:
 
     ros::NodeHandle nh;
-    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient_sensor_;
-    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient_vision_;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient_sensor_;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient_vision_;
+    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient_;
+    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient_;
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient_;
     ros::Subscriber angle_sub_;
     ros::Subscriber depth_sub_;
@@ -32,9 +30,11 @@ protected:
 
     double angle;
     double depth;
-    boost::thread* spin_thread;
     std::string upward_type_;
     std::string angle_type_;
+
+    bool depthGoalReceived;
+    bool angleGoalReceived;
 
 public:
 
@@ -42,7 +42,6 @@ public:
     ~moveForward();
 
     void setActive(bool);
-    void spinThread();
     void setReferenceAngle(double);
     void setReferenceDepth(double);
     void setDataSource(std::string, std::string);
