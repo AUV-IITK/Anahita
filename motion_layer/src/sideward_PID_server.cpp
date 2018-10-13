@@ -15,6 +15,7 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     sub_ = nh_.subscribe("/varun/sensors/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
 
     as_.start();
+    ROS_INFO("sideward_PID_server Initiated");
 }
 
 sidewardPIDAction::~sidewardPIDAction(void)

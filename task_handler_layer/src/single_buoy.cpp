@@ -4,30 +4,34 @@ singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sid
     forward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::forwardCB, this);
     sideward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::sidewardCB, this);
     angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &singleBuoy::angleCB, this);    
+    angleGoalReceived = false;
 }
 singleBuoy::~singleBuoy() {}
 
 void singleBuoy::setActive(bool status) {
 
-    motion_layer::sidewardPIDGoal sideward_PID_goal;
+    if (status) {
+        spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
+    }
+    else {
+        spin_thread->join();
+    }
+}
 
+void singleBuoy::spinThread() {
     ROS_INFO("Waiting for sidewardPID server to start.");
     sidewardPIDClient.waitForServer();
 
     ROS_INFO("sidewardPID server started, sending goal.");
-    sideward_PID_goal.target_distance = 0;
-    sidewardPIDClient.sendGoal(sideward_PID_goal);
+    sidewardPIDgoal.target_distance = 0;
+    sidewardPIDClient.sendGoal(sidewardPIDgoal);
 
     ///////////////////////////////////////////////////
-
-    motion_layer::anglePIDGoal angle_PID_goal;
 
     ROS_INFO("Waiting for anglePID server to start.");
     anglePIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal.");
-    angle_PID_goal.target_angle = 0;
-    anglePIDClient.sendGoal(angle_PID_goal);
+    ROS_INFO("anglePID server stated");
 
     /////////////////////////////////////////////////////
 
@@ -52,9 +56,18 @@ void singleBuoy::setActive(bool status) {
 
     ROS_INFO("Action server started, sending goal.");
     
-    motion_layer::forwardPIDGoal forwardPIDgoal;
     forwardPIDgoal.target_distance = 100;
     forwardPIDClient.sendGoal(forwardPIDgoal);
+    while(forward_distance_ <= 100) {
+        continue;
+    }
+    forwardPIDClient.cancelGoal();
+
+    nh_.setParam("/pwm_forward_right", 0);
+    nh_.setParam("/pwm_forward_left", 0);
+    nh_.setParam("/pwm_sideward_front", 0);
+    nh_.setParam("/pwm_sideward_back", 0);
+
 }
 
 void singleBuoy::forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
@@ -67,4 +80,10 @@ void singleBuoy::sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
 
 void singleBuoy::angleCB(const std_msgs::Float64Ptr &_msg) {
     angle_ = _msg->data;
+    if (angleGoalReceived) {
+        ROS_INFO("anglePID server sending goal.");
+        anglePIDGoal.target_angle = angle_;
+        anglePIDClient.sendGoal(anglePIDGoal);
+        angleGoalReceived = false;
+    }
 }

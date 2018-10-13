@@ -15,6 +15,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     sub_ = nh_.subscribe("/varun/sensors/x_coordinate", 1, &forwardPIDAction::visionCB, this);
 
     as_.start();
+    ROS_INFO("forward_PID_server Initialised");
 }
 
 forwardPIDAction::~forwardPIDAction(void)

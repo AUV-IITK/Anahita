@@ -18,23 +18,14 @@
 int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
     ros::NodeHandle nh;
-    // nh.setParam("/current_task", "LINE");
-    // lineTask line_;
-    // line_.setActive(true);
-    // ros::Duration(5).sleep();
-    // line_.setActive(false);
-    // buoy buoy_;
-    // nh.setParam("/current_task", "BUOY");
-    // buoy_.setActive(true);
-    // // TRANSITION FROM BUOY TASK TO GATE TASK //
-    // nh.setParam("/current_task", "GATE");
-    // gateTask gate_;
-    // gate_.setActive(true);
-    // ros::Duration(5).sleep();
-    // TRANSITION FROM GATE TASK TO TORPEDO TASK //
 
-    // ros::Subscriber sub_;
-    // sub_ = nh.subscribe("/varun/sensors/yaw", 1, &imuAngleCB);
+    singleBuoy single_buoy;
+    single_buoy.setActive(true);
+    ROS_INFO("after single buoy");
+
+    gateTask gate_task;
+    gate_task.setActive(true);
+
     //actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
     //motion_layer::anglePIDGoal angle_PID_goal;
 
@@ -45,8 +36,8 @@ int main(int argc, char** argv) {
     //angle_PID_goal.target_angle = 90;
     //anglePIDClient.sendGoal(angle_PID_goal);
 
-    moveStraight move_straight_(100);
-    move_straight_.setActive(true);
+    // moveStraight move_straight_(100);
+    // move_straight_.setActive(true);
     //ros::Duration(10).sleep();
     //move_straight_.setActive(false);
 

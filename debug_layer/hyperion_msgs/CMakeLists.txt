@@ -3,7 +3,7 @@ project(hyperion_msgs)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  geographic_msgs
+  # geographic_msgs
   geometry_msgs
   sensor_msgs
   std_msgs
@@ -40,7 +40,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-    geographic_msgs
+    # geographic_msgs
     geometry_msgs
     sensor_msgs
     std_msgs
@@ -58,6 +58,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hyperion_msgs
-   CATKIN_DEPENDS geographic_msgs geometry_msgs message_generation message_runtime sensor_msgs std_msgs
+   CATKIN_DEPENDS geometry_msgs message_generation message_runtime sensor_msgs std_msgs
+  #  geographic_msgs
 #  DEPENDS system_lib
 )

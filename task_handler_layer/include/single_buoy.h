@@ -25,6 +25,7 @@ public:
     void forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
     void sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
     void angleCB(const std_msgs::Float64Ptr &_msg);
+    void spinThread();
 
 private:
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
@@ -34,6 +35,14 @@ private:
     ros::Subscriber forward_sub_;
     ros::Subscriber sideward_sub_;
     ros::Subscriber angle_sub_;
+
+    bool angleGoalReceived;
+
+    motion_layer::sidewardPIDGoal sidewardPIDgoal;
+    motion_layer::forwardPIDGoal forwardPIDgoal;
+    motion_layer::anglePIDGoal anglePIDGoal;
+
+    boost::thread* spin_thread;
 
     ros::NodeHandle nh_;
     double forward_distance_;

@@ -9,9 +9,9 @@
 int main(int argc, char** argv) {
     ros::init(argc, argv, "motion");
 
-    // forwardPIDAction forward_motion("forwardPID");
-    // sidewardPIDAction sideward_motion("sidewardPID");
-    // upwardPIDAction upward_motion("upwardPID");
+    forwardPIDAction forward_motion("forwardPID");
+    sidewardPIDAction sideward_motion("sidewardPID");
+    upwardPIDAction upward_motion("upwardPID");
     anglePIDAction turn_motion_vision("turnPID");
     
     ros::spin();

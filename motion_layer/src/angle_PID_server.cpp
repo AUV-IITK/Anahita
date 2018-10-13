@@ -14,7 +14,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     angle.setPID(2.4, 0, 0.5, 1);
 
     as_.start();
-    std::cout << "Angle Server Initialised" << std::endl;
+    ROS_INFO("angle_PID_server Initialised");
 }
 
 anglePIDAction::~anglePIDAction(void)

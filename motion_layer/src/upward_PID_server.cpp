@@ -14,6 +14,7 @@ upwardPIDAction::upwardPIDAction(std::string name) :
     z_coord.setPID(7.5, 0, 2, 10);
 
     as_.start();
+    ROS_INFO("upward_PID_server Initiated");
 }
 
 upwardPIDAction::~upwardPIDAction(void)
