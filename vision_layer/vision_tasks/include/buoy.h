@@ -15,6 +15,7 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
+#include <boost/thread.hpp> 
 
 #include <vision_tasks/buoyRangeConfig.h>
 #include <vision_commons/filter.h>
@@ -25,11 +26,13 @@
 class Buoy
 {
 protected:
+    ros::NodeHandle nh;
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
 	ros::Publisher coordinates_pub;
 	image_transport::Subscriber image_raw_sub;
+ 	int current_color;
 	std::string camera_frame_;
     double clahe_clip_;
 	int clahe_grid_size_;
@@ -46,15 +49,24 @@ protected:
 	int opening_iter_;
 	int closing_mat_point_;
 	int closing_iter_;
+
+	int data_low_h[3] = {0, 0, 0};
+	int data_high_h[3] = {10, 10, 10};
+	int data_low_s[3] = {251, 251, 251};
+	int data_high_s[3] = {255, 255, 255};
+	int data_low_v[3] = {160, 160, 160};
+	int data_high_v[3] = {255, 255, 255};
+
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
     Buoy();
-    ros::NodeHandle nh;
-	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;
-	void TaskHandling();
+    boost::thread* spin_thread; 
+	void TaskHandling(bool);
+	void switchColor(int);
+	void spinThread();
 };
 #endif // BUOY_TASK_H

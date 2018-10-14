@@ -1,23 +1,3 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Image.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/PointStamped.h>
-#include <sensor_msgs/image_encodings.h>
-#include <bits/stdc++.h>
-#include <stdlib.h>
-#include <string>
-
-#include <vision_tasks/buoyRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
 #include <buoy.h>
 
 Buoy::Buoy(){
@@ -37,10 +17,35 @@ Buoy::Buoy(){
 	this->closing_mat_point_ = 1;
 	this->closing_iter_ = 0;
 	this->camera_frame_ = "auv-iitk";
+	this->current_color = 0;
+	image_transport::ImageTransport it(nh);
+	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
+	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
+	this->marked_pub = it.advertise("/buoy_task/marked", 1);
+	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+}
+
+void Buoy::switchColor(int color)
+{
+	if(color > 2)
+		std::cerr << "Changing to wrong buoy color, use 0-2 for the the different colors" << std::endl;
+	else
+		current_color = color;
 }
 
 void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 {
+	if(Buoy::current_color != config.color)
+	{
+		config.color = current_color;
+		config.low_h = Buoy::data_low_h[current_color];
+		config.high_h = Buoy::data_high_h[current_color];
+		config.low_s = Buoy::data_low_s[current_color];
+		config.high_s = Buoy::data_high_s[current_color];
+		config.low_v = Buoy::data_low_v[current_color];
+		config.high_v = Buoy::data_high_v[current_color];
+	}
 	Buoy::clahe_clip_ = config.clahe_clip;
 	Buoy::clahe_grid_size_ = config.clahe_grid_size;
 	Buoy::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
@@ -74,15 +79,25 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 };
 
+void Buoy::TaskHandling(bool status){
+	// if(status)
+	// {
+	// 	spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
+	// }
+	// else 
+	// {
+    //     spin_thread->join();
+	// }
+	spinThread();
+}
 
-void Buoy::TaskHandling(){
-	image_transport::ImageTransport it(nh);
-	image_transport::Publisher blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
-	image_transport::Publisher thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
-	image_transport::Publisher marked_pub = it.advertise("/buoy_task/marked", 1);
-	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+void Buoy::spinThread(){
+
+	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
+	f = boost::bind(&Buoy::callback, this, _1, _2);
+	server.setCallback(f);
 
 	cv::Scalar buoy_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);

@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     if(input == 1)
     {
         Buoy buoy_;
-        buoy_.TaskHandling();    
+        buoy_.TaskHandling(true);    
     }
     else if(input == 2)
     {
