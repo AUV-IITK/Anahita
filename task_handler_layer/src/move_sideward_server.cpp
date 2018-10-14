@@ -14,7 +14,7 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
+        spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
 
     else {

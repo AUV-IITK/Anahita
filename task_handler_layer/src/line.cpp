@@ -2,7 +2,6 @@
 
 lineTask::lineTask(): move_straight_(100), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID/vision"), move_forward_(150) {
     spin_thread = new boost::thread(boost::bind(&lineTask::spinThread, this));
-    move_forward_.setDataSource("VISION", "SENSOR");
 }
 
 lineTask::~lineTask() {
