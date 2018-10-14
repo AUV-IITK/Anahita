@@ -11,23 +11,29 @@ moveStraight::~moveStraight() {
 }
 
 void moveStraight::setActive(bool status) {
-    if (status == true) {
-        ROS_INFO("Waiting for turnPID server to start.");
-        anglePIDClient.waitForServer();
-        ROS_INFO("turnPID server started, sending goal.");
-        goalReceived = true;
+    if (status) {
+        spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
-
-    if (status == false) {
+    else {
         anglePIDClient.cancelGoal();
+        spin_thread->join();
     }
 }   
 
 void moveStraight::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
     angle = _msg->data;
-    if (goalReceived) {
-        angle_PID_goal.target_angle = angle;
-        anglePIDClient.sendGoal(angle_PID_goal);
-        goalReceived = false;
+    goalReceived = true;
+}
+
+void moveStraight::spinThread() {
+
+    ROS_INFO("Waiting for turnPID server to start.");
+    anglePIDClient.waitForServer();
+    ROS_INFO("turnPID server started, sending goal.");
+
+    while (!goalReceived) {
     }
+
+    angle_PID_goal.target_angle = angle;
+    anglePIDClient.sendGoal(angle_PID_goal);
 }

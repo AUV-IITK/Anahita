@@ -23,7 +23,8 @@ protected:
     bool goalReceived;
     double angle;
     ros::Subscriber sub_;
-
+    
+    boost::thread* spin_thread;
 
 public:
 
@@ -32,5 +33,6 @@ public:
 
     void setActive(bool);
     void imuAngleCB(const std_msgs::Float32Ptr &_msg);
+    void spinThread();
 };
 #endif // STRAIGHT_SERVER_H

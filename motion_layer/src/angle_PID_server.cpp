@@ -59,7 +59,3 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     nh_.setParam("/pwm_sideward_front_turn", angle.getPWM());
     nh_.setParam("/pwm_sideward_back_turn", -1*angle.getPWM());
 }
-
-void anglePIDAction::setDataSource(std::string type_) {
-    type = type_;
-}
