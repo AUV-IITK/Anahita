@@ -25,17 +25,12 @@ protected:
     ros::Subscriber sub_;
     ErrorDescriptor z_coord; // z_coord for forward direction
 
-    std::string type;
-
 public:
 
-    upwardPIDAction(std::string, std::string);
+    upwardPIDAction(std::string);
     ~upwardPIDAction();
     void goalCB();
     void preemptCB();
-    void sensorCB(const std_msgs::Float32ConstPtr&);
-    void visionCB(const geometry_msgs::PointStampedConstPtr&);
-    void setDataSource(std::string);
-
+    void depthCB(const std_msgs::Float32ConstPtr&);
 };
 #endif // UPWARD_PID_SERVER_H

@@ -33,15 +33,19 @@ include_directories(
 )
 
 add_library(buoy_task SHARED src/buoy.cpp include/buoy.h)
+add_dependencies(buoy_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(buoy_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_library(line_task SHARED src/line.cpp include/line.h)
+add_dependencies(line_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(line_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_library(torpedo_task SHARED src/torpedo.cpp include/torpedo.h)
-target_link_libraries(line_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+add_dependencies(torpedo_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(torpedo_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h)
+add_dependencies(markerDropper_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(markerDropper_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 # add_library(gate_task SHARED src/gate.cpp include/gate.h)

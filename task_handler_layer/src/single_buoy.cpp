@@ -1,17 +1,14 @@
 #include <single_buoy.h>
 
-singleBuoy::singleBuoy(): move_forward_(150), move_sideward_(100), move_straight_(100), forwardPIDClient("forwardPID") {
-    sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::forwardCB, this);
+singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID") {
+    forward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::forwardCB, this);
+    sideward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::sidewardCB, this);
+    angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &singleBuoy::angleCB, this);    
 }
 singleBuoy::~singleBuoy() {}
 
 void singleBuoy::setActive(bool status) {
-    // move_forward_.setDataSource("SENSOR", "VISION");
-    // move_forward_.setActive(true);
 
-    // move_straight_.setActive(true);
-
-    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");    
     motion_layer::sidewardPIDGoal sideward_PID_goal;
 
     ROS_INFO("Waiting for sidewardPID server to start.");
@@ -21,7 +18,8 @@ void singleBuoy::setActive(bool status) {
     sideward_PID_goal.target_distance = 0;
     sidewardPIDClient.sendGoal(sideward_PID_goal);
 
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("anglePID");    
+    ///////////////////////////////////////////////////
+
     motion_layer::anglePIDGoal angle_PID_goal;
 
     ROS_INFO("Waiting for anglePID server to start.");
@@ -31,40 +29,42 @@ void singleBuoy::setActive(bool status) {
     angle_PID_goal.target_angle = 0;
     anglePIDClient.sendGoal(angle_PID_goal);
 
+    /////////////////////////////////////////////////////
+
+    nh_.setParam("/pwm_forward_right", 100);
+    nh_.setParam("/pwm_forward_left", 100);
+
     while(forward_distance_ >= 60) {
         continue;
     }
-    // move_forward_.setActive(false);
-    anglePIDClient.cancelGoal();
-    // move_straight_.setActive(true);
-    // ros::Duration(6).sleep();
-    // move_straight_.setActive(false);
-    // move_straight_.setActive(true);
-    // ros::Duration(10).sleep();
-    // move_straight_.setActive(false);
+    sidewardPIDClient.cancelGoal();
+    ros::Duration(6).sleep();
+
+    nh_.setParam("/pwm_forward_right", -100);
+    nh_.setParam("/pwm_forward_left", -100);
+
+    ros::Duration(10).sleep();
+
+    //////////////////////////////////////////////////////
 
     ROS_INFO("Waiting for action server to start.");
     forwardPIDClient.waitForServer();
 
     ROS_INFO("Action server started, sending goal.");
-    // send a goal to the action
-    motion_layer::forwardPIDGoal goal;
-    goal.target_distance = 100;
-    forwardPIDClient.sendGoal(goal);
-
-    bool finished_before_timeout = forwardPIDClient.waitForResult(ros::Duration(15.0));
     
-    if (finished_before_timeout)
-    {
-        actionlib::SimpleClientGoalState state = forwardPIDClient.getState();
-        ROS_INFO("Action finished: %s",state.toString().c_str());
-    }
-    else
-        ROS_INFO("Action did not finish before the time out.");
-
+    motion_layer::forwardPIDGoal forwardPIDgoal;
+    forwardPIDgoal.target_distance = 100;
+    forwardPIDClient.sendGoal(forwardPIDgoal);
 }
 
 void singleBuoy::forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
     forward_distance_ = _msg->point.x;
-    depth_ = _msg->point.z;
+}
+
+void singleBuoy::sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
+    sideward_distance_ = _msg->point.y;
+}
+
+void singleBuoy::angleCB(const std_msgs::Float64Ptr &_msg) {
+    angle_ = _msg->data;
 }

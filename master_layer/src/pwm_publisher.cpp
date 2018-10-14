@@ -28,6 +28,18 @@ int main(int argc, char** argv) {
     int pwm_upward_back_;
     int pwm_upward_front_;
 
+    nh.setParam("/pwm_forward_left", 0);
+    nh.setParam("/pwm_forward_right", 0);
+    nh.setParam("/pwm_upward_front", 0);
+    nh.setParam("/pwm_upward_back", 0);
+    nh.setParam("/pwm_sideward_back_straight", 0);
+    nh.setParam("/pwm_sideward_front_straight", 0);
+    nh.setParam("/pwm_sideward_front_turn", 0);
+    nh.setParam("/pwm_sideward_back_turn", 0);
+
+    ros::Rate r(50);
+
+
     while(ros::ok()) {
         nh.getParam("/pwm_forward_left", pwm_forward_left_);
         nh.getParam("/pwm_forward_right", pwm_forward_right_);
@@ -63,6 +75,7 @@ int main(int argc, char** argv) {
         ROS_INFO("PWM sideward_back : %d", pwm_sideward_back.data);
         ROS_INFO("PWM upward_front : %d", pwm_upward_front.data);
         ROS_INFO("PWM upward_back : %d", pwm_upward_back.data);
+        r.sleep();
     }
     return 0;
 }

@@ -19,7 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(task_handler_layer REQUIRED)
+find_package(motion_layer REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -105,7 +106,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer
 #  DEPENDS system_lib
 )
 
@@ -116,12 +117,10 @@ CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
-  include/
-  ../task_handler_layer/include
-  ../motion_layer/include
-  ../../../devel/include/
+  ${task_handler_layer_INCLUDE_DIRS}
+  ${motion_layer_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -139,6 +138,7 @@ add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
 add_executable(master src/master.cpp)
+add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(master buoy line gate ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
