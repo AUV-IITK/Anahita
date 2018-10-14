@@ -15,16 +15,18 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 
+using namespace std;
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
     ros::NodeHandle nh;
 
-    singleBuoy single_buoy;
-    single_buoy.setActive(true);
-    ROS_INFO("after single buoy");
+    // singleBuoy single_buoy;
+    // single_buoy.setActive(true);
+    // ROS_INFO("after single buoy");
 
-    gateTask gate_task;
-    gate_task.setActive(true);
+    // gateTask gate_task;
+    // gate_task.setActive(true);
 
     //actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
     //motion_layer::anglePIDGoal angle_PID_goal;
@@ -36,10 +38,10 @@ int main(int argc, char** argv) {
     //angle_PID_goal.target_angle = 90;
     //anglePIDClient.sendGoal(angle_PID_goal);
 
-    // moveStraight move_straight_(100);
-    // move_straight_.setActive(true);
-    //ros::Duration(10).sleep();
-    //move_straight_.setActive(false);
+    moveStraight move_straight_(100);
+    move_straight_.setActive(true);
+
+    cout << "it is over now" << endl;
 
     //actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
     //motion_layer::forwardPIDGoal forward_PID_goal;

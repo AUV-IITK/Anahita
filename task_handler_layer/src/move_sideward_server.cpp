@@ -14,22 +14,25 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        ROS_INFO("Waiting for turnPID server to start.");
-        anglePIDClient.waitForServer();
-	    goalReceived = true;
-        ROS_INFO("turnPID server started, sending goal.");
+        spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
     }
 
-    if (status == false) {
+    else {
         anglePIDClient.cancelGoal();
+        spin_thread->join();
     }
-}   
+}
+
+void moveSideward::spinThread() {
+    ROS_INFO("Waiting for turnPID server to start.");
+    anglePIDClient.waitForServer();
+    while(!goalReceived) {} 
+    ROS_INFO("turnPID server started, sending goal.");
+    angle_PID_goal.target_angle = angle;
+    anglePIDClient.sendGoal(angle_PID_goal);
+}
 
 void moveSideward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
 	angle = _msg->data;
-	if (goalReceived) {
-        angle_PID_goal.target_angle = angle;
-        anglePIDClient.sendGoal(angle_PID_goal);
-		goalReceived = false;	
-	}
+    goalReceived = true;
 }

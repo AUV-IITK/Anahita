@@ -36,6 +36,8 @@ protected:
     bool depthGoalReceived;
     bool angleGoalReceived;
 
+    boost::thread* spin_thread;
+
 public:
 
     moveForward(int pwm_);
@@ -44,8 +46,8 @@ public:
     void setActive(bool);
     void setReferenceAngle(double);
     void setReferenceDepth(double);
-    void setDataSource(std::string, std::string);
     void imuAngleCB(const std_msgs::Float64Ptr &_msg);
-    void depthCB(const std_msgs::Float64Ptr &_msg); 
+    void depthCB(const std_msgs::Float64Ptr &_msg);
+    void spinThread();
 };
 #endif // MOVE_FORWARD_SERVER_H

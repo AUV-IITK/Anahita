@@ -29,11 +29,11 @@ void moveStraight::spinThread() {
 
     ROS_INFO("Waiting for turnPID server to start.");
     anglePIDClient.waitForServer();
-    ROS_INFO("turnPID server started, sending goal.");
 
     while (!goalReceived) {
     }
-
+    
+    ROS_INFO("turnPID server started, sending goal.");
     angle_PID_goal.target_angle = angle;
     anglePIDClient.sendGoal(angle_PID_goal);
 }

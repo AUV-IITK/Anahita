@@ -31,7 +31,12 @@ void singleBuoy::spinThread() {
     ROS_INFO("Waiting for anglePID server to start.");
     anglePIDClient.waitForServer();
 
-    ROS_INFO("anglePID server stated");
+    while (!angleGoalReceived) {}
+
+    ROS_INFO("anglePID server started, sending goal.");
+
+    anglePIDGoal.target_angle = angle_;
+    anglePIDClient.sendGoal(anglePIDGoal);
 
     /////////////////////////////////////////////////////
 
@@ -80,10 +85,5 @@ void singleBuoy::sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
 
 void singleBuoy::angleCB(const std_msgs::Float64Ptr &_msg) {
     angle_ = _msg->data;
-    if (angleGoalReceived) {
-        ROS_INFO("anglePID server sending goal.");
-        anglePIDGoal.target_angle = angle_;
-        anglePIDClient.sendGoal(anglePIDGoal);
-        angleGoalReceived = false;
-    }
+    angleGoalReceived = true;
 }

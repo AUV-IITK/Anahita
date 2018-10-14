@@ -22,6 +22,8 @@ protected:
     double angle;
     bool goalReceived;
 
+    boost::thread* spin_thread;
+
 public:
 
     moveSideward(int);
@@ -29,5 +31,6 @@ public:
 
     void setActive(bool);
     void imuAngleCB(const std_msgs::Float64Ptr &_msg);
+    void spinThread();
 };
 #endif // MOVE_SIDEWARD_SERVER_H

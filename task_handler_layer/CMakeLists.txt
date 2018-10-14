@@ -135,6 +135,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
+add_executable(temp src/temp.cpp)
+target_link_libraries(temp ${catkin_LIBRARIES})
+
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(singleBuoy moveStraight moveForward moveSideward ${catkin_LIBRARIES})
