@@ -1,24 +1,3 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Image.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/PointStamped.h>
-#include <sensor_msgs/image_encodings.h>
-#include <bits/stdc++.h>
-#include <stdlib.h>
-#include <string>
-
-#include <vision_tasks/torpedoRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
-#include <vision_commons/geometry.h>
 #include <torpedo.h>
 
 Torpedo::Torpedo(){
@@ -38,6 +17,12 @@ Torpedo::Torpedo(){
 	this->closing_mat_point_ = 2;
 	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
+	image_transport::ImageTransport it(nh);
+	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
+	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
+	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
+	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
+	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
 }
 
 void Torpedo::callback(vision_tasks::torpedoRangeConfig &config, double level)
@@ -77,13 +62,10 @@ void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 void Torpedo::TaskHandling()
 {
-	image_transport::ImageTransport it(nh);
-	image_transport::Publisher blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
-	image_transport::Publisher thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
-	image_transport::Publisher marked_pub = it.advertise("/torpedo_task/marked", 1);
-	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
-
-	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
+	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
+	f = boost::bind(&Torpedo::callback, this, _1, _2);
+	server.setCallback(f);
 
 	cv::Scalar torpedo_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);

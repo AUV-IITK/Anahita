@@ -11,6 +11,7 @@
 #include <image_transport/image_transport.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Pose2D.h>
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>

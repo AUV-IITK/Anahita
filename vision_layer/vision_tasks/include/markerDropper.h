@@ -25,12 +25,13 @@
 class MarkerDropper
 {
 protected:
-
+	ros::NodeHandle nh;
+    image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
-    ros::Publisher coordinates_pub;
+	ros::Publisher coordinates_pub;
+	image_transport::Subscriber image_raw_sub;
 	
-    image_transport::Subscriber image_raw_sub;
 	std::string camera_frame_;
 
     int low_h_;
@@ -48,12 +49,12 @@ protected:
 	int clahe_bilateral_iter_;
 	int balanced_bilateral_iter_;
 	double denoise_h_;
+
 	void callback(vision_tasks::markerDropperRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
     MarkerDropper();
-    ros::NodeHandle nh;
 	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;

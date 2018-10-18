@@ -147,6 +147,11 @@ void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 void Gate::bottomTaskHandling()
 {
+	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::gateBottomConfig>::CallbackType f_bottom;
+	f_bottom = boost::bind(&BGate::bottomCallback, this, _1, _2);
+	server.setCallback(f_bottom);
+
     image_transport::ImageTransport it(nh);
     image_transport::Publisher blue_filtered_pub = it.advertise("/gate_task/bottom/blue_filtered", 1);
     image_transport::Publisher thresholded_pub = it.advertise("/gate_task/bottom/thresholded", 1);
@@ -216,7 +221,13 @@ void Gate::bottomTaskHandling()
     }
 }
 
-void Gate::frontTaskHandling(){
+void Gate::frontTaskHandling()
+{
+	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
+	f_front = boost::bind(&gateFront::callback, this, _1, _2);
+	server.setCallback(f_front);
+
     image_transport::ImageTransport it(nh);
 	image_transport::Publisher blue_filtered_pub = it.advertise("/gate_task/front/blue_filtered", 1);
 	image_transport::Publisher thresholded_pub = it.advertise("/gate_task/front/thresholded", 1);

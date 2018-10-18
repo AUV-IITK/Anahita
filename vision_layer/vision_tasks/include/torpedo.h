@@ -32,6 +32,7 @@ protected:
 	ros::Publisher coordinates_pub;
 	image_transport::Subscriber image_raw_sub;
 	std::string camera_frame_;
+
     double clahe_clip_;
 	int clahe_grid_size_;
 	int clahe_bilateral_iter_;
@@ -57,8 +58,7 @@ public:
 	cv::Mat image_;
 	cv::Mat image_marked;
 	void TaskHandling();
-
-    
+	
 };
 #endif // TORPEDO_TASK_H
 

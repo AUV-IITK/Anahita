@@ -1,24 +1,3 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Image.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/PointStamped.h>
-#include <sensor_msgs/image_encodings.h>
-#include <geometry_msgs/Pose2D.h>
-#include <bits/stdc++.h>
-#include <stdlib.h>
-#include <string>
-#include <math.h>
-
-#include <vision_tasks/lineRangeConfig.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
 #include <line.h>
 
 Line::Line(){
@@ -33,6 +12,11 @@ Line::Line(){
 	this->closing_mat_point_ = 2;
 	this->closing_iter_ = 1;
 	this->camera_frame_ = "auv-iitk";
+	image_transport::ImageTransport it(nh);
+	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
+	this->marked_pub = it.advertise("/line_task/marked", 1);
+	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
+	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
@@ -74,14 +58,12 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 }
 
 void Line::TaskHandling()
-{
-	image_transport::ImageTransport it(nh);
-	image_transport::Publisher thresholded_pub = it.advertise("/line_task/thresholded", 1);
-	image_transport::Publisher marked_pub = it.advertise("/line_task/marked", 1);
-	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
+{  
+	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
+	f = boost::bind(&Line::callback, this, _1, _2);
+	server.setCallback(f);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
-  
 	cv::Scalar line_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
 	cv::Scalar edge_color(255, 255, 255);
@@ -153,6 +135,5 @@ void Line::TaskHandling()
 		else
 			ROS_INFO("Image empty");
 		ros::spinOnce();
-		loop_rate.sleep();
 	}
 }
