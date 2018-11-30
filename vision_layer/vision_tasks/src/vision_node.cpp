@@ -12,7 +12,18 @@ int main(int argc, char *argv[]){
     if(input == 1)
     {
         Buoy buoy_;
-        buoy_.TaskHandling(true);    
+        buoy_.TaskHandling(true);           
+        ros::Time next = ros::Time::now() + ros::Duration(10);
+        int i = 0;
+        while(1)
+        {
+            std::cout << "Changing the color" << std::endl;
+            std::cout << "__________________________________________________________" << std::endl << std::endl;
+            buoy_.switchColor(i+1);   
+            while(ros::Time::now() < next){}
+            next = ros::Time::now() + ros::Duration(10);
+            i = (i+1)%3;
+        }     
     }
     else if(input == 2)
     {

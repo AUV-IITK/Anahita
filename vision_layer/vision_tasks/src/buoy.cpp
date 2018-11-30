@@ -31,7 +31,16 @@ void Buoy::switchColor(int color)
 	if(color > 2)
 		std::cerr << "Changing to wrong buoy color, use 0-2 for the the different colors" << std::endl;
 	else
-		current_color = color;
+	{
+		current_color = color;		
+		Buoy::low_h_ = Buoy::data_low_h[current_color];
+		Buoy::high_h_ = Buoy::data_high_h[current_color];
+		Buoy::low_s_ = Buoy::data_low_s[current_color];
+		Buoy::high_s_ = Buoy::data_high_s[current_color];
+		Buoy::low_v_ = Buoy::data_low_v[current_color];
+		Buoy::high_v_ = Buoy::data_high_v[current_color];
+	}
+	std::cout << "Colour changed successfully" << std::endl;
 }
 
 void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
@@ -80,15 +89,15 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 };
 
 void Buoy::TaskHandling(bool status){
-	// if(status)
-	// {
-	// 	spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
-	// }
-	// else 
-	// {
-    //     spin_thread->join();
-	// }
-	spinThread();
+	if(status)
+	{
+		spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
+	}
+	else 
+	{
+        spin_thread->join();
+	}
+	std::cout << "Task Handling function over" << std::endl;	
 }
 
 
@@ -115,15 +124,18 @@ void Buoy::spinThread(){
 	geometry_msgs::PointStamped buoy_point_message;
 	buoy_point_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
+	ros::Rate loop_rate(10);
 
 	while (1)
 	{
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
+				std::cout<<"HSV"<< high_h_ << " " << high_s_ << " " <<  high_v_ << std::endl;
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
@@ -160,11 +172,12 @@ void Buoy::spinThread(){
 			blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(buoy_point_message);
-			ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
 			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
+		{
 			ROS_INFO("Image empty");
+		}
 		ros::spinOnce();
 	}
 }

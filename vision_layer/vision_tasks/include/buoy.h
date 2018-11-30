@@ -32,7 +32,6 @@ protected:
 	image_transport::Publisher marked_pub;
 	ros::Publisher coordinates_pub;
 	image_transport::Subscriber image_raw_sub;
- 	int current_color;
 	std::string camera_frame_;
     double clahe_clip_;
 	int clahe_grid_size_;
@@ -50,11 +49,11 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[3] = {0, 0, 0};
-	int data_high_h[3] = {10, 10, 10};
+	int data_low_h[3] = {0, 100, 0};
+	int data_high_h[3] = {10, 250, 10};
 	int data_low_s[3] = {251, 251, 251};
 	int data_high_s[3] = {255, 255, 255};
-	int data_low_v[3] = {160, 160, 160};
+	int data_low_v[3] = {160, 200, 160};
 	int data_high_v[3] = {255, 255, 255};
 
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
@@ -68,5 +67,6 @@ public:
 	void TaskHandling(bool);
 	void switchColor(int);
 	void spinThread();
+	int current_color;
 };
 #endif // BUOY_TASK_H
