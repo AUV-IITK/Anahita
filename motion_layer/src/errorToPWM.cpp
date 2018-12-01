@@ -102,17 +102,17 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
 void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM values within a limit
 {
     float maxOutput = 1000, minOutput = -maxOutput;
-    float scale = 255 / maxOutput;
+    float scale = 400 / maxOutput;
     if (output > maxOutput)
         output = maxOutput;
     if (output < minOutput)
         output = minOutput;
     float temp = output * scale;
     int output_pwm = static_cast<int>(temp);
-    if (output_pwm > 255)
-        output_pwm = 255;
-    if (output_pwm < -255)
-        output_pwm = -255;
+    if (output_pwm > 400)
+        output_pwm = 400;
+    if (output_pwm < -400)
+        output_pwm = -400;
     this->pwm_ = output_pwm;
 }
 

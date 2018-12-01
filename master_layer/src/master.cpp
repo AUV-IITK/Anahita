@@ -28,18 +28,18 @@ int main(int argc, char** argv) {
     // gateTask gate_task;
     // gate_task.setActive(true);
 
-    //actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
-    //motion_layer::anglePIDGoal angle_PID_goal;
+    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
+    motion_layer::anglePIDGoal angle_PID_goal;
 
-    //ROS_INFO("Waiting for anglePID server to start.");
-    //anglePIDClient.waitForServer();
+    ROS_INFO("Waiting for anglePID server to start.");
+    anglePIDClient.waitForServer();
 
-    //ROS_INFO("anglePID server started, sending goal.");
-    //angle_PID_goal.target_angle = 90;
-    //anglePIDClient.sendGoal(angle_PID_goal);
+    ROS_INFO("anglePID server started, sending goal.");
+    angle_PID_goal.target_angle = 90;
+    anglePIDClient.sendGoal(angle_PID_goal);
 
-    moveStraight move_straight_(100);
-    move_straight_.setActive(true);
+    // moveStraight move_straight_(100);
+    // move_straight_.setActive(true);
 
     cout << "it is over now" << endl;
 

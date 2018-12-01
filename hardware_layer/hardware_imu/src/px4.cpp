@@ -1,12 +1,12 @@
 #include "ros/ros.h"
 #include <sensor_msgs/Imu.h>
-#include <std_msgs/Float64.h>
+#include <std_msgs/Float32.h>
 
 #define TO_DEG(x) (x * 57.2957795131)
 
-std_msgs::Float64 imu_yaw;
-std_msgs::Float64 imu_roll;
-std_msgs::Float64 imu_pitch;
+std_msgs::Float32 imu_yaw;
+std_msgs::Float32 imu_roll;
+std_msgs::Float32 imu_pitch;
    
 ros::Publisher imu_yaw_pub;
 ros::Publisher imu_roll_pub;
@@ -43,9 +43,9 @@ int main(int argc, char **argv)
   std::string imu_roll_pub_topic = "/mavros/imu/roll";
   std::string imu_pitch_pub_topic = "/mavros/imu/pitch";
      
-  imu_yaw_pub = nh.advertise<std_msgs::Float64>(imu_yaw_pub_topic, 1000);
-  imu_roll_pub = nh.advertise<std_msgs::Float64>(imu_roll_pub_topic, 1000);
-  imu_pitch_pub = nh.advertise<std_msgs::Float64>(imu_pitch_pub_topic, 1000);
+  imu_yaw_pub = nh.advertise<std_msgs::Float32>(imu_yaw_pub_topic, 1000);
+  imu_roll_pub = nh.advertise<std_msgs::Float32>(imu_roll_pub_topic, 1000);
+  imu_pitch_pub = nh.advertise<std_msgs::Float32>(imu_pitch_pub_topic, 1000);
 
   //initializing subscribers
   ros::Subscriber imu_data_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data", 1000, &imu_data_callback);

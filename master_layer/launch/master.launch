@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="master_layer" name="master" type="master" respawn="true"/>
+    <node pkg="master_layer" name="motion_server" type="motion_server" respawn="true"/>
+    <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" respawn="true"/>
+</launch>

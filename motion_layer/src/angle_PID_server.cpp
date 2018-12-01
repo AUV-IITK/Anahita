@@ -10,8 +10,8 @@ anglePIDAction::anglePIDAction(std::string name) :
     goal_ = 0;
     
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &anglePIDAction::callBack, this);
-    angle.setPID(2.4, 0, 0.5, 1);
+    sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &anglePIDAction::callBack, this);
+    angle.setPID(1.0, 0, 0.5, 1);
 
     as_.start();
     ROS_INFO("angle_PID_server Initialised");
