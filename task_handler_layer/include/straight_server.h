@@ -8,10 +8,11 @@
 #include <actionlib/client/terminal_state.h>
 #include <boost/thread.hpp>
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
 #include <string>
-#include <limits>
+
+#include <iostream>
+#include <vector>
+#include <map>
 
 class moveStraight {
 
@@ -23,8 +24,9 @@ protected:
     bool goalReceived;
     double angle;
     ros::Subscriber sub_;
-    
+
     boost::thread* spin_thread;
+    boost::thread* spin_thread_;
 
 public:
 
@@ -32,6 +34,7 @@ public:
     ~moveStraight();
 
     void setActive(bool);
+    void spinThread_();
     void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
 };

@@ -10,6 +10,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Bool.h>
 #include <string>
 
 class sidewardPIDAction
@@ -24,6 +25,7 @@ protected:
     motion_layer::sidewardPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
+    ros::Publisher pub_;
     ErrorDescriptor y_coord;
 
 public:

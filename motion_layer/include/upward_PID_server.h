@@ -10,6 +10,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Bool.h>
 #include <string>
 
 class upwardPIDAction
@@ -25,6 +26,7 @@ protected:
     motion_layer::upwardPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
+    ros::Publisher pub_;
     ErrorDescriptor z_coord;
 
 public:

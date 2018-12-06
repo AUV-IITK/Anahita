@@ -10,6 +10,7 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
 
     depthGoalReceived = false;
     angleGoalReceived = false;
+    spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
 }
 
 moveForward::~moveForward() {
@@ -57,6 +58,10 @@ void moveForward::spinThread() {
     ROS_INFO("anglePID server started, sending goal.");
     angle_PID_goal.target_angle = angle;
     anglePIDClient_.sendGoal(angle_PID_goal);
+}
+
+void moveForward::spinThread_() {
+    ros::spin();
 }
 
 void moveForward::setReferenceAngle(double angle_) {

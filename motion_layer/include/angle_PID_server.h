@@ -10,6 +10,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Bool.h>
 #include <string>
 
 class anglePIDAction
@@ -24,6 +25,7 @@ protected:
     motion_layer::anglePIDResult result_;
     double goal_;
     ros::Subscriber sub_;
+    ros::Publisher pub_;
     ErrorDescriptor angle;
 
     boost::thread* spin_thread;

@@ -6,6 +6,7 @@ moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") {
     
     nh.setParam("/pwm_sideward_front_straight", pwm_);
     nh.setParam("/pwm_sideward_back_straight", pwm_);
+    spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
 }
 
 moveSideward::~moveSideward() {
@@ -30,6 +31,10 @@ void moveSideward::spinThread() {
     ROS_INFO("turnPID server started, sending goal.");
     angle_PID_goal.target_angle = angle;
     anglePIDClient.sendGoal(angle_PID_goal);
+}
+
+void moveSideward::spinThread_() {
+    ros::spin();
 }
 
 void moveSideward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {

@@ -1,7 +1,7 @@
 #include <line.h>
 
 lineTask::lineTask(): move_straight_(100), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID/vision"), move_forward_(150) {
-    spin_thread = new boost::thread(boost::bind(&lineTask::spinThread, this));
+    // spin_thread = new boost::thread(boost::bind(&lineTask::spinThread, this));
 }
 
 lineTask::~lineTask() {
@@ -47,6 +47,6 @@ void lineTask::setActive(bool value) {
     }
 }
 
-void lineTask::spinThread() {
-    ros::spin();
-}
+// void lineTask::spinThread() {
+//     ros::spin();
+// }

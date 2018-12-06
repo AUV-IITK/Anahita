@@ -13,6 +13,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/varun/sensors/x_coordinate", 1, &forwardPIDAction::visionCB, this);
+    pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/x", 1);
 
     as_.start();
     ROS_INFO("forward_PID_server Initialised");
@@ -53,6 +54,9 @@ void forwardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         as_.setSucceeded(result_);
+        std_msgs::Bool msg_;
+        msg_.data = true;
+        pub_.publish(msg_);
     }
 
     nh_.setParam("/pwm_forward_right", x_coord.getPWM());

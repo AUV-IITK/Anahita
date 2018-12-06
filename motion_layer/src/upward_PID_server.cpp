@@ -11,6 +11,7 @@ upwardPIDAction::upwardPIDAction(std::string name) :
 
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/varun/sensors/z_coordinate", 1, &upwardPIDAction::depthCB, this);
+    pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/z", 1);
     z_coord.setPID(7.5, 0, 2, 10);
 
     as_.start();
@@ -52,6 +53,9 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         as_.setSucceeded(result_);
+        std_msgs::Bool msg_;
+        msg_.data = true;
+        pub_.publish(msg_);
     }
 
     nh_.setParam("/pwm_upward_front", z_coord.getPWM());

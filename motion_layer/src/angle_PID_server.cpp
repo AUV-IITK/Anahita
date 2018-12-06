@@ -11,7 +11,9 @@ anglePIDAction::anglePIDAction(std::string name) :
     
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &anglePIDAction::callBack, this);
-    angle.setPID(1.0, 0, 0.5, 1);
+    pub_ = nh_.advertise<std_msgs::Bool>("/kill/angularvelocity/z", 1);
+
+    angle.setPID(2.5, 0, 0.5, 1);
 
     as_.start();
     ROS_INFO("angle_PID_server Initialised");
@@ -54,6 +56,9 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         as_.setSucceeded(result_);
+        std_msgs::Bool msg_;
+        msg_.data = true;
+        pub_.publish(msg_);
     }
 
     nh_.setParam("/pwm_sideward_front_turn", angle.getPWM());

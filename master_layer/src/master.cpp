@@ -28,20 +28,22 @@ int main(int argc, char** argv) {
     // gateTask gate_task;
     // gate_task.setActive(true);
 
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
-    motion_layer::anglePIDGoal angle_PID_goal;
+    // actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
+    // motion_layer::anglePIDGoal angle_PID_goal;
 
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal.");
-    angle_PID_goal.target_angle = 90;
-    anglePIDClient.sendGoal(angle_PID_goal);
+    // ROS_INFO("anglePID server started, sending goal.");
+    // angle_PID_goal.target_angle = 90;
+    // anglePIDClient.sendGoal(angle_PID_goal);
+    // anglePIDClient.cancelGoal();
+    // anglePIDClient.cancelGoal();
 
-    // moveStraight move_straight_(100);
-    // move_straight_.setActive(true);
-
-    cout << "it is over now" << endl;
+    moveStraight move_straight_(100);
+    move_straight_.setActive(true);
+    ros::Duration(5).sleep();
+    move_straight_.setActive(false);
 
     //actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
     //motion_layer::forwardPIDGoal forward_PID_goal;
@@ -76,6 +78,7 @@ int main(int argc, char** argv) {
     //singleBuoy single_buoy_;
     //single_buoy_.setActive(true);
 
-    ros::spin();
+    // ros::spin();
+
     return 0;
 }

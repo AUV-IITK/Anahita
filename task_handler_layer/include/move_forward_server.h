@@ -37,6 +37,7 @@ protected:
     bool angleGoalReceived;
 
     boost::thread* spin_thread;
+    boost::thread* spin_thread_;
 
 public:
 
@@ -49,5 +50,6 @@ public:
     void imuAngleCB(const std_msgs::Float64Ptr &_msg);
     void depthCB(const std_msgs::Float64Ptr &_msg);
     void spinThread();
+    void spinThread_();
 };
 #endif // MOVE_FORWARD_SERVER_H
