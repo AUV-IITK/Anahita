@@ -23,7 +23,7 @@ Buoy::Buoy(){
 	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	this->marked_pub = it.advertise("/buoy_task/marked", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/varun/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)

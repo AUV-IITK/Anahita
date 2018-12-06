@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string>
 #include <std_msgs/Bool.h>
+#include <boost/thread.hpp> 
+
 
 #include <vision_tasks/gateBottomRangeConfig.h>
 #include <vision_tasks/gateFrontRangeConfig.h>
@@ -30,10 +32,10 @@ Gate::Gate(){
     this->front_balanced_bilateral_iter_ = 4;
     this->front_denoise_h_ = 10.0;
     this->front_low_h_ = 0;
-    this->front_high_h_ = 255;
+    this->front_high_h_ = 20;
     this->front_low_s_ = 0;
-    this->front_high_s_ = 255;
-    this->front_low_v_ = 0;
+    this->front_high_s_ = 92;
+    this->front_low_v_ = 46;
     this->front_high_v_ = 255;
     this->front_closing_mat_point_ = 1;
     this->front_closing_iter_ = 1;
@@ -86,6 +88,20 @@ cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, floa
 	}
 };
 
+void Gate::TaskHandling(bool status){
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&Gate::frontTaskHandling, this); 
+		spin_thread_bottom = new boost::thread(&Gate::bottomTaskHandling, this); 
+	}
+	else 
+	{
+        spin_thread_front->join();
+        spin_thread_bottom->join();
+	}
+	std::cout << "Task Handling function over" << std::endl;	
+}
+
 void Gate::frontCallback(vision_tasks::gateFrontRangeConfig &config, double level)
 {
     Gate::front_clahe_clip_ = config.clahe_clip;
@@ -129,47 +145,44 @@ void Gate::bottomCallback(vision_tasks::gateBottomRangeConfig &config, double le
     Gate::bottom_closing_iter_ = config.closing_iter;
 }
 
-void imageCallback(const sensor_msgs::Image::ConstPtr &msg)
-{
-	try
-	{
-		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
-	}
-	catch (cv_bridge::Exception &e)
-	{
-		ROS_ERROR("cv_bridge exception: %s", e.what());
-	}
-	catch (cv::Exception &e)
-	{
-		ROS_ERROR("cv exception: %s", e.what());
-	}
-};
-
 void Gate::bottomTaskHandling()
 {
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::gateBottomConfig>::CallbackType f_bottom;
-	f_bottom = boost::bind(&BGate::bottomCallback, this, _1, _2);
+	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
+	f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
 	server.setCallback(f_bottom);
 
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::ImageTransport it(nh);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher blue_filtered_pub = it.advertise("/gate_task/bottom/blue_filtered", 1);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher thresholded_pub = it.advertise("/gate_task/bottom/thresholded", 1);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher marked_pub = it.advertise("/gate_task/bottom/marked", 1);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     ros::Publisher task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Subscriber bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageCallback, this);
 
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar pipe_center_color(255, 255, 255);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar image_center_color(0, 0, 0);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar bounding_rectangle_color(255, 0, 0);
 
     cv::Mat blue_filtered;
     cv::Mat image_hsv;
     cv::Mat image_thresholded;
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     geometry_msgs::PointStamped pipe_point_message;
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     pipe_point_message.header.frame_id = camera_frame_.c_str();
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     std::vector<std::vector<cv::Point> > contours;
     cv::RotatedRect bounding_rectangle;
     std_msgs::Bool task_done_message;
@@ -182,12 +195,18 @@ void Gate::bottomTaskHandling()
         if (!image_.empty())
         {
         image_.copyTo(image_marked);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
         blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
         if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
         {
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
             cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
             image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
             image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
+	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
             contours = vision_commons::Contour::getBestX(image_thresholded, 1);
             if (contours.size() != 0)
             {
@@ -225,7 +244,7 @@ void Gate::frontTaskHandling()
 {
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
-	f_front = boost::bind(&gateFront::callback, this, _1, _2);
+	f_front = boost::bind(&Gate::frontCallback, this, _1, _2);
 	server.setCallback(f_front);
 
     image_transport::ImageTransport it(nh);
@@ -236,8 +255,8 @@ void Gate::frontTaskHandling()
 	image_transport::Publisher marked_pub = it.advertise("/gate_task/front/marked", 1);
 	ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/gate_task/front/gate_coordinates", 1000);
 
-//	image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, imageCallback);
-	image_transport::Subscriber front_image_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, &Gate::imageCallback, this);
+	image_transport::Subscriber front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageCallback, this);
+	//image_transport::Subscriber front_image_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, &Gate::imageCallback, this);
 
 	cv::Scalar gate_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -394,3 +413,20 @@ void Gate::frontTaskHandling()
 		ros::spinOnce();
 	}
 }
+
+void Gate::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+};

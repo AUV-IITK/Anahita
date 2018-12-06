@@ -1,7 +1,7 @@
-#include <markerDropper.h>
+#include <octagon.h>
 
-MarkerDropper::MarkerDropper(){
-	this->front_clahe_clip_ = 4.0;
+Octagon::Octagon(){
+   	this->front_clahe_clip_ = 4.0;
     this->front_clahe_grid_size_ = 8;
     this->front_clahe_bilateral_iter_ = 8;
     this->front_balanced_bilateral_iter_ = 4;
@@ -41,49 +41,48 @@ MarkerDropper::MarkerDropper(){
     this->camera_frame_ = "auv-iitk";
 }
 
-
-void MarkerDropper::frontCallback(vision_tasks::markerDropperFrontRangeConfig &config, double level)
+void Octagon::frontCallback(vision_tasks::octagonFrontRangeConfig &config, double level)
 {
-	MarkerDropper::front_clahe_clip_ = config.front_clahe_clip;
-	MarkerDropper::front_clahe_grid_size_ = config.front_clahe_grid_size;
-	MarkerDropper::front_clahe_bilateral_iter_ = config.front_clahe_bilateral_iter;
-	MarkerDropper::front_balanced_bilateral_iter_ = config.front_balanced_bilateral_iter;
-	MarkerDropper::front_denoise_h_ = config.front_denoise_h;
-	MarkerDropper::front_low_h_ = config.front_low_h;
-	MarkerDropper::front_high_h_ = config.front_high_h;
-	MarkerDropper::front_low_s_ = config.front_low_s;
-	MarkerDropper::front_high_s_ = config.front_high_s;
-	MarkerDropper::front_low_v_ = config.front_low_v;
-	MarkerDropper::front_high_v_ = config.front_high_v;
-	MarkerDropper::front_opening_mat_point_ = config.front_opening_mat_point;
-	MarkerDropper::front_opening_iter_ = config.front_opening_iter;
-	MarkerDropper::front_closing_mat_point_ = config.front_closing_mat_point;
-	MarkerDropper::front_closing_iter_ = config.front_closing_iter;
+	Octagon::front_clahe_clip_ = config.front_clahe_clip;
+	Octagon::front_clahe_grid_size_ = config.front_clahe_grid_size;
+	Octagon::front_clahe_bilateral_iter_ = config.front_clahe_bilateral_iter;
+	Octagon::front_balanced_bilateral_iter_ = config.front_balanced_bilateral_iter;
+	Octagon::front_denoise_h_ = config.front_denoise_h;
+	Octagon::front_low_h_ = config.front_low_h;
+	Octagon::front_high_h_ = config.front_high_h;
+	Octagon::front_low_s_ = config.front_low_s;
+	Octagon::front_high_s_ = config.front_high_s;
+	Octagon::front_low_v_ = config.front_low_v;
+	Octagon::front_high_v_ = config.front_high_v;
+	Octagon::front_opening_mat_point_ = config.front_opening_mat_point;
+	Octagon::front_opening_iter_ = config.front_opening_iter;
+	Octagon::front_closing_mat_point_ = config.front_closing_mat_point;
+	Octagon::front_closing_iter_ = config.front_closing_iter;
 };
 
-void MarkerDropper::bottomCallback(vision_tasks::markerDropperBottomRangeConfig &config, double level)
+void Octagon::bottomCallback(vision_tasks::octagonBottomRangeConfig &config, double level)
 {
-	MarkerDropper::bottom_clahe_clip_ = config.bottom_clahe_clip;
-	MarkerDropper::bottom_clahe_grid_size_ = config.bottom_clahe_grid_size;
-	MarkerDropper::bottom_clahe_bilateral_iter_ = config.bottom_clahe_bilateral_iter;
-	MarkerDropper::bottom_balanced_bilateral_iter_ = config.bottom_balanced_bilateral_iter;
-	MarkerDropper::bottom_denoise_h_ = config.bottom_denoise_h;
-	MarkerDropper::bottom_low_h_ = config.bottom_low_h;
-	MarkerDropper::bottom_high_h_ = config.bottom_high_h;
-	MarkerDropper::bottom_low_s_ = config.bottom_low_s;
-	MarkerDropper::bottom_high_s_ = config.bottom_high_s;
-	MarkerDropper::bottom_low_v_ = config.bottom_low_v;
-	MarkerDropper::bottom_high_v_ = config.bottom_high_v;
-	MarkerDropper::bottom_opening_mat_point_ = config.bottom_opening_mat_point;
-	MarkerDropper::bottom_opening_iter_ = config.bottom_opening_iter;
-	MarkerDropper::bottom_closing_mat_point_ = config.bottom_closing_mat_point;
-	MarkerDropper::bottom_closing_iter_ = config.bottom_closing_iter;
+    Octagon::bottom_clahe_clip_ = config.bottom_clahe_clip;
+	Octagon::bottom_clahe_grid_size_ = config.bottom_clahe_grid_size;
+	Octagon::bottom_clahe_bilateral_iter_ = config.bottom_clahe_bilateral_iter;
+	Octagon::bottom_balanced_bilateral_iter_ = config.bottom_balanced_bilateral_iter;
+	Octagon::bottom_denoise_h_ = config.bottom_denoise_h;
+	Octagon::bottom_low_h_ = config.bottom_low_h;
+	Octagon::bottom_high_h_ = config.bottom_high_h;
+	Octagon::bottom_low_s_ = config.bottom_low_s;
+	Octagon::bottom_high_s_ = config.bottom_high_s;
+	Octagon::bottom_low_v_ = config.bottom_low_v;
+	Octagon::bottom_high_v_ = config.bottom_high_v;
+	Octagon::bottom_opening_mat_point_ = config.bottom_opening_mat_point;
+	Octagon::bottom_opening_iter_ = config.bottom_opening_iter;
+	Octagon::bottom_closing_mat_point_ = config.bottom_closing_mat_point;
+	Octagon::bottom_closing_iter_ = config.bottom_closing_iter;
 };
 
-void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Octagon::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
-	cv_bridge::CvImagePtr cv_img_ptr;
-	try
+    cv_bridge::CvImagePtr cv_img_ptr;
+    try
 	{
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
@@ -97,11 +96,12 @@ void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 };
 
-void MarkerDropper::TaskHandling(bool status){
+void Octagon::TaskHandling(bool status)
+{
 	if(status)
 	{
-		spin_thread_front = new boost::thread(&MarkerDropper::FrontTaskHandling, this); 
-		spin_thread_bottom = new boost::thread(&MarkerDropper::BottomTaskHandling, this); 
+		spin_thread_front = new boost::thread(&Octagon::FrontTaskHandling, this); 
+		spin_thread_bottom = new boost::thread(&Octagon::BottomTaskHandling, this); 
 	}
 	else 
 	{
@@ -111,22 +111,20 @@ void MarkerDropper::TaskHandling(bool status){
 	std::cout << "Task Handling function over" << std::endl;	
 }
 
-
-void MarkerDropper::BottomTaskHandling()
+void Octagon::BottomTaskHandling()
 {
-	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;
-	f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
+	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig>::CallbackType f;
+	f = boost::bind(&Octagon::bottomCallback, this, _1, _2);
 	server.setCallback(f);
 
 	image_transport::ImageTransport it(nh);
-	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/markerdropper_task/bottom/blue_filtered", 1);
-	image_transport::Publisher bottom_thresholded_pub = it.advertise("/markerdropper_task/bottom/thresholded", 1);
-	image_transport::Publisher bottom_marked_pub = it.advertise("/markerdropper_task/bottom/marked", 1);
-	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/bottom_bin_coordinates", 1000);
+	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
+	image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
+	image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
+	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
-
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageCallback, this);
 
 	cv::Scalar bin_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -205,26 +203,26 @@ void MarkerDropper::BottomTaskHandling()
 	}
 }
 
-void MarkerDropper::FrontTaskHandling(){
-	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig> server;
-	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig>::CallbackType f;
-	f = boost::bind(&MarkerDropper::frontCallback, this, _1, _2);
+void Octagon::FrontTaskHandling(){
+	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig> server;
+	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig>::CallbackType f;
+	f = boost::bind(&Octagon::frontCallback, this, _1, _2);
 	server.setCallback(f);
 	
-		std::cout << "front Task Handling function start" << std::endl;	
+	std::cout << "front task Handling function start" << std::endl;	
 
-	  image_transport::ImageTransport it(nh);
-		image_transport::Publisher front_blue_filtered_pub = it.advertise("/markerdropper_task/front/blue_filtered", 1);
-		image_transport::Publisher front_thresholded_pub = it.advertise("/markerdropper_task/front/thresholded", 1);
-		image_transport::Publisher front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
-		ros::Publisher front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
+	image_transport::ImageTransport it(nh);
+	image_transport::Publisher front_blue_filtered_pub = it.advertise("/octagon_task/front/blue_filtered", 1);
+	image_transport::Publisher front_thresholded_pub = it.advertise("/octagon_task/front/thresholded", 1);
+	image_transport::Publisher front_marked_pub = it.advertise("/octagon_task/front/marked", 1);
+	ros::Publisher front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/front_bin_coordinates", 1000);
 
-		image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Octagon::imageCallback, this);
 
-		cv::Scalar bin_center_color(255, 255, 255);
-		cv::Scalar image_center_color(0, 0, 0);
-		cv::Scalar enclosing_circle_color(149, 255, 23);
-		cv::Scalar contour_color(255, 0, 0);
+	cv::Scalar bin_center_color(255, 255, 255);
+	cv::Scalar image_center_color(0, 0, 0);
+	cv::Scalar enclosing_circle_color(149, 255, 23);
+	cv::Scalar contour_color(255, 0, 0);
 
 	cv::Mat blue_filtered;
 	cv::Mat image_hsv;
@@ -300,3 +298,4 @@ void MarkerDropper::FrontTaskHandling(){
 		ros::spinOnce();
 	}
 }
+

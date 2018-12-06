@@ -1,5 +1,5 @@
-#ifndef GATE_TASK_H
-#define GATE_TASK_H
+#ifndef OCTAGON_TASK_H
+#define OCTAGON_TASK_H
 
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
@@ -15,18 +15,27 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
-#include <std_msgs/Bool.h>
+#include <boost/thread.hpp> 
 
-#include <vision_tasks/gateFrontRangeConfig.h>
-#include <vision_tasks/gateBottomRangeConfig.h>
+#include <vision_tasks/octagonFrontRangeConfig.h>
+#include <vision_tasks/octagonBottomRangeConfig.h>
 #include <vision_commons/filter.h>
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
 
-class Gate
+class Octagon
 {
 protected:
+	ros::NodeHandle nh;
+    image_transport::Publisher blue_filtered_pub;
+	image_transport::Publisher thresholded_pub;
+	image_transport::Publisher marked_pub;
+	ros::Publisher coordinates_pub;
+	image_transport::Subscriber image_raw_sub;
+
+	std::string camera_frame_;
+
     double front_clahe_clip_ = 4.0;
     int front_clahe_grid_size_ = 8;
     int front_clahe_bilateral_iter_ = 8;
@@ -40,6 +49,8 @@ protected:
     int front_high_v_ = 255;
     int front_closing_mat_point_ = 1;
     int front_closing_iter_ = 1;
+    int front_opening_mat_point_ = 1;	
+	int front_opening_iter_ = 1;
     int front_canny_threshold_low_ = 0;
     int front_canny_threshold_high_ = 1000;
     int front_canny_kernel_size_ = 3;
@@ -63,23 +74,24 @@ protected:
     int bottom_high_v_ = 255;
     int bottom_closing_mat_point_ = 1;
     int bottom_closing_iter_ = 1;
+    int bottom_opening_iter_ = 1;    
+    int bottom_opening_mat_point_ = 1;
 
-    std::string camera_frame_ = "auv-iitk";
-	void frontCallback(vision_tasks::gateFrontRangeConfig &config, double level);
-	void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);    
+	void frontCallback(vision_tasks::octagonFrontRangeConfig &config, double level);
+	void bottomCallback(vision_tasks::octagonBottomRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-    cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle);
 
 public:
-    Gate();
-    ros::NodeHandle nh;
+    Octagon();
 	image_transport::ImageTransport it();
 	cv::Mat image_;
-	cv::Mat image_marked;
     boost::thread* spin_thread_bottom; 
     boost::thread* spin_thread_front; 
-    void TaskHandling(bool status);
-	void bottomTaskHandling();
-    void frontTaskHandling();   
+
+	cv::Mat image_marked;
+	void TaskHandling(bool status);
+	void BottomTaskHandling();
+	void FrontTaskHandling();  
 };
-#endif // GATE_TASK_H
+#endif // OCTAGON_TASK_H
+
