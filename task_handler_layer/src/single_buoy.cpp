@@ -1,17 +1,17 @@
 #include <single_buoy.h>
 
 singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID") {
-    forward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::forwardCB, this);
-    sideward_sub_ = nh_.subscribe("/buoy_task/buoy_coordinates", 1, &singleBuoy::sidewardCB, this);
-    angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &singleBuoy::angleCB, this);    
+    forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::forwardCB, this);
+    sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &singleBuoy::sidewardCB, this);
+    angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);    
     angleGoalReceived = false;
+    spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
 }
 singleBuoy::~singleBuoy() {}
 
 void singleBuoy::setActive(bool status) {
 
     if (status) {
-        // spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();
 
@@ -69,22 +69,23 @@ void singleBuoy::setActive(bool status) {
         anglePIDClient.cancelGoal();
     }
     else {
-        // spin_thread->join();
+        spin_thread->join();
     }
 }
 
-// void singleBuoy::spinThread() {
-// }
-
-void singleBuoy::forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
-    forward_distance_ = _msg->point.x;
+void singleBuoy::spinThread() {
+    ros::spin();
 }
 
-void singleBuoy::sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
-    sideward_distance_ = _msg->point.y;
+void singleBuoy::forwardCB(const std_msgs::Float32ConstPtr &_msg) {
+    forward_distance_ = _msg->data;
 }
 
-void singleBuoy::angleCB(const std_msgs::Float64Ptr &_msg) {
+void singleBuoy::sidewardCB(const std_msgs::Float32ConstPtr &_msg) {
+    sideward_distance_ = _msg->data;
+}
+
+void singleBuoy::angleCB(const std_msgs::Float32Ptr &_msg) {
     angle_ = _msg->data;
     angleGoalReceived = true;
 }

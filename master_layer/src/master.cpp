@@ -21,9 +21,8 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
     ros::NodeHandle nh;
 
-    // singleBuoy single_buoy;
-    // single_buoy.setActive(true);
-    // ROS_INFO("after single buoy");
+    singleBuoy single_buoy;
+    single_buoy.setActive(true);
 
     // gateTask gate_task;
     // gate_task.setActive(true);
@@ -40,10 +39,10 @@ int main(int argc, char** argv) {
     // anglePIDClient.cancelGoal();
     // anglePIDClient.cancelGoal();
 
-    moveStraight move_straight_(100);
-    move_straight_.setActive(true);
-    ros::Duration(5).sleep();
-    move_straight_.setActive(false);
+    // moveStraight move_straight_(100);
+    // move_straight_.setActive(true);
+    // ros::Duration(20).sleep();
+    // move_straight_.setActive(false);
 
     //actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
     //motion_layer::forwardPIDGoal forward_PID_goal;
@@ -65,10 +64,10 @@ int main(int argc, char** argv) {
     //sideward_PID_goal.target_distance = 0;
     //sidewardPIDClient.sendGoal(sideward_PID_goal);
 
-    //moveForward move_forward_(150);
-    //move_forward_.setActive(true);
-    //ros::Duration(10).sleep();
-    //move_forward_.setActive(false);
+    // moveForward move_forward_(150);
+    // move_forward_.setActive(true);
+    // ros::Duration(10).sleep();
+    // move_forward_.setActive(false);
 
     //moveSideward move_sideward_(100);
     //move_sideward_.setActive(true);

@@ -7,6 +7,7 @@
 #include <motion_layer/sidewardPIDAction.h>
 #include <actionlib/client/terminal_state.h>
 #include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #include <std_msgs/Float32.h>
 #include <string>
 
@@ -21,7 +22,9 @@ protected:
     ros::NodeHandle nh;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
+
     bool goalReceived;
+    bool& goalReceived_ref = goalReceived;
     double angle;
     ros::Subscriber sub_;
 

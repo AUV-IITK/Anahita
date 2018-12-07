@@ -22,9 +22,9 @@ public:
     singleBuoy();
     ~singleBuoy();
     void setActive(bool);
-    void forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
-    void sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
-    void angleCB(const std_msgs::Float64Ptr &_msg);
+    void forwardCB(const std_msgs::Float32ConstPtr &_msg);
+    void sidewardCB(const std_msgs::Float32ConstPtr &_msg);
+    void angleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
 
 private:

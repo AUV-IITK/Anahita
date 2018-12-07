@@ -10,7 +10,7 @@ upwardPIDAction::upwardPIDAction(std::string name) :
     goal_ = 0;
 
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/varun/sensors/z_coordinate", 1, &upwardPIDAction::depthCB, this);
+    sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &upwardPIDAction::depthCB, this);
     pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/z", 1);
     z_coord.setPID(7.5, 0, 2, 10);
 

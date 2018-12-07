@@ -12,7 +12,7 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     y_coord.setPID(7.5, 0, 2, 10);
     
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/varun/sensors/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
+    sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
     pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/y", 1);
 
     as_.start();
@@ -39,16 +39,16 @@ void sidewardPIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void sidewardPIDAction::visionCB(const geometry_msgs::PointStampedConstPtr &msg) {
+void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
     if (!as_.isActive())
         return;
     
-    y_coord.errorToPWM(msg->point.y);
+    y_coord.errorToPWM(msg->data);
 
-    feedback_.current_distance = msg->point.y;
+    feedback_.current_distance = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->point.y == goal_) {
+    if (msg->data == goal_) {
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         as_.setSucceeded(result_);

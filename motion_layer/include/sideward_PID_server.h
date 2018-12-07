@@ -34,7 +34,7 @@ public:
     ~sidewardPIDAction();
     void goalCB();
     void preemptCB();
-    void visionCB(const geometry_msgs::PointStampedConstPtr&);
+    void visionCB(const std_msgs::Float32ConstPtr&);
 
 };
 #endif // MOVE_SIDEWARD_SERVER_H

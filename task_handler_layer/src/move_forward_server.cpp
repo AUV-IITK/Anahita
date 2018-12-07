@@ -3,7 +3,7 @@
 moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClient_("turnPID"),
                                     sidewardPIDClient_("sidewardPID") 
 {
-    angle_sub_ = nh.subscribe("/varun/sensors/imu/yaw", 1, &moveForward::imuAngleCB, this);
+    angle_sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveForward::imuAngleCB, this);
     depth_sub_ = nh.subscribe("/varun/sensors/depth", 1, &moveForward::depthCB, this);
     nh.setParam("/pwm_forward_right", pwm_);
     nh.setParam("/pwm_forward_left", pwm_);
@@ -22,9 +22,13 @@ void moveForward::setActive(bool status) {
     }
 
     if (status == false) {
+        if (!depthGoalReceived) {
+            upwardPIDClient_.cancelGoal();
+        }
+        if (!angleGoalReceived) {
+            anglePIDClient_.cancelGoal();
+        }
         sidewardPIDClient_.cancelGoal();
-        upwardPIDClient_.cancelGoal();
-        anglePIDClient_.cancelGoal();
         spin_thread->join();
     }
 }
