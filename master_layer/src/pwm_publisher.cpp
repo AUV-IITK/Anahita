@@ -39,7 +39,6 @@ int main(int argc, char** argv) {
 
     ros::Rate r(50);
 
-
     while(ros::ok()) {
         nh.getParam("/pwm_forward_left", pwm_forward_left_);
         nh.getParam("/pwm_forward_right", pwm_forward_right_);
@@ -68,13 +67,13 @@ int main(int argc, char** argv) {
         frontUpwardPublisher.publish(pwm_upward_front);
         backUpwardPublisher.publish(pwm_upward_back);
 
-        std::cout << "----------------------------------" << std::endl;
-        ROS_INFO("PWM forward_right : %d", pwm_forward_right.data);
-        ROS_INFO("PWM forward_left : %d", pwm_forward_left.data);
-        ROS_INFO("PWM sideward_front : %d", pwm_sideward_front.data);
-        ROS_INFO("PWM sideward_back : %d", pwm_sideward_back.data);
-        ROS_INFO("PWM upward_front : %d", pwm_upward_front.data);
-        ROS_INFO("PWM upward_back : %d", pwm_upward_back.data);
+        // std::cout << "----------------------------------" << std::endl;
+        // ROS_INFO("PWM forward_right : %d", pwm_forward_right.data);
+        // ROS_INFO("PWM forward_left : %d", pwm_forward_left.data);
+        // ROS_INFO("PWM sideward_front : %d", pwm_sideward_front.data);
+        // ROS_INFO("PWM sideward_back : %d", pwm_sideward_back.data);
+        // ROS_INFO("PWM upward_front : %d", pwm_upward_front.data);
+        // ROS_INFO("PWM upward_back : %d", pwm_upward_back.data);
         r.sleep();
     }
     return 0;

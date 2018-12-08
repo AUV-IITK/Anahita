@@ -9,7 +9,7 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&sidewardPIDAction::preemptCB, this));
     goal_ = 0;
 
-    y_coord.setPID(7.5, 0, 2, 10);
+    y_coord.setPID(5.5, 0, 0, 15);
     
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
@@ -48,10 +48,10 @@ void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
     feedback_.current_distance = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->data == goal_) {
+    if (msg->data <= goal_ + 10 && msg->data >= goal_ - 10) {
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
-        as_.setSucceeded(result_);
+        // as_.setSucceeded(result_);
         std_msgs::Bool msg_;
         msg_.data = true;
         pub_.publish(msg_);

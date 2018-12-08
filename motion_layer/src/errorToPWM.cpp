@@ -63,7 +63,12 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
         dt = 0.1;
     }
 
-    this->error_ = this->reference_value_ - this->current_value_;
+    if (this->name_ == "ANGLE") {
+        this->error_ = this->reference_value_ - this->current_value_;
+    }
+    else {
+        this->error_ = this->current_value_ - this->reference_value_;
+    }
 
     if (this->name_ == "ANGLE") {
         if (this->error_ < 0)
@@ -78,7 +83,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     std::cout << this->name_ << " ERROR: " << this->error_ << std::endl;
     integral += (this->error_ * dt);
     derivative = (this->current_value_ - this->previous_value_) / dt;
-    double output = (this->p_ * this->error_) + (this->i_ * integral) + (this->d_ * derivative);
+    double output = (this->p_ * this->error_) + (this->i_ * integral) + std::abs(this->d_ * derivative);
 
     //std::cerr << this->name_ << " output from PID: " << output << std::endl;
     //std::cerr << this->name_ << " integral: " << integral << std::endl;

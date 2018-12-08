@@ -31,7 +31,7 @@ public:
     ~moveSideward();
 
     void setActive(bool);
-    void imuAngleCB(const std_msgs::Float64Ptr &_msg);
+    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
     void spinThread_();
 };

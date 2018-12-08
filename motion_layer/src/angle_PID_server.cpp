@@ -52,10 +52,10 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     feedback_.current_angle = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->data == goal_) {
+    if (msg->data <= goal_ + 0.2 && msg->data >= goal_ - 0.2) {
         ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
-        as_.setSucceeded(result_);
+        // as_.setSucceeded(result_);
         std_msgs::Bool msg_;
         msg_.data = true;
         pub_.publish(msg_);

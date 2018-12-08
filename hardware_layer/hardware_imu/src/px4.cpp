@@ -25,7 +25,7 @@ void imu_data_callback(sensor_msgs::Imu msg)
   // convert form quaternion to euler angle (pitch)
   imu_pitch.data = TO_DEG(-asin(2 * q1 * q3 + 2 * q0 * q2));
    
-	ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_roll.data, imu_pitch.data, imu_yaw.data);
+	// ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_roll.data, imu_pitch.data, imu_yaw.data);
    
   imu_yaw_pub.publish(imu_yaw);  
   imu_roll_pub.publish(imu_roll);
