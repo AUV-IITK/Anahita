@@ -52,3 +52,8 @@ void moveSideward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
 	angle = _msg->data;
     goalReceived = true;
 }
+
+void moveSideward::setThrust(int _pwm) {
+    nh.setParam("/pwm_sideward_front_straight", _pwm);
+    nh.setParam("/pwm_sideward_back_straight", _pwm);
+}

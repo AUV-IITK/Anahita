@@ -21,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(motion_layer REQUIRED)
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -137,7 +136,7 @@ include_directories(
 
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(singleBuoy moveStraight moveForward moveSideward ${catkin_LIBRARIES})
+target_link_libraries(singleBuoy ${catkin_LIBRARIES})
 
 add_library(buoy SHARED src/buoy.cpp include/buoy.h)
 add_dependencies(buoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

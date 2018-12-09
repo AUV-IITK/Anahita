@@ -11,82 +11,108 @@
 #include <motion_layer/forwardPIDAction.h>
 #include <motion_layer/sidewardPIDAction.h>
 #include <actionlib/client/terminal_state.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
 
 using namespace std;
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
     ros::NodeHandle nh;
+    ros::Publisher task_pub = nh.advertise<std_msgs::String>("/current_task", 1000);
 
-    // singleBuoy single_buoy;
-    // single_buoy.setActive(true);
+    // can make a node which can send a signal when an object is detected given the current task
+    // can make a task handler class which can take care of when a task is completed or when an object is detected
 
-    // gateTask gate_task;
-    // gate_task.setActive(true);
-    // cout << "Start" << endl;
+    std_msgs::String current_task;
+    current_task.data = "red_buoy";
+    task_pub.publish(current_task);
 
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");    
-    motion_layer::anglePIDGoal angle_PID_goal;
+    singleBuoy single_buoy;
+    single_buoy.setActive(true); // blocking function, will terminalte after completion
 
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
+    ////////////////////////////////////////////////
+    
+    current_task.data = "yellow_buoy";
+    task_pub.publish(current_task);
 
-    ROS_INFO("anglePID server started, sending goal.");
-    angle_PID_goal.target_angle = 179;
-    anglePIDClient.sendGoal(angle_PID_goal);
+    moveSideward move_sideward(-100);
+    move_sideward.setActive(true); // until the yellow buoy is detected
+    ros::Duration(5).sleep(); // duration may vary depending upon the time observed in testing
+    move_sideward.setActive(false);
 
-    // moveStraight move_straight_(100);
-    // move_straight_.setActive(true);
-    // ros::Duration(20).sleep();
-    // move_straight_.setActive(false);
+    single_buoy.setActive(true); // blocking function, will terminalte after completion
 
-    // actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");    
-    // motion_layer::forwardPIDGoal forward_PID_goal;
+    ////////////////////////////////////////////////
 
-    // ROS_INFO("Waiting for forwardPID server to start.");
-    // forwardPIDClient.waitForServer();
+    current_task.data = "green_buoy";
+    task_pub.publish(current_task);
 
-    // ROS_INFO("forwardPID server started, sending goal.");
-    // forward_PID_goal.target_distance = 275;
-    // forwardPIDClient.sendGoal(forward_PID_goal);
+    move_sideward.setThrust(100);
+    move_sideward.setActive(true); // until the green buoy is detected
+    ros::Duration(10).sleep(); // should move approx. 10m straight sideways
+    move_sideward.setActive(false);
 
-    // actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");    
-    // motion_layer::upwardPIDGoal upward_PID_goal;
+    single_buoy.setActive(true); // blocking function, will terminalte after completion
 
-    // ROS_INFO("Waiting for upwardPID server to start.");
-    // upwardPIDClient.waitForServer();
+    ////////////////////////////////////////////////
 
-    // ROS_INFO("upwardPID server started, sending goal.");
-    // upward_PID_goal.target_depth = 0;
-    // upwardPIDClient.sendGoal(upward_PID_goal);
+    current_task.data = "buoy-gate";
+    task_pub.publish(current_task);
 
-    // actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");    
-    // motion_layer::sidewardPIDGoal sideward_PID_goal;
+    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
+    motion_layer::upwardPIDGoal upwardPIDgoal;
 
-    // ROS_INFO("Waiting for sidewardPID server to start.");
-    // sidewardPIDClient.waitForServer();
+    ROS_INFO("Waiting for upwardPID server to start, Buoy-Gate transition.");
+    upwardPIDClient.waitForServer();
 
-    // ROS_INFO("sidewardPID server started, sending goal.");
-    // sideward_PID_goal.target_distance = 0;
-    // sidewardPIDClient.sendGoal(sideward_PID_goal);
+    ROS_INFO("upwardPID server started, sending goal, Buoy-Gate transition.");
+    upwardPIDgoal.target_depth = 40; // some number based on the data getting from the pressure sensor
+    upwardPIDClient.sendGoal(upwardPIDgoal); 
 
-    // moveForward move_forward_(150);
-    // move_forward_.setActive(true);
-    // ros::Duration(10).sleep();
-    // move_forward_.setActive(false);
+    // to get vertically above the buoy
 
-    // moveSideward move_sideward_(100);
-    // move_sideward_.setActive(true);
-    // ros::Duration(20).sleep();
-    // move_sideward_.setActive(false);
+    // NEED to have a node or class to notify when something's done
 
-    //singleBuoy single_buoy_;
-    //single_buoy_.setActive(true);
+    // when upward target is achieved 
 
-    // ros::spin();
+    moveStraight move_straight(100);
+    move_straight.setActive(true); // until the green buoy is detected under the bottom camera
+
+    // Align to its center
+
+    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
+    motion_layer::sidewardPIDGoal sidewardPIDgoal;
+
+    ROS_INFO("Waiting for sidewardPID server to start, Buoy-Gate transition.");
+    sidewardPIDClient.waitForServer();
+
+    ROS_INFO("sidewardPID server started, sending goal, Buoy-Gate transition.");
+    sidewardPIDgoal.target_distance = 0;
+    sidewardPIDClient.sendGoal(sidewardPIDgoal);
+
+    actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");
+    motion_layer::forwardPIDGoal forwardPIDgoal;
+
+    ROS_INFO("Waiting for forwardPID server to start, Buoy-Gate transition.");
+    forwardPIDClient.waitForServer();
+
+    ROS_INFO("forwardPID server started, sending goal, Buoy-Gate transition.");
+    forwardPIDgoal.target_distance = 0;
+    forwardPIDClient.sendGoal(forwardPIDgoal);
+
+    // After the alignment
+
+    move_sideward.setThrust(-100);
+    move_sideward.setActive(true); // until gate is detected
+    ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+
+    ////////////////////////////////////////////////
+
+    current_task.data = "gate";
+    task_pub.publish(current_task);
+
+    gateTask gate_task;
+    gate_task.setActive(true); // blocking function, will terminalte after completion
 
     return 0;
 }

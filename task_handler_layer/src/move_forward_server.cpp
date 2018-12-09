@@ -93,3 +93,8 @@ void moveForward::depthCB(const std_msgs::Float64Ptr &_msg) {
     depth = _msg->data;
     depthGoalReceived = true;
 }
+
+void moveForward::setThrust(int _pwm) {
+    nh.setParam("/pwm_forward_right", _pwm);
+    nh.setParam("/pwm_forward_left", _pwm);
+}

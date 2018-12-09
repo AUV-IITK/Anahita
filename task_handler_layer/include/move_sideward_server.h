@@ -31,6 +31,7 @@ public:
     ~moveSideward();
 
     void setActive(bool);
+    void setThrust(int);
     void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
     void spinThread_();

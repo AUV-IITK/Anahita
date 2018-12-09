@@ -37,6 +37,7 @@ public:
     ~moveStraight();
 
     void setActive(bool);
+    void setThrust(int);
     void spinThread_();
     void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();

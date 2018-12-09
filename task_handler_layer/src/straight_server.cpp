@@ -50,3 +50,8 @@ void moveStraight::spinThread() {
 void moveStraight::spinThread_() {
     ros::spin();
 }
+
+void moveStraight::setThrust(int _pwm) {
+    nh.setParam("/pwm_forward_right", _pwm);
+    nh.setParam("/pwm_forward_left", _pwm);
+}

@@ -45,6 +45,7 @@ public:
     ~moveForward();
 
     void setActive(bool);
+    void setThrust(int);
     void setReferenceAngle(double);
     void setReferenceDepth(double);
     void imuAngleCB(const std_msgs::Float64Ptr &_msg);
