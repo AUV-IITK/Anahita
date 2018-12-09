@@ -7,13 +7,13 @@ Buoy::Buoy(){
 	this->balanced_bilateral_iter_ = 4;
 	this->denoise_h_ = 10.0;
 	this->low_h_ = 0;
-	this->high_h_ = 10;
-	this->low_s_ = 251;
+	this->high_h_ = 25;
+	this->low_s_ = 245;
 	this->high_s_ = 255;
-	this->low_v_ = 160;
-	this->high_v_ = 255;
+	this->low_v_ = 78;
+	this->high_v_ = 115;
 	this->opening_mat_point_ = 1;
-	this->opening_iter_ = 0;
+	this->opening_iter_ = 3;
 	this->closing_mat_point_ = 1;
 	this->closing_iter_ = 0;
 	this->camera_frame_ = "auv-iitk";
@@ -23,7 +23,11 @@ Buoy::Buoy(){
 	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	this->marked_pub = it.advertise("/buoy_task/marked", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
-	this->image_raw_sub = it.subscribe("/varun/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)
@@ -126,6 +130,8 @@ void Buoy::spinThread(){
 	cv::RotatedRect min_ellipse;
 	ros::Rate loop_rate(10);
 
+	std_msgs::Bool detection_bool;
+
 	while (1)
 	{
 		if (!image_.empty())
@@ -134,8 +140,7 @@ void Buoy::spinThread(){
 			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
-			{
-				std::cout<<"HSV"<< high_h_ << " " << high_s_ << " " <<  high_v_ << std::endl;
+			{	
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
@@ -156,10 +161,17 @@ void Buoy::spinThread(){
 					}
 					cv::minEnclosingCircle(contours[index], center[0], radius[0]);
 					buoy_point_message.header.stamp = ros::Time();
-					buoy_point_message.point.x = pow(radius[0] / 7526.5, -.92678);
-					buoy_point_message.point.y = center[0].x - ((float)image_.size().width) / 2;
-					buoy_point_message.point.z = ((float)image_.size().height) / 2 - center[0].y;
-					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", buoy_point_message.point.x, buoy_point_message.point.y, buoy_point_message.point.z);
+					x_coordinate.data = pow(radius[0] / 7526.5, -.92678);
+ 					y_coordinate.data = center[0].x - ((float)image_.size().width) / 2;
+					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
+					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
+
+					if(contourArea(contours[index]) > 20 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+						detection_bool.data = true;
+					else
+						detection_bool.data = false;						
+					detection_pub.publish(detection_bool);
+
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, buoy_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					cv::circle(image_marked, center[0], (int)radius[0], enclosing_circle_color, 2, 8, 0);
@@ -168,16 +180,27 @@ void Buoy::spinThread(){
 						cv::drawContours(image_marked, contours, i, contour_color, 1);
 					}
 				}
+				else
+				{
+					ROS_INFO("Object not being detected");
+					detection_bool.data = false;
+					detection_pub.publish(detection_bool);
+				}	
 			}
 			blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
-			coordinates_pub.publish(buoy_point_message);
+//			coordinates_pub.publish(buoy_point_message);
+
+			x_coordinates_pub.publish(x_coordinate);
+			y_coordinates_pub.publish(y_coordinate);
+			z_coordinates_pub.publish(z_coordinate);
 			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
 		{
 			ROS_INFO("Image empty");
 		}
+		loop_rate.sleep();
 		ros::spinOnce();
 	}
 }

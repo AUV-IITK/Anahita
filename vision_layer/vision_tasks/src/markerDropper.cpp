@@ -159,7 +159,7 @@ void MarkerDropper::BottomTaskHandling()
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * bottom_opening_mat_point_ + 1, bottom_opening_mat_point_, bottom_opening_mat_point_, bottom_opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
-				contours = vision_commons::Contour::getBestX(image_thresholded, 3);
+				contours = vision_commons::Contour::getBestX(image_thresholded, 2);
 				if (contours.size() != 0)
 				{
 					int index = 0;

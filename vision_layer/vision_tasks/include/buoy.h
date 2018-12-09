@@ -14,6 +14,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <string>
 #include <boost/thread.hpp> 
 
@@ -31,6 +33,10 @@ protected:
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
 	ros::Publisher coordinates_pub;
+	ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
+	ros::Publisher detection_pub;
 	image_transport::Subscriber image_raw_sub;
 	std::string camera_frame_;
     double clahe_clip_;
@@ -60,10 +66,13 @@ protected:
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
-    Buoy();
+	Buoy();
+	std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;
 	cv::Mat image_;
 	cv::Mat image_marked;
-    boost::thread* spin_thread; 
+	boost::thread* spin_thread; 
 	void TaskHandling(bool);
 	void switchColor(int);
 	void spinThread();

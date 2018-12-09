@@ -15,8 +15,11 @@ Line::Line(){
 	image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
 	this->marked_pub = it.advertise("/line_task/marked", 1);
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
-	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
@@ -107,8 +110,8 @@ void Line::TaskHandling()
 						cv::line(image_marked, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), hough_line_color, 1, CV_AA);
 					}
 					ROS_INFO("Loop OVer");
-					line_point_message.x = (image_.size().height) / 2 - bounding_rectangle.center.y;
-					line_point_message.y = bounding_rectangle.center.x - (image_.size().width) / 2;
+					x_coordinate.data = (image_.size().height) / 2 - bounding_rectangle.center.y;
+					y_coordinate.data = bounding_rectangle.center.x - (image_.size().width) / 2;
 					if (angles.size() > 0)
 					{
 						double angle = computeMean(angles);
@@ -128,6 +131,9 @@ void Line::TaskHandling()
 					}
 				}
 			}
+			x_coordinates_pub.publish(x_coordinate);
+			y_coordinates_pub.publish(y_coordinate);
+			z_coordinates_pub.publish(z_coordinate);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(line_point_message);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());

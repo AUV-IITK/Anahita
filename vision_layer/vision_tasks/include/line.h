@@ -12,6 +12,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Pose2D.h>
+#include <std_msgs/Float32.h>
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
@@ -44,6 +45,9 @@ protected:
 	int opening_iter_;
 	int closing_mat_point_;
 	int closing_iter_;
+ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
 	void callback(vision_tasks::lineRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     double computeMean(std::vector<double> &newAngles);
@@ -51,6 +55,9 @@ protected:
 public:
     Line();
     ros::NodeHandle nh;
+std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;	
 	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;

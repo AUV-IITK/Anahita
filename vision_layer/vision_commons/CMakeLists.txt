@@ -34,4 +34,7 @@ add_executable(blue_filter_demo src/blue_filter_demo.cpp)
 add_dependencies(blue_filter_demo ${vision_commons_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blue_filter_demo ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_executable(image_pub src/image_pub.cpp)
+target_link_libraries(image_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 install(DIRECTORY include/vision_commons/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
