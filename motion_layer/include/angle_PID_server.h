@@ -5,11 +5,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <motion_layer/anglePIDAction.h>
 #include <errorToPWM.h>
-#include <geometry_msgs/PointStamped.h>
-#include <geometry_msgs/Pose2D.h>
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <string>
 

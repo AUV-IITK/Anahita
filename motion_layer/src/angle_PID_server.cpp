@@ -61,6 +61,17 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_sideward_front_turn", angle.getPWM());
-    nh_.setParam("/pwm_sideward_back_turn", -1*angle.getPWM());
+    static int total_pwm = 0;
+    total_pwm = angle.getPWM();
+
+    static int sideward_pwm = 0;
+    sideward_pwm = total_pwm/3;
+    
+    static int forward_pwm = 0;
+    forward_pwm = total_pwm - sideward_pwm; 
+
+    nh_.setParam("/pwm_sideward_front_turn", sideward_pwm);
+    nh_.setParam("/pwm_sideward_back_turn", -sideward_pwm);
+    nh_.setParam("/pwm_forward_left_turn", forward_pwm);
+    nh_.setParam("/pwm_forward_right_turn", -forward_pwm);
 }

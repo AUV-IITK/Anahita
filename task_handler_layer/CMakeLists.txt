@@ -104,7 +104,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES singleBuoy buoy line gate moveForward moveSideward moveStraight
+  LIBRARIES singleBuoy line gate moveForward moveSideward moveStraight
   CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs motion_layer
   # DEPENDS system_lib
 )
@@ -134,22 +134,6 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
-add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(singleBuoy ${catkin_LIBRARIES})
-
-add_library(buoy SHARED src/buoy.cpp include/buoy.h)
-add_dependencies(buoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(buoy singleBuoy moveSideward ${catkin_LIBRARIES})
-
-add_library(line SHARED src/line.cpp include/line.h)
-add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
-
-add_library(gate SHARED src/gate.cpp include/gate.h)
-add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(gate moveStraight moveForward ${catkin_LIBRARIES})
-
 add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
 add_dependencies(moveForward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveForward ${catkin_LIBRARIES})
@@ -161,6 +145,18 @@ target_link_libraries(moveSideward ${catkin_LIBRARIES})
 add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
 add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveStraight ${catkin_LIBRARIES})
+
+add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
+add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(singleBuoy ${catkin_LIBRARIES})
+
+add_library(line SHARED src/line.cpp include/line.h)
+add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
+
+add_library(gate SHARED src/gate.cpp include/gate.h)
+add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(gate moveStraight moveForward ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
