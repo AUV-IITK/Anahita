@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   image_transport::Publisher white_balanced_pub = it.advertise("/blue_filter_demo/white_balanced", 1);
   image_transport::Publisher blue_filtered_pub = it.advertise("/blue_filter_demo/blue_filtered", 1);
 
-  image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
+  image_transport::Subscriber image_raw_sub = it.subscribe("/camera/image_raw", 1, imageCallback);
 
   cv::Mat clahe;
   cv::Mat white_balanced;
