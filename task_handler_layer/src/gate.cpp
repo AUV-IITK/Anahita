@@ -3,10 +3,8 @@
 gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID") {
     forward_sub_ = nh_.subscribe("/gate_task/gate_coordinates", 1, &gateTask::forwardCB, this);
     sideward_sub_ = nh_.subscribe("/gate_task/gate_coordinates", 1, &gateTask::sidewardCB, this);
-    angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &gateTask::angleCB, this);   
-    gate_status_ = nh_.subscribe("/gate_task/done", 1, &gateTask::statusCB, this); 
+    angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &gateTask::angleCB, this);
     angleGoalReceived = false;
-    gateTask_done = false;
     spin_thread = new boost::thread(boost::bind(&gateTask::spinThread, this));
 }
 
@@ -16,10 +14,10 @@ gateTask::~gateTask() {
 
 void gateTask::setActive(bool status) {
     if (status) {
-        ROS_INFO("Waiting for sidewardPID server to start.");
+        ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
         sidewardPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal.");
+        ROS_INFO("sidewardPID server started, sending goal, Gate Task.");
         sidewardPIDgoal.target_distance = 0;
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
 
@@ -65,26 +63,15 @@ void gateTask::spinThread() {
     ros::spin();
 }
 
-void gateTask::forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
-    forward_distance_ = _msg->point.x;
+void gateTask::forwardCB(const std_msgs::Float32Ptr &_msg) {
+    forward_distance_ = _msg->data;
 }
 
-void gateTask::sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg) {
-    sideward_distance_ = _msg->point.y;
+void gateTask::sidewardCB(const std_msgs::Float32Ptr &_msg) {
+    sideward_distance_ = _msg->data;
 }
 
-void gateTask::angleCB(const std_msgs::Float64Ptr &_msg) {
+void gateTask::angleCB(const std_msgs::Float32Ptr &_msg) {
     angle_ = _msg->data;
     angleGoalReceived = true;
-
-    // if (angleGoalReceived) {
-    //     ROS_INFO("anglePID server sending goal.");
-    //     anglePIDGoal.target_angle = angle_;
-    //     anglePIDClient.sendGoal(anglePIDGoal);
-    //     angleGoalReceived = false;
-    // }
-}
-
-void gateTask::statusCB(const std_msgs::BoolPtr &_msg) {
-    gateTask_done = _msg->data;
 }

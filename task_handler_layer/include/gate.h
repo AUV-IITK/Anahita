@@ -3,11 +3,7 @@
 
 #include <ros/ros.h>
 
-#include <geometry_msgs/PointStamped.h>
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Bool.h>
 
 #include <boost/thread.hpp>
 #include <string>
@@ -31,10 +27,8 @@ private:
     ros::Subscriber forward_sub_;
     ros::Subscriber sideward_sub_;
     ros::Subscriber angle_sub_;
-    ros::Subscriber gate_status_;
 
     bool angleGoalReceived;
-    bool gateTask_done;
 
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
@@ -50,10 +44,9 @@ public:
 
     void setActive(bool);
     void spinThread();
-    void forwardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
-    void sidewardCB(const geometry_msgs::PointStamped::ConstPtr &_msg);
-    void angleCB(const std_msgs::Float64Ptr &_msg);
-    void statusCB(const std_msgs::BoolPtr &_msg);
+    void forwardCB(const std_msgs::Float32Ptr &_msg);
+    void sidewardCB(const std_msgs::Float32Ptr &_msg);
+    void angleCB(const std_msgs::Float32Ptr &_msg);
 };
 
 #endif // GATE_H

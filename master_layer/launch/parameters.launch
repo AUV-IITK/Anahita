@@ -12,4 +12,6 @@
   <param name="/pwm_upward_front" value="0" type="int" />
   <param name="/pwm_upward_back" value="0" type="int" />
 
+  <param name="/current_task" value="NONE" type="string" />
+
 </launch>

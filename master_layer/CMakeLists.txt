@@ -134,12 +134,15 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
+add_library(task_handler SHARED src/task_handler.cpp include/task_handler.h)
+target_link_libraries(task_handler ${catkin_LIBRARIES})
+
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
 add_executable(master src/master.cpp)
 add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master buoy line gate ${catkin_LIBRARIES})
+target_link_libraries(master singleBuoy gate moveSideward moveStraight moveForward task_handler ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server sidewardPIDServer upwardPIDServer anglePIDServer forwardPIDServer ${catkin_LIBRARIES})
