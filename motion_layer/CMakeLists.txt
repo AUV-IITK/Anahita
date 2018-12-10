@@ -10,7 +10,6 @@ project(motion_layer)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
-  geometry_msgs
   message_generation
   roscpp
   rospy
@@ -71,7 +70,7 @@ add_action_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES actionlib_msgs geometry_msgs std_msgs
+  DEPENDENCIES actionlib_msgs std_msgs
 )
 
 ################################################
@@ -106,7 +105,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES upwardPIDServer sidewardPIDServer forwardPIDServer anglePIDServer
-  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation
   # DEPENDS system_lib
 )
 

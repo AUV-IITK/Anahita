@@ -10,7 +10,6 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
-  geometry_msgs
   message_generation
   roscpp
   rospy
@@ -71,7 +70,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs geometry_msgs std_msgs
+  actionlib_msgs std_msgs
 )
 
 ################################################
@@ -106,7 +105,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer
 #  DEPENDS system_lib
 )
 

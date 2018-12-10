@@ -13,7 +13,7 @@ add_definitions(-DUSB_CON)
 
 generate_arduino_firmware(arduino_node
   SRCS arduino_node.cpp ${ROS_LIB_DIR}/time.cpp ../src/MS5837.cpp ../src/Thruster.cpp ../src/ESC.cpp
-  HDRS ../include/MS5837.h ../include/Thruster.h ../include/ArduinoConfig.h ../include/ESC.h
+  HDRS ../include/MS5837.h ../include/ArduinoConfig.h ../include/ESC.h # ../include/Thruster.h
   BOARD uno
   PORT /dev/arduino
 )

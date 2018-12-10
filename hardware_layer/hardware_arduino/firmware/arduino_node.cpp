@@ -9,7 +9,7 @@
 // #include <hyperion_msgs/Pressure.h>
 
 #include "../include/MS5837.h"
-#include "../include/Thruster.h"
+// #include "../include/Thruster.h"
 #include "../include/ArduinoConfig.h"
 #include "../include/ESC.h"
 
@@ -39,12 +39,16 @@ ESC T_EAST(servoPinEast,1100,1900,1500);
 ESC T_WEST(servoPinWest,1100,1900,1500);
 ESC T_NORTH(servoPinNorthSway,1100,1900,1500);
 ESC T_SOUTH(servoPinSouthSway,1100,1900,1500);
+ESC T_SOUTH_WEST_UP(servoPinSouthWestUp,1100,1900,1500);
+ESC T_SOUTH_EAST_UP(servoPinSouthEastUp,1100,1900,1500);
+ESC T_NORTH_WEST_UP(servoPinNorthWestUp,1100,1900,1500);
+ESC T_NORTH_EAST_UP(servoPinNorthEastUp,1100,1900,1500);
 
 // for upward thrusters
-Thruster T_NORTH_EAST_UP(pwmPinNorthEastUp, directionPinNorthEastUp1, directionPinNorthEastUp2);
-Thruster T_NORTH_WEST_UP(pwmPinNorthWestUp, directionPinNorthWestUp1, directionPinNorthWestUp2);
-Thruster T_SOUTH_WEST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
-Thruster T_SOUTH_EAST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
+// Thruster T_NORTH_EAST_UP(pwmPinNorthEastUp, directionPinNorthEastUp1, directionPinNorthEastUp2);
+// Thruster T_NORTH_WEST_UP(pwmPinNorthWestUp, directionPinNorthWestUp1, directionPinNorthWestUp2);
+// Thruster T_SOUTH_WEST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
+// Thruster T_SOUTH_EAST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
 
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
@@ -63,14 +67,14 @@ void TSWUpCb(const std_msgs::Int32& msg);
 ros::NodeHandle nh;
 
 // declare subscribers
-ros::Subscriber<std_msgs::Int32> TEast_PWM_Sub("/thruster/east/pwm", &TEastCb);
-ros::Subscriber<std_msgs::Int32> TWest_PWM_Sub("/thruster/west/pwm", &TWestCb);
-ros::Subscriber<std_msgs::Int32> TNorth_PWM_Sub("/thruster/north/pwm", &TNorthCb);
-ros::Subscriber<std_msgs::Int32> TSouth_PWM_Sub("/thruster/south/pwm", &TSouthCb);
-ros::Subscriber<std_msgs::Int32> TNW_PWM_Sub("/thruster/north-west/pwm", &TNWUpCb);
-ros::Subscriber<std_msgs::Int32> TNE_PWM_Sub("/thruster/north-east/pwm", &TNEUpCb);
-ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/thruster/south-east/pwm", &TSEUpCb);
-ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/thruster/south-west/pwm", &TSWUpCb);
+ros::Subscriber<std_msgs::Int32> TEast_PWM_Sub("/pwm/forwardRight", &TEastCb);
+ros::Subscriber<std_msgs::Int32> TWest_PWM_Sub("/pwm/forwardLeft", &TWestCb);
+ros::Subscriber<std_msgs::Int32> TNorth_PWM_Sub("/pwm/sidewardFront", &TNorthCb);
+ros::Subscriber<std_msgs::Int32> TSouth_PWM_Sub("/pwm/sidewardBack", &TSouthCb);
+ros::Subscriber<std_msgs::Int32> TNW_PWM_Sub("/pwm/upwardNorthWest", &TNWUpCb);
+ros::Subscriber<std_msgs::Int32> TNE_PWM_Sub("/pwm/upwardNorthEast", &TNEUpCb);
+ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/pwm/upwardSouthEast", &TSEUpCb);
+ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/pwm/upwardSouthWest", &TSWUpCb);
 
 // declare publishers
 std_msgs::Float32 pressure_msg;
@@ -81,16 +85,20 @@ ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
 void setup()
 {
     //setting up thruster pins
-    T_NORTH_EAST_UP.setup();
-    T_NORTH_WEST_UP.setup();
-    T_SOUTH_EAST_UP.setup();
-    T_SOUTH_WEST_UP.setup();
+    // T_NORTH_EAST_UP.setup();
+    // T_NORTH_WEST_UP.setup();
+    // T_SOUTH_EAST_UP.setup();
+    // T_SOUTH_WEST_UP.setup();
 
     // calibrating ESCs
     T_EAST.calibrate();
     T_WEST.calibrate();
     T_NORTH.calibrate();
     T_SOUTH.calibrate();
+    T_NORTH_EAST_UP.calibrate();
+    T_NORTH_WEST_UP.calibrate();
+    T_SOUTH_EAST_UP.calibrate();
+    T_SOUTH_WEST_UP.calibrate();
  
     // setting up pressure sensor
     Wire.begin();
@@ -126,7 +134,7 @@ void setup()
     TNorthCb(v);
     TSouthCb(v);
     
-    v.data = 0;
+    // v.data = 0;
     TNEUpCb(v);
     TNWUpCb(v);
     TSEUpCb(v);
@@ -198,20 +206,20 @@ void TSouthCb(const std_msgs::Int32& msg)
 
 void TNEUpCb(const std_msgs::Int32& msg)
 {
-    T_NORTH_EAST_UP.spin(msg.data);
+    T_NORTH_EAST_UP.speed(msg.data);
 }
 
 void TSEUpCb(const std_msgs::Int32& msg)
 {
-    T_NORTH_WEST_UP.spin(msg.data);
+    T_NORTH_WEST_UP.speed(msg.data);
 }
 
 void TNWUpCb(const std_msgs::Int32& msg)
 {
-    T_SOUTH_WEST_UP.spin(msg.data);
+    T_SOUTH_WEST_UP.speed(msg.data);
 }
 
 void TSWUpCb(const std_msgs::Int32& msg)
 {
-    T_SOUTH_EAST_UP.spin(msg.data);
+    T_SOUTH_EAST_UP.speed(msg.data);
 }

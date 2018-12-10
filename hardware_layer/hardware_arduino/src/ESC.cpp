@@ -27,7 +27,7 @@ void ESC::arm()
     delay(calib_delay_);
 }
 
-//speed method contorls the speed of the T200 thruster (considering that outputESC is in the range of the ESC
+// speed method contorls the speed of the T200 thruster (considering that outputESC is in the range of the ESC
 void ESC::speed(int outputESC)
 {
     ESC_.writeMicroseconds(outputESC);

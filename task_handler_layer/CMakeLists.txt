@@ -10,7 +10,6 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
-  geometry_msgs
   message_generation
   roscpp
   rospy
@@ -70,7 +69,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs geometry_msgs std_msgs
+  actionlib_msgs std_msgs
 )
 
 ################################################
@@ -105,7 +104,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES singleBuoy line gate moveForward moveSideward moveStraight
-  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation roscpp rospy std_msgs motion_layer
+  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs motion_layer message_generation
   # DEPENDS system_lib
 )
 

@@ -37,13 +37,17 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     this->current_value_ = _current_value;
 
     if (this->name_ == "ANGLE") {
-        if (this->reference_value_ >= 180)
+        if (this->reference_value_ >= 180) {
             this->reference_value_ = this->reference_value_ - 360;
-        else if (this->reference_value_ <= -180)
+        }
+        else if (this->reference_value_ <= -180) {
             this->reference_value_ = this->reference_value_ + 360;
+        }
     }
+
     float derivative = 0, integral = 0;
     double dt = 0;
+    
     if (this->name_ == "ANGLE") { dt = 0.02; }
     else { dt = 0.1; }
 
@@ -75,10 +79,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     else
         turningOutputPWMMapping(2*output);
 
-    if (this->error_ < this->band_ && this->error_ > -this->band_)
-    {
-        this->pwm_ = 0;
-    }
+    if (this->error_ < this->band_ && this->error_ > -this->band_) { this->pwm_ = 0; }
 }
 
 void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM values within a limit
@@ -98,10 +99,6 @@ void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM value
     this->pwm_ = output_pwm;
 }
 
-int ErrorDescriptor::getPWM() {
-    return this->pwm_;
-}
+int ErrorDescriptor::getPWM() { return this->pwm_; }
 
-double ErrorDescriptor::getCurrentValue() {
-    return this->current_value_;
-}
+double ErrorDescriptor::getCurrentValue() { return this->current_value_; }

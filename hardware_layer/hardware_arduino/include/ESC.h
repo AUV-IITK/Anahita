@@ -9,16 +9,16 @@
 class ESC
 {
     public:
-        //constructor to initialise the ESC
+        // constructor to initialise the ESC
         ESC(byte ESC_pin, int maxReverse, int maxForward, int armVal);
     
-        //function to calibrate
+        // function to calibrate
         void calibrate();
     
-        //function to arm the ESC to accept the input signals
+        // function to arm the ESC to accept the input signals
         void arm(void);
     
-        //function to control the speed of ESC
+        // function to control the speed of ESC
         void speed(int ESC_val);
     
     private:
