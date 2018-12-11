@@ -93,10 +93,14 @@ void setup()
     delay(7000);
     Serial.print("Successfully started servos");    
     
-    
+   
     // setting up pressure sensor
     Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
+    pressure_sensor.init();
+     
+    //This function causes problem while running
+    /*
     while (!pressure_sensor.init())
     {
         nh.loginfo("Init failed!");
@@ -104,30 +108,31 @@ void setup()
         nh.loginfo("Blue Robotics Bar30: White=SDA, Green=SCL");
         nh.loginfo("\n\n");
         delay(5000);
-    }
+    }*/
     pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)*/
+    
 
-     //initialize ROS node
-      nh.initNode();
-      nh.getHardware()->setBaud(57600);
+    //initialize ROS node
+    nh.initNode();
+    nh.getHardware()->setBaud(57600);
 
-     //start ros_node
-      nh.subscribe(TEast_PWM_Sub);
-      nh.subscribe(TWest_PWM_Sub);
-      nh.subscribe(TNorth_PWM_Sub);
-      nh.subscribe(TSouth_PWM_Sub);
-      nh.subscribe(TNW_PWM_Sub);
-      nh.subscribe(TNE_PWM_Sub);
-      nh.subscribe(TSW_PWM_Sub);
-      nh.subscribe(TSE_PWM_Sub);
+    //start ros_node
+    nh.subscribe(TEast_PWM_Sub);
+    nh.subscribe(TWest_PWM_Sub);
+    nh.subscribe(TNorth_PWM_Sub);
+    nh.subscribe(TSouth_PWM_Sub);
+    nh.subscribe(TNW_PWM_Sub);
+    nh.subscribe(TNE_PWM_Sub);
+    nh.subscribe(TSW_PWM_Sub);
+    nh.subscribe(TSE_PWM_Sub);
 
 
     // publisher
-      nh.advertise(ps_pressure_pub);
-      nh.advertise(ps_depth_pub);
+    nh.advertise(ps_pressure_pub);
+    nh.advertise(ps_depth_pub);
 
-     while (!nh.connected())
-     {
+    while (!nh.connected())
+    {
          nh.spinOnce();
     }
     nh.loginfo("Anahita CONNECTED");
@@ -135,7 +140,7 @@ void setup()
 
 void loop()
 {
-    static unsigned long prev_pressure_time = 0;
+     static unsigned long prev_pressure_time = 0;
 
     //this block publishes the pressure sensor data based on defined rate
     if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
@@ -143,8 +148,9 @@ void loop()
         publish_pressure_data();
         prev_pressure_time = millis();
     }
+        
     
-    nh.loginfo("recieved");
+    nh.loginfo("Data being recieved");
     delay(10);
     
     nh.spinOnce();
@@ -156,8 +162,7 @@ void publish_pressure_data()
     pressure_sensor.read();
     pressure_msg.header.frame_id = "pressure_sensor_link";
     pressure_msg.header.stamp = nh.now();
-//    pressure_msg.data = pressure_sensor.pressure(100);
-    pressure_msg.fluid_pressure = pressure_sensor.pressure(100);
+    pressure_msg.fluid_pressure = pressure_sensor.pressure();
 
     depth_msg.header.frame_id = "depth_sensor_link";
     depth_msg.header.stamp = pressure_msg.header.stamp;
