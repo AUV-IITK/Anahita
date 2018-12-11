@@ -5,8 +5,8 @@
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
-// #include <hyperion_msgs/Depth.h>
-// #include <hyperion_msgs/Pressure.h>
+#include <hyperion_msgs/Depth.h>
+#include <hyperion_msgs/Pressure.h>
 
 #include "MS5837.h"
 #include "ArduinoConfig.h"
@@ -37,7 +37,7 @@ ros::NodeHandle nh;
 #define PRESSURE_PUBLISH_RATE 10
 
 // pressure sensor
-//MS5837 pressure_sensor;
+MS5837 pressure_sensor;
 
 
 // declare subscribers
@@ -51,14 +51,14 @@ ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/pwm/upwardSouthEast", &TSEUpCb);
 ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/pwm/upwardSouthWest", &TSWUpCb);
 
 // function declration to puboish pressure sensor data
-//void publish_pressure_data();
+void publish_pressure_data();
 
 // declaration of callback functions for all thrusters
 // declare publishers
-//std_msgs::Float32 pressure_msg;
-//ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
-// hyperion_msgs::Pressure depth_msg;
-// ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
+hyperion_msgs::Pressure pressure_msg;
+ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
+hyperion_msgs::Depth depth_msg;
+ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 void setup()
 {
@@ -95,9 +95,9 @@ void setup()
     
     
     // setting up pressure sensor
-  //  Wire.begin();
+    Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
-    /*while (!pressure_sensor.init())
+    while (!pressure_sensor.init())
     {
         nh.loginfo("Init failed!");
         nh.loginfo("Are SDA/SCL connected correctly?");
@@ -123,8 +123,8 @@ void setup()
 
 
     // publisher
-    // nh.advertise(ps_pressure_pub);
-    // nh.advertise(ps_depth_pub);
+      nh.advertise(ps_pressure_pub);
+      nh.advertise(ps_depth_pub);
 
      while (!nh.connected())
      {
@@ -135,15 +135,15 @@ void setup()
 
 void loop()
 {
-   /* static unsigned long prev_pressure_time = 0;
+    static unsigned long prev_pressure_time = 0;
 
     //this block publishes the pressure sensor data based on defined rate
     if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
     {
         publish_pressure_data();
         prev_pressure_time = millis();
-    }*/
-
+    }
+    
     nh.loginfo("recieved");
     delay(10);
     
@@ -151,21 +151,21 @@ void loop()
 }
 
 // function definition for publish_pressure_data
-/*void publish_pressure_data()
+void publish_pressure_data()
 {
     pressure_sensor.read();
-    // pressure_msg.header.frame_id = "pressure_sensor_link";
-    // pressure_msg.header.stamp = nh.now();
-    pressure_msg.data = pressure_sensor.pressure(100);
-    // pressure_msg.fluid_pressure = pressure_sensor.pressure(100);
+    pressure_msg.header.frame_id = "pressure_sensor_link";
+    pressure_msg.header.stamp = nh.now();
+//    pressure_msg.data = pressure_sensor.pressure(100);
+    pressure_msg.fluid_pressure = pressure_sensor.pressure(100);
 
-    // depth_msg.header.frame_id = "depth_sensor_link"
-    // depth_msg.header.stamp = pressure_sensor.header.time;
-    // depth_msg.depth = pressure_sensor.depth();
+    depth_msg.header.frame_id = "depth_sensor_link";
+    depth_msg.header.stamp = pressure_msg.header.stamp;
+    depth_msg.depth = pressure_sensor.depth();
 
-    // ps_depth_pub.publish(depth);
+    ps_depth_pub.publish(&depth_msg);
     ps_pressure_pub.publish(&pressure_msg);
-}*/
+}
 
 
 // definition of callback function
