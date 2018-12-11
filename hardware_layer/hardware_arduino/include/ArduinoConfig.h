@@ -16,30 +16,21 @@ ROBOT ORIENTATION
                        SOUTH
 */
 
-#define servoPinEast 2       // pin definitions for forward thrusters
-#define servoPinWest 3
+#define servoEastPin 40       // pin definitions for forward thrusters
+#define servoWestPin 43
 
-#define servoPinNorthSway 4   // pin definitions for sideward thrusters
-#define servoPinSouthSway 5
+#define servoNorthSwayPin 31   // pin definitions for sideward thrusters
+#define servoSouthSwayPin 30
 
-#define servoPinNorthWestUp 6   // pin definitions for upward thrusters
-#define servoPinSouthWestUp 7
-#define servoPinNorthEastUp 8   
-#define servoPinSouthEastUp 9
+#define servoNorthWestUpPin 32  // pin definitions for upward thrusters
+#define servoSouthWestUpPin 33
+#define servoNorthEastUpPin 29   
+#define servoSouthEastUpPin 26
 
-// #define pwmPinNorthWestUp 6     // pin definitions for upward east side thrusters
-// #define pwmPinSouthWestUp 7
-// #define directionPinNorthWestUp1 8 
-// #define directionPinNorthWestUp2 9
-// #define directionPinSouthWestUp1 10
-// #define directionPinSouthWestUp2 11
-
-// #define pwmPinNorthEastUp 12      // pin definitions for upward west side thrusters
-// #define pwmPinSouthEastUp 13
-// #define directionPinNorthEastUp1 14
-// #define directionPinNorthEastUp2 15
-// #define directionPinSouthEastUp1 16
-// #define directionPinSouthEastUp2 17
+#define permanentGround1 28
+#define permanentGround1 27
+#define permanentGround1 41
+#define permanentGround1 43
 
 #define analogPinPressureSensor A0      //pin definition for depth sensor
 
