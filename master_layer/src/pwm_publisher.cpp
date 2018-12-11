@@ -25,49 +25,55 @@ int main(int argc, char** argv) {
 
     int pwm_sideward_back_straight;
     int pwm_sideward_front_straight;
-    int pwm_sideward_back_turn;
-    int pwm_sideward_front_turn;
-    int pwm_forward_left_turn;
-    int pwm_forward_right_turn;
+    // int pwm_sideward_back_turn;
+    // int pwm_sideward_front_turn;
+    // int pwm_forward_left_turn;
+    // int pwm_forward_right_turn;
     int pwm_forward_left_straight;
     int pwm_forward_right_straight;
-    int pwm_upward_back;
-    int pwm_upward_front;
+    // int pwm_upward_back;
+    // int pwm_upward_front;
+    int pwm_turn;
+    int pwm_upward;
 
     nh.setParam("/pwm_forward_left", 0);
     nh.setParam("/pwm_forward_right", 0);
-    nh.setParam("/pwm_upward_front", 0);
-    nh.setParam("/pwm_upward_back", 0);
+    // nh.setParam("/pwm_upward_front", 0);
+    // nh.setParam("/pwm_upward_back", 0);
     nh.setParam("/pwm_sideward_back_straight", 0);
     nh.setParam("/pwm_sideward_front_straight", 0);
-    nh.setParam("/pwm_sideward_front_turn", 0);
-    nh.setParam("/pwm_sideward_back_turn", 0);
+    // nh.setParam("/pwm_sideward_front_turn", 0);
+    // nh.setParam("/pwm_sideward_back_turn", 0);
+    nh.setParam("/pwm_turn", 0);
+    nh.setParam("/pwm_upward", 0);
 
     ros::Rate r(50);
 
     while(ros::ok()) {
-        nh.getParam("/pwm_forward_left_turn", pwm_forward_left_turn);
-        nh.getParam("/pwm_forward_right_turn", pwm_forward_right_turn);
+        // nh.getParam("/pwm_forward_left_turn", pwm_forward_left_turn);
+        // nh.getParam("/pwm_forward_right_turn", pwm_forward_right_turn);
         nh.getParam("/pwm_forward_left_straight", pwm_forward_left_straight);
         nh.getParam("/pwm_forward_right_straight", pwm_forward_right_straight);
-        nh.getParam("/pwm_upward_front", pwm_upward_front);
-        nh.getParam("/pwm_upward_back", pwm_upward_back);
+        // nh.getParam("/pwm_upward_front", pwm_upward_front);
+        // nh.getParam("/pwm_upward_back", pwm_upward_back);
         nh.getParam("/pwm_sideward_back_straight", pwm_sideward_back_straight);
         nh.getParam("/pwm_sideward_front_straight", pwm_sideward_front_straight);
-        nh.getParam("/pwm_sideward_front_turn", pwm_sideward_front_turn);
-        nh.getParam("/pwm_sideward_back_turn", pwm_sideward_back_turn);
+        // nh.getParam("/pwm_sideward_front_turn", pwm_sideward_front_turn);
+        // nh.getParam("/pwm_sideward_back_turn", pwm_sideward_back_turn);
+        nh.getParam("/pwm_turn", pwm_turn);
+        nh.getParam("/pwm_upward", pwm_upward);
 
-        pwm_forward_left.data = pwm_forward_left_straight + pwm_forward_left_turn;
-        pwm_forward_right.data = pwm_forward_right_straight + pwm_forward_right_turn;
+        pwm_forward_left.data = pwm_forward_left_straight + pwm_turn;
+        pwm_forward_right.data = pwm_forward_right_straight - pwm_turn;
 
-        pwm_sideward_back.data = pwm_sideward_back_straight + pwm_sideward_back_turn;
-        pwm_sideward_front.data = pwm_sideward_front_straight + pwm_sideward_front_turn;
+        pwm_sideward_back.data = pwm_sideward_back_straight - pwm_turn;
+        pwm_sideward_front.data = pwm_sideward_front_straight + pwm_turn;
 
-        pwm_upward_north_east.data = pwm_upward_front/2;
-        pwm_upward_north_west.data = pwm_upward_front/2;
+        pwm_upward_north_east.data = pwm_upward;
+        pwm_upward_north_west.data = pwm_upward;
 
-        pwm_upward_south_east.data = pwm_upward_back/2;
-        pwm_upward_south_west.data = pwm_upward_back/2;
+        pwm_upward_south_east.data = pwm_upward;
+        pwm_upward_south_west.data = pwm_upward;
 
         frontSidewardPublisher.publish(pwm_sideward_front);
         backSidewardPublisher.publish(pwm_sideward_back);

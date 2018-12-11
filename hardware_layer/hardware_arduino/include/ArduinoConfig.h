@@ -12,24 +12,29 @@ ROBOT ORIENTATION
                     |    -    |
                     |         |
        SOUTH-WEST-UP|         |SOUTH-EAST-UP
-                    -----------  
+                    -----------
                        SOUTH
 */
 
-#define servoPinEast 2       // pin definitions for forward thrusters
-#define servoPinWest 3
+#define servoPinEast 40      // pin definitions for forward thrusters
+#define servoPinWest 43
 
-#define servoPinNorthSway 4   // pin definitions for sideward thrusters
-#define servoPinSouthSway 5
+#define servoPinNorthSway 31   // pin definitions for sideward thrusters
+#define servoPinSouthSway 30
 
 #define servoPinNorthWestUp 6   // pin definitions for upward thrusters
 #define servoPinSouthWestUp 7
-#define servoPinNorthEastUp 8   
+#define servoPinNorthEastUp 8
 #define servoPinSouthEastUp 9
+
+#define permanentGround_1 26   // he pins are defined to keep them permamenent ground for ESCs
+#define permanentGround_2 29
+#define permanentGround_3 41
+#define permanentGround_4 42
 
 // #define pwmPinNorthWestUp 6     // pin definitions for upward east side thrusters
 // #define pwmPinSouthWestUp 7
-// #define directionPinNorthWestUp1 8 
+// #define directionPinNorthWestUp1 8
 // #define directionPinNorthWestUp2 9
 // #define directionPinSouthWestUp1 10
 // #define directionPinSouthWestUp2 11

@@ -15,6 +15,8 @@
 
 // define rate at which sensor data should be published (in Hz)
 #define PRESSURE_PUBLISH_RATE 10
+std_msgs::Int32 ESC_zero;
+// ESC_zero.data = 1500;
 
 // pressure sensor
 MS5837 pressure_sensor;
@@ -30,11 +32,11 @@ ROBOT ORIENTATION
                     |    -    |
                     |         |
        SOUTH-WEST-UP|         |SOUTH-EAST-UP
-                    -----------  
+                    -----------
                        SOUTH
 */
 
-// declaration of ESC objects for T200 thrusters 
+// declaration of ESC objects for T200 thrusters
 ESC T_EAST(servoPinEast,1100,1900,1500);
 ESC T_WEST(servoPinWest,1100,1900,1500);
 ESC T_NORTH(servoPinNorthSway,1100,1900,1500);
@@ -89,6 +91,7 @@ void setup()
     // T_NORTH_WEST_UP.setup();
     // T_SOUTH_EAST_UP.setup();
     // T_SOUTH_WEST_UP.setup();
+    ESC_zero.data = 1500;
 
     // calibrating ESCs
     T_EAST.calibrate();
@@ -99,7 +102,7 @@ void setup()
     T_NORTH_WEST_UP.calibrate();
     T_SOUTH_EAST_UP.calibrate();
     T_SOUTH_WEST_UP.calibrate();
- 
+
     // setting up pressure sensor
     Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
@@ -127,18 +130,18 @@ void setup()
     nh.subscribe(TSE_PWM_Sub);
 
     // sending initial message to all thrusters to stop
-    std_msgs::Int32 v;
-    v.data = 1500;
-    TEastCb(v);
-    TWestCb(v);
-    TNorthCb(v);
-    TSouthCb(v);
-    
+    //std_msgs::Int32 v;
+    // v.data = 1500;
+    TEastCb(ESC_zero);
+    TWestCb(ESC_zero);
+    TNorthCb(ESC_zero);
+    TSouthCb(ESC_zero);
+
     // v.data = 0;
-    TNEUpCb(v);
-    TNWUpCb(v);
-    TSEUpCb(v);
-    TSWUpCb(v);
+    TNEUpCb(ESC_zero);
+    TNWUpCb(ESC_zero);
+    TSEUpCb(ESC_zero);
+    TSWUpCb(ESC_zero);
 
     // publisher
     nh.advertise(ps_pressure_pub);
@@ -161,6 +164,11 @@ void loop()
         publish_pressure_data();
         prev_pressure_time = millis();
     }
+
+    digitalWrite(permanentGround_1, LOW);
+    digitalWrite(permanentGround_2, LOW);
+    digitalWrite(permanentGround_3, LOW);
+    digitalWrite(permanentGround_4, LOW);
 
     nh.spinOnce();
 }
@@ -185,41 +193,41 @@ void publish_pressure_data()
 // definition of callback functions
 void TEastCb(const std_msgs::Int32& msg)
 {
-    T_EAST.speed(msg.data);
+    T_EAST.speed(ESC_zero.data + msg.data);
 }
 
 
 void TWestCb(const std_msgs::Int32& msg)
 {
-    T_WEST.speed(msg.data);
+    T_WEST.speed(ESC_zero.data + msg.data);
 }
 
 void TNorthCb(const std_msgs::Int32& msg)
 {
-   T_NORTH.speed(msg.data);
+   T_NORTH.speed(ESC_zero.data + msg.data);
 }
 
 void TSouthCb(const std_msgs::Int32& msg)
 {
-    T_SOUTH.speed(msg.data);
+    T_SOUTH.speed(ESC_zero.data + msg.data);
 }
 
 void TNEUpCb(const std_msgs::Int32& msg)
 {
-    T_NORTH_EAST_UP.speed(msg.data);
+    T_NORTH_EAST_UP.speed(ESC_zero.data + msg.data);
 }
 
 void TSEUpCb(const std_msgs::Int32& msg)
 {
-    T_NORTH_WEST_UP.speed(msg.data);
+    T_NORTH_WEST_UP.speed(ESC_zero.data + msg.data);
 }
 
 void TNWUpCb(const std_msgs::Int32& msg)
 {
-    T_SOUTH_WEST_UP.speed(msg.data);
+    T_SOUTH_WEST_UP.speed(ESC_zero.data + msg.data);
 }
 
 void TSWUpCb(const std_msgs::Int32& msg)
 {
-    T_SOUTH_EAST_UP.speed(msg.data);
+    T_SOUTH_EAST_UP.speed(ESC_zero.data + msg.data);
 }
