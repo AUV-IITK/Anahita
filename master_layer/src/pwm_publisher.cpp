@@ -63,17 +63,17 @@ int main(int argc, char** argv) {
         nh.getParam("/pwm_turn", pwm_turn);
         nh.getParam("/pwm_upward", pwm_upward);
 
-        pwm_forward_left.data = pwm_forward_left_straight + pwm_turn;
-        pwm_forward_right.data = pwm_forward_right_straight - pwm_turn;
+        pwm_forward_left.data = -pwm_forward_left_straight - pwm_turn;
+        pwm_forward_right.data = -pwm_forward_right_straight + pwm_turn;
 
-        pwm_sideward_back.data = pwm_sideward_back_straight - pwm_turn;
-        pwm_sideward_front.data = pwm_sideward_front_straight + pwm_turn;
+        pwm_sideward_back.data = -pwm_sideward_back_straight + pwm_turn;
+        pwm_sideward_front.data = -pwm_sideward_front_straight - pwm_turn;
 
-        pwm_upward_north_east.data = pwm_upward;
-        pwm_upward_north_west.data = pwm_upward;
+        pwm_upward_north_east.data = -pwm_upward;
+        pwm_upward_north_west.data = -pwm_upward;
 
-        pwm_upward_south_east.data = pwm_upward;
-        pwm_upward_south_west.data = pwm_upward;
+        pwm_upward_south_east.data = -pwm_upward;
+        pwm_upward_south_west.data = -pwm_upward;
 
         frontSidewardPublisher.publish(pwm_sideward_front);
         backSidewardPublisher.publish(pwm_sideward_back);
