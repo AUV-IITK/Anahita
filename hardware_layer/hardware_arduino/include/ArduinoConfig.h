@@ -28,9 +28,9 @@ ROBOT ORIENTATION
 #define servoSouthEastUpPin 26
 
 #define permanentGround1 28
-#define permanentGround1 27
-#define permanentGround1 41
-#define permanentGround1 43
+#define permanentGround2 27
+#define permanentGround3 41
+#define permanentGround4 43
 
 #define analogPinPressureSensor A0      //pin definition for depth sensor
 
