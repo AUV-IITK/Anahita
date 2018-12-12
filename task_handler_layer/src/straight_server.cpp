@@ -1,8 +1,8 @@
 #include <straight_server.h>
 
 moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") {
-    nh.setParam("/pwm_forward_right", pwm_);
-    nh.setParam("/pwm_forward_left", pwm_);
+    nh.setParam("/pwm_forward_right_straight", pwm_);
+    nh.setParam("/pwm_forward_left_straight", pwm_);
     goalReceived = false;
     sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveStraight::imuAngleCB, this);
     spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));

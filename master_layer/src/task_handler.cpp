@@ -13,6 +13,8 @@ taskHandler::taskHandler (double _timeout) {
 
     time_out_ =  _timeout;
 
+    ros::Time::init();
+
     spin_thread_ = new boost::thread(boost::bind(&taskHandler::spinThread, this));
     vision_sub_ = nh_.subscribe("/detected", 1, &taskHandler::visionCB, this);
 }

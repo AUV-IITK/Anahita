@@ -4,9 +4,9 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
                                     sidewardPIDClient_("sidewardPID") 
 {
     angle_sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveForward::imuAngleCB, this);
-    depth_sub_ = nh.subscribe("/varun/sensors/depth", 1, &moveForward::depthCB, this);
-    nh.setParam("/pwm_forward_right", pwm_);
-    nh.setParam("/pwm_forward_left", pwm_);
+    depth_sub_ = nh.subscribe("/pressure_sensor/depth", 1, &moveForward::depthCB, this);
+    nh.setParam("/pwm_forward_right_straight", pwm_);
+    nh.setParam("/pwm_forward_left_straight", pwm_);
 
     depthGoalReceived = false;
     angleGoalReceived = false;
@@ -95,6 +95,6 @@ void moveForward::depthCB(const std_msgs::Float64Ptr &_msg) {
 }
 
 void moveForward::setThrust(int _pwm) {
-    nh.setParam("/pwm_forward_right", _pwm);
-    nh.setParam("/pwm_forward_left", _pwm);
+    nh.setParam("/pwm_forward_right_straight", _pwm);
+    nh.setParam("/pwm_forward_left_straight", _pwm);
 }
