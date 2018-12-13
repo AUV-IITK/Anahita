@@ -79,17 +79,17 @@ catkin_make hardware_arduino_firmware_arduino_node-upload
 ## Robot Orientation
 
 ```
-          FRONT
-          -----
-          SWAY1
-          HEAVE1
-            -
-  SURGE1           SURGE2
-            -
-          HEAVE2
-          SWAY2
-          -----
-          BACK
+                 FRONT
+                 -----
+      NWUp                    NEUp
+             sidewardFront
+                   -
+  ForwardLeft             ForwardRight
+                   -
+             sidewardBack
+      SWUp                    SEUp    
+                 -----
+                  BACK
 ```
 
 For technical definition of terms, refer to documentation [here](https://en.wikipedia.org/wiki/Ship_motions).
@@ -110,15 +110,18 @@ Subscribes to topics with PWM data and actuate the thrusters with that duty cycl
 __NOTE:__ Pins configurations are specified in the [ArduinoConfig.h](include/ArduinoConfig.h) file.
 
 #### Subscribed Topics
-* **`/thruster/surge1/pwm`** ([std_msgs/Int32])
-* **`/thruster/surge2/pwm`** ([std_msgs/Int32])
-* **`/thruster/heave1/pwm`** ([std_msgs/Int32])
-* **`/thruster/heave2/pwm`** ([std_msgs/Int32])
-* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
-* **`/thruster/sway1/pwm`** ([std_msgs/Int32])
+* **`/pwm/forwardRight`** ([std_msgs/Int32])
+* **`/pwm/forwardLeft`** ([std_msgs/Int32])
+* **`/pwm/sidewardFront`** ([std_msgs/Int32])
+* **`/pwm/sidewardBack`** ([std_msgs/Int32])
+* **`/pwm/upwardNorthWest`** ([std_msgs/Int32])
+* **`/pwm/upwardNorthEast`** ([std_msgs/Int32])
+* **`/pwm/upwardSouthEast`** ([std_msgs/Int32])
+* **`/pwm/upwardSouthWest`** ([std_msgs/Int32])
 
 #### Published Topics
-* **`/pressure_sensor/pressure`** ([underwater_sensor_msgs/Pressure]): Pressure sensor data (in Pascals)
+* **`/pressure_sensor/pressure`** (std_msgs/Float32): Pressure sensor data (in Pascals)
+* **`/pressure_sensor/depth` ** (std_msgs/Float32): Depth from pressure sensor
 
 
 ## Bugs & Feature Requests
@@ -126,4 +129,4 @@ __NOTE:__ Pins configurations are specified in the [ArduinoConfig.h](include/Ard
 Please report bugs and request features using the [Issue Tracker](https://github.com/AUV-IITK/auv2017/issues).
 
 [std_msgs/Int32]: http://docs.ros.org/api/std_msgs/html/msg/Int32.html
-[underwater_sensor_msgs/Pressure]: http://docs.ros.org/hydro/api/underwater_sensor_msgs/html/msg/Pressure.html
+[std_msgs/Float32]: http://docs.ros.org/api/std_msgs/html/msg/Float32.html
