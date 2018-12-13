@@ -5,8 +5,8 @@
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
-#include <hyperion_msgs/Depth.h>
-#include <hyperion_msgs/Pressure.h>
+//#include <hyperion_msgs/Depth.h>
+//#include <hyperion_msgs/Pressure.h>
 
 #include "MS5837.h"
 #include "ArduinoConfig.h"
