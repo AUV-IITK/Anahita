@@ -10,7 +10,6 @@
 
 #include "MS5837.h"
 #include "ArduinoConfig.h"
-#include "ESC.h"
 
 Servo servoEast;
 Servo servoWest;
@@ -31,6 +30,7 @@ void TNWUpCb(const std_msgs::Int32& msg);
 void TSWUpCb(const std_msgs::Int32& msg);
 
 int ESC_Zero = 1500;
+int deadZone = 25;
 ros::NodeHandle nh;
 
 // define rate at which sensor data should be published (in Hz)
@@ -38,7 +38,6 @@ ros::NodeHandle nh;
 
 // pressure sensor
 MS5837 pressure_sensor;
-
 
 // declare subscribers
 ros::Subscriber<std_msgs::Int32> TEast_PWM_Sub("/pwm/forwardRight", &TEastCb);
@@ -55,9 +54,9 @@ void publish_pressure_data();
 
 // declaration of callback functions for all thrusters
 // declare publishers
-hyperion_msgs::Pressure pressure_msg;
+std_msgs::Float32 pressure_msg;
 ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
-hyperion_msgs::Depth depth_msg;
+std_msgs::Float32 depth_msg;
 ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 void setup()
@@ -98,20 +97,8 @@ void setup()
     Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
     pressure_sensor.init();
-     
-    //This function causes problem while running
-    /*
-    while (!pressure_sensor.init())
-    {
-        nh.loginfo("Init failed!");
-        nh.loginfo("Are SDA/SCL connected correctly?");
-        nh.loginfo("Blue Robotics Bar30: White=SDA, Green=SCL");
-        nh.loginfo("\n\n");
-        delay(5000);
-    }*/
     pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)*/
     
-
     //initialize ROS node
     nh.initNode();
     nh.getHardware()->setBaud(57600);
@@ -125,7 +112,6 @@ void setup()
     nh.subscribe(TNE_PWM_Sub);
     nh.subscribe(TSW_PWM_Sub);
     nh.subscribe(TSE_PWM_Sub);
-
 
     // publisher
     nh.advertise(ps_pressure_pub);
@@ -160,49 +146,84 @@ void loop()
 void publish_pressure_data()
 {
     pressure_sensor.read();
-    pressure_msg.header.frame_id = "pressure_sensor_link";
-    pressure_msg.header.stamp = nh.now();
-    pressure_msg.fluid_pressure = pressure_sensor.pressure();
+    pressure_msg.data = pressure_sensor.pressure();
 
-    depth_msg.header.frame_id = "depth_sensor_link";
-    depth_msg.header.stamp = pressure_msg.header.stamp;
-    depth_msg.depth = pressure_sensor.depth();
+    depth_msg.data = pressure_sensor.depth();
 
     ps_depth_pub.publish(&depth_msg);
     ps_pressure_pub.publish(&pressure_msg);
 }
 
-
 // definition of callback function
 void TEastCb(const std_msgs::Int32& msg)
 {
-  servoEast.writeMicroseconds(ESC_Zero + msg.data);
+  if(msg.data>0)
+    servoEast.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoEast.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoEast.writeMicroseconds(ESC_Zero);
 }
 void TWestCb(const std_msgs::Int32& msg)
 {
-  servoWest.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoWest.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoWest.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoWest.writeMicroseconds(ESC_Zero);
 }
 void TNorthCb(const std_msgs::Int32& msg)
 {
-  servoNorthSway.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoNorthSway.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoNorthSway.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoNorthSway.writeMicroseconds(ESC_Zero);
 }
 void TSouthCb(const std_msgs::Int32& msg)
 {
-  servoSouthSway.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoSouthSway.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoSouthSway.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoSouthSway.writeMicroseconds(ESC_Zero);
 }
 void TNEUpCb(const std_msgs::Int32& msg)
 {
-  servoNorthWestUp.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoNorthEastUp.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoNorthEastUp.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoNorthEastUp.writeMicroseconds(ESC_Zero);
 }
 void TSEUpCb(const std_msgs::Int32& msg)
 {
-  servoNorthEastUp.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoSouthEastUp.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoSouthEastUp.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoSouthEastUp.writeMicroseconds(ESC_Zero);
 }
 void TNWUpCb(const std_msgs::Int32& msg)
 {
-  servoSouthEastUp.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoNorthWestUp.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoNorthWestUp.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoNorthWestUp.writeMicroseconds(ESC_Zero);
 }
 void TSWUpCb(const std_msgs::Int32& msg)
 {
-  servoSouthWestUp.writeMicroseconds(ESC_Zero + msg.data);
+   if(msg.data>0)
+    servoSouthWestUp.writeMicroseconds(ESC_Zero + msg.data + deadZone);
+  else if(msg.data<0)
+    servoSouthWestUp.writeMicroseconds(ESC_Zero + msg.data - deadZone);
+  else
+    servoSouthWestUp.writeMicroseconds(ESC_Zero);
 }
