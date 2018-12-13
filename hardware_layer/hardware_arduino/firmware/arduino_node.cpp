@@ -151,7 +151,7 @@ void publish_pressure_data()
     /** Depth returned in meters (valid for operation in incompressible
     *  liquids only. Uses density that is set for fresh or seawater.
     */
-    depth_msg.data = -pressure_sensor.depth();
+    depth_msg.data = -1*pressure_sensor.depth();
 
     ps_depth_pub.publish(&depth_msg);
     ps_pressure_pub.publish(&pressure_msg);
