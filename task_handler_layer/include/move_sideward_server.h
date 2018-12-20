@@ -22,14 +22,13 @@ protected:
     double angle;
     bool goalReceived;
 
-    boost::thread* spin_thread;
-    boost::thread* spin_thread_;
-
 public:
 
     moveSideward(int);
     ~moveSideward();
 
+    boost::thread* spin_thread;
+    boost::thread* spin_thread_;
     void setActive(bool);
     void setThrust(int);
     void imuAngleCB(const std_msgs::Float32Ptr &_msg);

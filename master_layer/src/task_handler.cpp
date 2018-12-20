@@ -5,6 +5,8 @@ taskHandler::taskHandler (double _timeout) {
     topic_map_["sideward"] = "/anahita/y_coordinate";
     topic_map_["forward"] = "/anahita/x_coordinate";
     topic_map_["angle"] = "/mavros/imu/yaw";
+    topic_map_["pitch"] = "/mavros/imu/pitch";
+    topic_map_["roll"] = "/mavros/imu/roll";
 
     task_map_["red_buoy"] = false;
     task_map_["green_buoy"] = false;

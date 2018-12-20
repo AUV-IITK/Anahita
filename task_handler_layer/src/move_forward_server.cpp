@@ -10,7 +10,7 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
 
     depthGoalReceived = false;
     angleGoalReceived = false;
-    spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
+    //spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
 }
 
 moveForward::~moveForward() {
@@ -18,7 +18,8 @@ moveForward::~moveForward() {
 
 void moveForward::setActive(bool status) {
     if (status == true) {
-        spin_thread = new boost::thread(boost::bind(&moveForward::spinThread, this));
+        spinThread();
+        spin_thread = new boost::thread(boost::bind(&moveForward::spinThread_, this));
     }
 
     if (status == false) {
@@ -30,6 +31,7 @@ void moveForward::setActive(bool status) {
         }
         sidewardPIDClient_.cancelGoal();
         spin_thread->join();
+        nh.setParam("/kill_signal", 1);
     }
 }
 
@@ -46,7 +48,7 @@ void moveForward::spinThread() {
     ROS_INFO("Waiting for upwardPID server to start.");
     upwardPIDClient_.waitForServer();
 
-    while (depthGoalReceived) {}
+    while (!depthGoalReceived) {}
 
     ROS_INFO("upwardPID server started, sending goal.");
     upward_PID_goal.target_depth = depth;
@@ -57,14 +59,16 @@ void moveForward::spinThread() {
     ROS_INFO("Waiting for anglePID server to start.");
     anglePIDClient_.waitForServer();
     
-    while (angleGoalReceived) {}
+    if (!angleGoalReceived) {}
 
     ROS_INFO("anglePID server started, sending goal.");
     angle_PID_goal.target_angle = angle;
     anglePIDClient_.sendGoal(angle_PID_goal);
+
 }
 
 void moveForward::spinThread_() {
+    ROS_INFO("Spinning the ros spin thread");
     ros::spin();
 }
 
@@ -84,12 +88,12 @@ void moveForward::setReferenceDepth(double depth_) {
     upwardPIDClient_.sendGoal(upward_PID_goal);
 }
 
-void moveForward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
+void moveForward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
     angle = _msg->data;
     angleGoalReceived = true;
 }
 
-void moveForward::depthCB(const std_msgs::Float64Ptr &_msg) {
+void moveForward::depthCB(const std_msgs::Float32Ptr &_msg) {
     depth = _msg->data;
     depthGoalReceived = true;
 }

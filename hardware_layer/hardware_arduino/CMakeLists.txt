@@ -49,11 +49,11 @@ rosserial_generate_ros_lib(
   PACKAGE rosserial_arduino
   SCRIPT make_libraries.py
 )
-
-# add_dependencies(${PROJECT_NAME}_ros_lib
-#     hyperion_msgs_generate_messages
-#     hyperion_msgs_generate_messages_cpp
-# )
+ add_dependencies(#
+   #${PROJECT_NAME}_ros_lib
+   hyperion_msgs_generate_messages
+   hyperion_msgs_generate_messages_cpp
+)
 
 rosserial_configure_client(
   DIRECTORY firmware

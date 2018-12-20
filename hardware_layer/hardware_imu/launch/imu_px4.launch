@@ -1,7 +1,7 @@
 <!-- Launch file to bring up serial communications with the PX4-->
 <launch>
   <!-- Launch configuration -->
-  <arg name="fcu_url"     default="/dev/ttyACM0:921600"/>
+  <arg name="fcu_url"     default="/dev/ttyACM1:921600"/>
   <arg name="gcs_url"     default="udp://@172.16.254.1"/>
   <arg name="config_yaml" default="$(find hardware_imu)/cfg/px4_config.yaml" />
 
