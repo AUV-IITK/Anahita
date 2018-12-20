@@ -48,7 +48,7 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     if (!as_.isActive()) {
         return;
     }
-  ROS_INFO("INSIDE CALLBACK -----------_");
+    ROS_INFO("INSIDE CALLBACK -----------");
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;
@@ -63,5 +63,5 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_turn", angle.getPWM());
+    nh_.setParam("/pwm_yaw", angle.getPWM());
 }

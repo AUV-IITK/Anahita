@@ -58,7 +58,6 @@ void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_sideward_front_straight", y_coord.getPWM());
-    nh_.setParam("/pwm_sideward_back_straight", y_coord.getPWM());
+    nh_.setParam("/pwm_sway", y_coord.getPWM());
 }
 

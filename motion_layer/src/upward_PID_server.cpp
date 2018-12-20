@@ -58,7 +58,6 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
         pub_.publish(msg_);
     }
     ROS_INFO("PWM set as %d", z_coord.getPWM());
-    nh_.setParam("/pwm_upward_front", z_coord.getPWM());
-    nh_.setParam("/pwm_upward", z_coord.getPWM());
+    nh_.setParam("/pwm_heave", z_coord.getPWM());
 }
 

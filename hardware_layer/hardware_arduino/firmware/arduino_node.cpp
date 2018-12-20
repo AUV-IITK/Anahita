@@ -76,7 +76,6 @@ ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 void setup()
 {
-    nh.loginfo("Anahita CONNECTED");
     servoEast.attach(servoEastPin);
     servoEast.writeMicroseconds(ESC_Zero);
     servoNorthSway.attach(servoNorthSwayPin);
@@ -124,7 +123,6 @@ void setup()
     // publisher
     nh.advertise(ps_pressure_pub);
     nh.advertise(ps_depth_pub);
-    nh.loginfo("Anahita CONNECTED");
     
     while (!nh.connected())
     {
@@ -143,8 +141,6 @@ void loop()
         publish_pressure_data();
         prev_pressure_time = millis();
     }
-    // servoEast.writeMicroseconds(1575);
-    // servoWest.writeMicroseconds(1575);
     
     nh.loginfo("Data being recieved");
     delay(10);
@@ -165,19 +161,6 @@ void publish_pressure_data()
 
     ps_depth_pub.publish(&depth_msg);
     ps_pressure_pub.publish(&pressure_msg);
-}
-
-void PWMCb(const hyperion_msgs::Thrust& msg_)
-{
-    nh.loginfo("Inside PWM Callback");
-    TEast(msg_.forward_right);
-    TWest(msg_.forward_left);
-    TNorth(msg_.sideward_front);
-    TSouth(msg_.sideward_back);
-    TNEUp(msg_.upward_north_east);
-    TNWUp(msg_.upward_north_west);
-    TSEUp(msg_.upward_south_east);
-    TSWUp(msg_.upward_south_west); 
 }
 
 void TEast(const int data)
@@ -252,3 +235,17 @@ void TSWUp(const int data)
   else
     servoSouthWestUp.writeMicroseconds(ESC_Zero);
 }
+
+void PWMCb(const hyperion_msgs::Thrust& msg_)
+{
+    nh.loginfo("Inside PWM Callback");
+    TEast(msg_.forward_right);
+    TWest(msg_.forward_left);
+    TNorth(msg_.sideward_front);
+    TSouth(msg_.sideward_back);
+    TNEUp(msg_.upward_north_east);
+    TNWUp(msg_.upward_north_west);
+    TSEUp(msg_.upward_south_east);
+    TSWUp(msg_.upward_south_west); 
+}
+

@@ -47,8 +47,7 @@ void singleBuoy::setActive(bool status) {
 
         /////////////////////////////////////////////////////
         ROS_INFO("SETTING FRWARD PWM TO 50");
-        nh_.setParam("/pwm_forward_right_straight", 50);
-        nh_.setParam("/pwm_forward_left_straight", 50);
+        nh_.setParam("/pwm_surge", 50);
 
         while(forward_distance_ >= 40) {
             ROS_INFO("to maintain the distance move forward");
@@ -58,18 +57,15 @@ void singleBuoy::setActive(bool status) {
         std::cout<<forward_distance_<<std::endl;
 
         sidewardPIDClient.cancelGoal();
-        nh_.setParam("/pwm_sideward_back_straight", 0);
-        nh_.setParam("/pwm_sideward_front_straight", 0);
+        nh_.setParam("/pwm_sway", 0);
         //upwardPIDClient.cancelGoal();
 //        ros::Duration(6).sleep();
 
-        nh_.setParam("/pwm_forward_right_straight", 50);
-        nh_.setParam("/pwm_forward_left_straight", 50);
+        nh_.setParam("/pwm_surge", 50);
 
         ros::Duration(6).sleep();
         //////////////////////////////////////////////////////
-        nh_.setParam("/pwm_forward_right_straight", -50);
-        nh_.setParam("/pwm_forward_left_straight", -50);
+        nh_.setParam("/pwm_surge", -50);
         
         ros::Duration(8).sleep();
         
@@ -87,8 +83,8 @@ void singleBuoy::setActive(bool status) {
         //////////////////////////////////////////////////////
 
         ROS_INFO("ForwardPID Client sending goal again, task buoy.");
-        nh_.setParam("/kill_signal", 1);
-        int temp;
+        nh_.setParam("/kill_signal", true);
+        bool temp;
         nh_.getParam("/kill_signal", temp);
         ROS_INFO("kill signal is  %d", temp);
 

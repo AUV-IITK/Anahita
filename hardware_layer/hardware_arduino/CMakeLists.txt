@@ -29,7 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   # INCLUDE_DIRS include
   # LIBRARIES hardware_arduino
-  CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs hyperion_msgs
+  # CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs hyperion_msgs
   # DEPENDS system_lib
 )
 
@@ -41,6 +41,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include/
+  ${ROS_LIB_DIR}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -49,10 +50,10 @@ rosserial_generate_ros_lib(
   PACKAGE rosserial_arduino
   SCRIPT make_libraries.py
 )
- add_dependencies(#
-   #${PROJECT_NAME}_ros_lib
-   hyperion_msgs_generate_messages
-   hyperion_msgs_generate_messages_cpp
+
+add_dependencies(${PROJECT_NAME}_ros_lib
+  hyperion_msgs_generate_messages
+  hyperion_msgs_generate_messages_cpp
 )
 
 rosserial_configure_client(

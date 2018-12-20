@@ -74,10 +74,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     
     double output = (this->p_ * this->error_) + (this->i_ * integral) + std::abs(this->d_ * derivative);
 
-    if(this->name_ == "ANGLE")
-        turningOutputPWMMapping(output);
-    else
-        turningOutputPWMMapping(output);
+    turningOutputPWMMapping(output);
 
     if (this->error_ < this->band_ && this->error_ > -this->band_) { this->pwm_ = 0; }
 }

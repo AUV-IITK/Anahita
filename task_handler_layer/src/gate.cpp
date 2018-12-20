@@ -37,8 +37,8 @@ void gateTask::setActive(bool status) {
 
         /////////////////////////////////////////////////////
 
-        nh_.setParam("/pwm_forward_right", 100);
-        nh_.setParam("/pwm_forward_left", 100);
+        nh_.setParam("/pwm_surge", 100);
+        nh_.setParam("/pwm_surge", 100);
 
         while(forward_distance_ >= 100) {
             continue;
@@ -49,10 +49,7 @@ void gateTask::setActive(bool status) {
 
         anglePIDClient.cancelGoal();
 
-        nh_.setParam("/pwm_forward_right", 0);
-        nh_.setParam("/pwm_forward_left", 0);
-        nh_.setParam("/pwm_sideward_front", 0);
-        nh_.setParam("/pwm_sideward_back", 0);
+        nh_.setParam("/kill_signal", true);
     }
     else {
         spin_thread->join();

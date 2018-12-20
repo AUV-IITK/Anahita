@@ -1,12 +1,10 @@
 #include <straight_server.h>
 
 moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") {
-    nh.setParam("/pwm_forward_right_straight", pwm_);
-    nh.setParam("/pwm_forward_left_straight", pwm_);
+    nh.setParam("/pwm_surge", pwm_);
     goalReceived = false;
-    ROS_INFO("Params set");
     sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveStraight::imuAngleCB, this);
-    //spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
+    spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
 }
 
 moveStraight::~moveStraight() {
@@ -14,17 +12,16 @@ moveStraight::~moveStraight() {
 
 void moveStraight::setActive(bool status) {
     if (status) {
-        spinThread();
-        spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
+        spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
     else {
         if (goalReceived) {
             anglePIDClient.cancelGoal();
         }
-        //spin_thread_->join();
-        ROS_INFO("Forward completed");
+        spin_thread_->join();
+        ROS_INFO("Straight Server goal cancelled");
         spin_thread->join();
-        nh.setParam("/kill_signal",1);
+        nh.setParam("/kill_signal", 1);
     }
 }   
 
@@ -45,7 +42,7 @@ void moveStraight::spinThread() {
             break;
         }
     }
-    if (goalReceived_ref) {
+    if (goalReceived_ref) { 
         ROS_INFO("turnPID server started, sending goal.");
         angle_PID_goal.target_angle = angle;
         anglePIDClient.sendGoal(angle_PID_goal);
@@ -59,6 +56,5 @@ void moveStraight::spinThread_() {
 }
 
 void moveStraight::setThrust(int _pwm) {
-    nh.setParam("/pwm_forward_right_straight", _pwm);
-    nh.setParam("/pwm_forward_left_straight", _pwm);
+    nh.setParam("/pwm_surge", _pwm);
 }

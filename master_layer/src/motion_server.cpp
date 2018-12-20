@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     forwardPIDAction forward_motion("forwardPID");
     sidewardPIDAction sideward_motion("sidewardPID");
     upwardPIDAction upward_motion("upwardPID");
-    anglePIDAction turn_motion_vision("turnPID");
+    anglePIDAction turn_motion("turnPID");
     pitchPIDAction pitch_motion("pitchPID");
     rollPIDAction roll_motion("rollPID"); 
     

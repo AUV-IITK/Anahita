@@ -5,12 +5,11 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
 {
     angle_sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveForward::imuAngleCB, this);
     depth_sub_ = nh.subscribe("/pressure_sensor/depth", 1, &moveForward::depthCB, this);
-    nh.setParam("/pwm_forward_right_straight", pwm_);
-    nh.setParam("/pwm_forward_left_straight", pwm_);
+    nh.setParam("/pwm_surge", pwm_);
 
     depthGoalReceived = false;
     angleGoalReceived = false;
-    //spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
+    spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
 }
 
 moveForward::~moveForward() {
@@ -19,7 +18,7 @@ moveForward::~moveForward() {
 void moveForward::setActive(bool status) {
     if (status == true) {
         spinThread();
-        spin_thread = new boost::thread(boost::bind(&moveForward::spinThread_, this));
+        spin_thread = new boost::thread(boost::bind(&moveForward::spinThread, this));
     }
 
     if (status == false) {
@@ -32,6 +31,7 @@ void moveForward::setActive(bool status) {
         sidewardPIDClient_.cancelGoal();
         spin_thread->join();
         nh.setParam("/kill_signal", 1);
+        spin_thread_->join();
     }
 }
 
@@ -99,6 +99,5 @@ void moveForward::depthCB(const std_msgs::Float32Ptr &_msg) {
 }
 
 void moveForward::setThrust(int _pwm) {
-    nh.setParam("/pwm_forward_right_straight", _pwm);
-    nh.setParam("/pwm_forward_left_straight", _pwm);
+    nh.setParam("/pwm_surge", _pwm);
 }
