@@ -65,7 +65,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## Generate actions in the 'action' folder
 add_action_files(
   DIRECTORY action 
-  FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action
+  FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action pitchPID.action rollPID.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -104,7 +104,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES upwardPIDServer sidewardPIDServer forwardPIDServer anglePIDServer
+  LIBRARIES upwardPIDServer sidewardPIDServer forwardPIDServer anglePIDServer pitchPIDServer rollPIDServer
   CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation
   # DEPENDS system_lib
 )
@@ -148,6 +148,15 @@ target_link_libraries(forwardPIDServer errorToPWM ${catkin_LIBRARIES})
 add_library(sidewardPIDServer SHARED src/sideward_PID_server.cpp include/sideward_PID_server.h)
 add_dependencies(sidewardPIDServer motion_layer_generate_messages_cpp)
 target_link_libraries(sidewardPIDServer errorToPWM ${catkin_LIBRARIES})
+
+add_library(pitchPIDServer SHARED src/pitch_PID_server.cpp include/pitch_PID_server.h)
+add_dependencies(pitchPIDServer motion_layer_generate_messages_cpp)
+target_link_libraries(pitchPIDServer errorToPWM ${catkin_LIBRARIES})
+
+add_library(rollPIDServer SHARED src/roll_PID_server.cpp include/roll_PID_server.h)
+add_dependencies(rollPIDServer motion_layer_generate_messages_cpp)
+target_link_libraries(rollPIDServer errorToPWM ${catkin_LIBRARIES})
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

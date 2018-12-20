@@ -15,6 +15,8 @@ singleBuoy::~singleBuoy() {}
 void singleBuoy::setActive(bool status) {
 
     if (status) {
+        ros::Duration(1).sleep();
+
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
 
@@ -23,7 +25,7 @@ void singleBuoy::setActive(bool status) {
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
 
         ///////////////////////////////////////////////////
-
+/*
         ROS_INFO("Waiting for upwardPID server to start.");
         upwardPIDClient.waitForServer();
 
@@ -31,7 +33,7 @@ void singleBuoy::setActive(bool status) {
         upwardPIDgoal.target_depth = 0;
         upwardPIDClient.sendGoal(upwardPIDgoal);
 
-        ///////////////////////////////////////////////////
+  */      ///////////////////////////////////////////////////
 
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
@@ -44,53 +46,76 @@ void singleBuoy::setActive(bool status) {
         anglePIDClient.sendGoal(anglePIDGoal);
 
         /////////////////////////////////////////////////////
+        ROS_INFO("SETTING FRWARD PWM TO 50");
+        nh_.setParam("/pwm_forward_right_straight", 50);
+        nh_.setParam("/pwm_forward_left_straight", 50);
 
-        nh_.setParam("/pwm_forward_right", 100);
-        nh_.setParam("/pwm_forward_left", 100);
-
-        while(forward_distance_ >= 60) {
+        while(forward_distance_ >= 40) {
+            ROS_INFO("to maintain the distance move forward");
             continue;
         }
+       
+        std::cout<<forward_distance_<<std::endl;
+
         sidewardPIDClient.cancelGoal();
-        upwardPIDClient.cancelGoal();
+        nh_.setParam("/pwm_sideward_back_straight", 0);
+        nh_.setParam("/pwm_sideward_front_straight", 0);
+        //upwardPIDClient.cancelGoal();
+//        ros::Duration(6).sleep();
+
+        nh_.setParam("/pwm_forward_right_straight", 50);
+        nh_.setParam("/pwm_forward_left_straight", 50);
+
         ros::Duration(6).sleep();
-
-        nh_.setParam("/pwm_forward_right", -100);
-        nh_.setParam("/pwm_forward_left", -100);
-
-        ros::Duration(10).sleep();
-
         //////////////////////////////////////////////////////
-
+        nh_.setParam("/pwm_forward_right_straight", -50);
+        nh_.setParam("/pwm_forward_left_straight", -50);
+        
+        ros::Duration(8).sleep();
+        
         ROS_INFO("SidewardPID Client sending goal again, task buoy.");
         sidewardPIDgoal.target_distance = 0;
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
+        
+        
 
-        ROS_INFO("UpwardPID Client sending goal again, task buoy.");
-        upwardPIDgoal.target_depth = 0;
-        upwardPIDClient.sendGoal(upwardPIDgoal);
+       // ros::Duration(5).sleep();
+       // ROS_INFO("UpwardPID Client sending goal again, task buoy.");
+        //upwardPIDgoal.target_depth = 0;
+        //upwardPIDClient.sendGoal(upwardPIDgoal);
 
         //////////////////////////////////////////////////////
 
         ROS_INFO("ForwardPID Client sending goal again, task buoy.");
-        
+        nh_.setParam("/kill_signal", 1);
+        int temp;
+        nh_.getParam("/kill_signal", temp);
+        ROS_INFO("kill signal is  %d", temp);
+
+        /*
         forwardPIDgoal.target_distance = 100;
         forwardPIDClient.sendGoal(forwardPIDgoal);
         while(forward_distance_ <= 100) {
             continue;
         }
         ros::Duration(2).sleep();
-        forwardPIDClient.cancelGoal();
 
-        nh_.setParam("/pwm_forward_right", 0);
-        nh_.setParam("/pwm_forward_left", 0);
-        nh_.setParam("/pwm_sideward_front", 0);
-        nh_.setParam("/pwm_sideward_back", 0);
+        forwardPIDClient.cancelGoal();
+        */
+
+        // nh_.setParam("/pwm_forward_right", 0);
+        // nh_.setParam("/pwm_forward_left", 0);
+        // nh_.setParam("/pwm_sideward_front", 0);
+        // nh_.setParam("/pwm_sideward_back", 0);
+	
+	//nh_.setParam("/kill_signal", true);
 
         anglePIDClient.cancelGoal();
     }
     else {
         spin_thread->join();
+        forwardPIDClient.cancelGoal();
+        anglePIDClient.cancelGoal();
     }
 }
 

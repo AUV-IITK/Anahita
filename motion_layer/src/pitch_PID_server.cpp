@@ -1,57 +1,57 @@
-#include <angle_PID_server.h>
+#include <pitch_PID_server.h>
 
-anglePIDAction::anglePIDAction(std::string name) :
+pitchPIDAction::pitchPIDAction(std::string name) :
     as_(nh_, name, false),
-    action_name_(name), angle("ANGLE")
+    action_name_(name), pitch("PITCH")
 {
     // register the goal and feeback callbacks
-    as_.registerGoalCallback(boost::bind(&anglePIDAction::goalCB, this));
-    as_.registerPreemptCallback(boost::bind(&anglePIDAction::preemptCB, this));
+    as_.registerGoalCallback(boost::bind(&pitchPIDAction::goalCB, this));
+    as_.registerPreemptCallback(boost::bind(&pitchPIDAction::preemptCB, this));
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &anglePIDAction::callBack, this);
-    pub_ = nh_.advertise<std_msgs::Bool>("/kill/angularvelocity/z", 1);
+    sub_ = nh_.subscribe("/mavros/imu/pitch", 1, &pitchPIDAction::callBack, this);
+    pub_ = nh_.advertise<std_msgs::Bool>("/kill/angularvelocity/y", 1);
 
-    angle.setPID(2.0, 0, 0.65, 1);
+    pitch.setPID(2.0, 0, 0.65, 1);
 
     as_.start();
-    ROS_INFO("angle_PID_server Initialised");
+    ROS_INFO("pitch_PID_server Initialised");
 }
 
-anglePIDAction::~anglePIDAction(void)
+pitchPIDAction::~pitchPIDAction(void)
 {
 }
 
-void anglePIDAction::goalCB()
+void pitchPIDAction::goalCB()
 {
     ROS_INFO("Inside goal callback");
-    goal_ = as_.acceptNewGoal()->target_angle;
+    goal_ = as_.acceptNewGoal()->target_pitch;
 
-    angle.setReference(goal_);
+    pitch.setReference(goal_);
     ROS_INFO("Goal set as referecnce");
 
     // publish info to the console for the user
     ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);
 }
 
-void anglePIDAction::preemptCB()
+void pitchPIDAction::preemptCB()
 {
     ROS_INFO("%s: Preempted", action_name_.c_str());
     // set the action state to preempted
     as_.setPreempted();
 }
 
-void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
+void pitchPIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
     if (!as_.isActive()) {
         return;
     }
   ROS_INFO("INSIDE CALLBACK -----------_");
-    angle.errorToPWM(msg->data);
+    pitch.errorToPWM(msg->data);
 
-    feedback_.current_angle = msg->data;
+    feedback_.current_pitch = msg->data;
     as_.publishFeedback(feedback_);
 
     if (msg->data <= goal_ + 0.2 && msg->data >= goal_ - 0.2) {
@@ -63,5 +63,5 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_turn", angle.getPWM());
+    nh_.setParam("/pwm_pitch", pitch.getPWM());
 }

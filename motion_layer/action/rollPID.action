@@ -1,0 +1,8 @@
+#goal definition
+float32 target_roll
+---
+#result definition
+float32 final_roll
+---
+#feedback
+float32 current_roll

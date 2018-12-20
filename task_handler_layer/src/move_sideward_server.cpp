@@ -6,7 +6,7 @@ moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") {
     
     nh.setParam("/pwm_sideward_front_straight", pwm_);
     nh.setParam("/pwm_sideward_back_straight", pwm_);
-    spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
+    //spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
 }
 
 moveSideward::~moveSideward() {
@@ -15,15 +15,17 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
+        spinThread();
+	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
     }
-
     else {
         if (goalReceived) {
-            anglePIDClient.cancelGoal();
+           anglePIDClient.cancelGoal();
         }
-        spin_thread_->join();
         spin_thread->join();
+        nh.setParam("/kill_signal", 1);
+    //    spin_thread->join();
+       // spin_thread_->join();
     }
 }
 
@@ -34,9 +36,10 @@ void moveSideward::spinThread() {
     while(!goalReceived) {
         double now = ros::Time::now().toSec();
         if (now - then > 5) {
+            std::cout<<"Hello"<<std::endl;
             break;
         }
-    } 
+    }
     if (goalReceived) {
         ROS_INFO("turnPID server started, sending goal.");
         angle_PID_goal.target_angle = angle;
@@ -45,6 +48,7 @@ void moveSideward::spinThread() {
 }
 
 void moveSideward::spinThread_() {
+    ROS_INFO("Spinning the ros spin thread");
     ros::spin();
 }
 

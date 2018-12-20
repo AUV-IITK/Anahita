@@ -27,7 +27,7 @@ Buoy::Buoy(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)
@@ -141,6 +141,7 @@ void Buoy::spinThread(){
 			blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{	
+				std::cout<<"Colour being detected is: " << current_color << std::endl;
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
