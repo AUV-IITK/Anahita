@@ -81,8 +81,11 @@ void Line::TaskHandling()
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
 
-	while (1)
+	while (ros::ok())
 	{
+		if (task_done) {
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);

@@ -62,6 +62,8 @@ protected:
 	int data_low_v[3] = {91, 0, 21};
 	int data_high_v[3] = {189, 255, 117};
 
+	bool close_task = false;
+
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 

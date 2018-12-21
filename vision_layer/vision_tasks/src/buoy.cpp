@@ -22,7 +22,7 @@ Buoy::Buoy(){
 	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	this->marked_pub = it.advertise("/buoy_task/marked", 1);
-	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
+	// this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
@@ -37,12 +37,12 @@ void Buoy::switchColor(int color)
 	else
 	{
 		current_color = color;		
-		Buoy::low_h_ = Buoy::data_low_h[current_color];
-		Buoy::high_h_ = Buoy::data_high_h[current_color];
-		Buoy::low_s_ = Buoy::data_low_s[current_color];
-		Buoy::high_s_ = Buoy::data_high_s[current_color];
-		Buoy::low_v_ = Buoy::data_low_v[current_color];
-		Buoy::high_v_ = Buoy::data_high_v[current_color];
+		this->low_h_ = this->data_low_h[current_color];
+		this->high_h_ = this->data_high_h[current_color];
+		this->low_s_ = this->data_low_s[current_color];
+		this->high_s_ = this->data_high_s[current_color];
+		this->low_v_ = this->data_low_v[current_color];
+		this->high_v_ = this->data_high_v[current_color];
 	}
 	std::cout << "Colour changed successfully" << std::endl;
 }
@@ -52,29 +52,29 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 	if(Buoy::current_color != config.color)
 	{
 		config.color = current_color;
-		config.low_h = Buoy::data_low_h[current_color];
-		config.high_h = Buoy::data_high_h[current_color];
-		config.low_s = Buoy::data_low_s[current_color];
-		config.high_s = Buoy::data_high_s[current_color];
-		config.low_v = Buoy::data_low_v[current_color];
-		config.high_v = Buoy::data_high_v[current_color];
+		config.low_h = this->data_low_h[current_color];
+		config.high_h = this->data_high_h[current_color];
+		config.low_s = this->data_low_s[current_color];
+		config.high_s = this->data_high_s[current_color];
+		config.low_v = this->data_low_v[current_color];
+		config.high_v = this->data_high_v[current_color];
 	}
-	Buoy::clahe_clip_ = config.clahe_clip;
-	Buoy::clahe_grid_size_ = config.clahe_grid_size;
-	Buoy::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	Buoy::balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	Buoy::denoise_h_ = config.denoise_h;
-	Buoy::low_h_ = config.low_h;
-	Buoy::high_h_ = config.high_h;
-	Buoy::low_s_ = config.low_s;
-	Buoy::high_s_ = config.high_s;
-	Buoy::low_v_ = config.low_v;
-	Buoy::high_v_ = config.high_v;
-	Buoy::opening_mat_point_ = config.opening_mat_point;
-	Buoy::opening_iter_ = config.opening_iter;
-	Buoy::closing_mat_point_ = config.closing_mat_point;
-	Buoy::closing_iter_ = config.closing_iter;
-};
+	this->clahe_clip_ = config.clahe_clip;
+	this->clahe_grid_size_ = config.clahe_grid_size;
+	this->clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	this->balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	this->denoise_h_ = config.denoise_h;
+	this->low_h_ = config.low_h;
+	this->high_h_ = config.high_h;
+	this->low_s_ = config.low_s;
+	this->high_s_ = config.high_s;
+	this->low_v_ = config.low_v;
+	this->high_v_ = config.high_v;
+	this->opening_mat_point_ = config.opening_mat_point;
+	this->opening_iter_ = config.opening_iter;
+	this->closing_mat_point_ = config.closing_mat_point;
+	this->closing_iter_ = config.closing_iter;
+}
 
 void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -90,7 +90,7 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-};
+}
 
 void Buoy::TaskHandling(bool status){
 	if(status)
@@ -99,9 +99,10 @@ void Buoy::TaskHandling(bool status){
 	}
 	else 
 	{
+		close_task = true;
         spin_thread->join();
+		std::cout << "Task Handling function over" << std::endl;	
 	}
-	std::cout << "Task Handling function over" << std::endl;	
 }
 
 
@@ -133,7 +134,10 @@ void Buoy::spinThread(){
 	std_msgs::Bool detection_bool;
 
 	while (1)
-	{
+	{	
+		if (close_task) {
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -190,7 +194,7 @@ void Buoy::spinThread(){
 			}
 			blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
-//			coordinates_pub.publish(buoy_point_message);
+			// coordinates_pub.publish(buoy_point_message);
 
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
