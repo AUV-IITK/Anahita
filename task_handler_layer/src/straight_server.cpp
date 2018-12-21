@@ -4,7 +4,6 @@ moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") {
     nh.setParam("/pwm_surge", pwm_);
     goalReceived = false;
     sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveStraight::imuAngleCB, this);
-    spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
 }
 
 moveStraight::~moveStraight() {
@@ -12,6 +11,7 @@ moveStraight::~moveStraight() {
 
 void moveStraight::setActive(bool status) {
     if (status) {
+        spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
         spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
     else {

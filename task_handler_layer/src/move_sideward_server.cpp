@@ -5,7 +5,6 @@ moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") {
     goalReceived = false;
     
     nh.setParam("/pwm_sway", pwm_);
-    spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
 }
 
 moveSideward::~moveSideward() {
@@ -14,6 +13,7 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
+        spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
     	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
     else {
@@ -21,7 +21,7 @@ void moveSideward::setActive(bool status) {
            anglePIDClient.cancelGoal();
         }
         spin_thread->join();
-        nh.setParam("/kill_signal", 1);
+        nh.setParam("/kill_signal", true);
         spin_thread_->join();
     }
 }

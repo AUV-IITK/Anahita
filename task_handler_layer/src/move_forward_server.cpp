@@ -9,7 +9,6 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
 
     depthGoalReceived = false;
     angleGoalReceived = false;
-    spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
 }
 
 moveForward::~moveForward() {
@@ -17,7 +16,7 @@ moveForward::~moveForward() {
 
 void moveForward::setActive(bool status) {
     if (status == true) {
-        spinThread();
+        spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
         spin_thread = new boost::thread(boost::bind(&moveForward::spinThread, this));
     }
 

@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
             pwm.upward_north_west = 0;
             
             pwm.upward_south_east = 0;
-            pwm.upward_south_west = 0;                   
+            pwm.upward_south_west = 0;
 	}
 	
         // frontSidewardPublisher.publish(pwm_sideward_front);
