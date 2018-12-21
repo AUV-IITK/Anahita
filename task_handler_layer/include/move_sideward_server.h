@@ -21,6 +21,7 @@ protected:
     ros::Subscriber sub_;
     double angle;
     bool goalReceived;
+    bool close_loop = false;
 
 public:
 

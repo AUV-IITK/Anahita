@@ -10,6 +10,7 @@
 #include <motion_layer/pitchPIDAction.h>
 #include <motion_layer/forwardPIDAction.h>
 #include <motion_layer/sidewardPIDAction.h>
+#include <motion_layer/upwardPIDAction.h>
 #include <actionlib/client/terminal_state.h>
 #include <std_msgs/String.h>
 #include <task_handler.h>

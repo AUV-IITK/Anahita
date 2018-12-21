@@ -18,6 +18,7 @@ void moveStraight::setActive(bool status) {
         if (goalReceived) {
             anglePIDClient.cancelGoal();
         }
+        close_loop = true;
         spin_thread_->join();
         ROS_INFO("Straight Server goal cancelled");
         spin_thread->join();
@@ -38,7 +39,7 @@ void moveStraight::spinThread() {
     double then = ros::Time::now().toSec();
     while (!goalReceived_ref) {
         double now = ros::Time::now().toSec();
-        if (now - then > 5) {
+        if (now - then > 5 || close_loop) {
             break;
         }
     }

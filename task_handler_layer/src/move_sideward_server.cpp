@@ -20,6 +20,7 @@ void moveSideward::setActive(bool status) {
         if (goalReceived) {
            anglePIDClient.cancelGoal();
         }
+        close_loop = true; 
         spin_thread->join();
         nh.setParam("/kill_signal", true);
         spin_thread_->join();
@@ -32,7 +33,7 @@ void moveSideward::spinThread() {
     double then = ros::Time::now().toSec();
     while(!goalReceived) {
         double now = ros::Time::now().toSec();
-        if (now - then > 5) {
+        if (now - then > 5 || close_loop) {
             std::cout<<"Hello"<<std::endl;
             break;
         }

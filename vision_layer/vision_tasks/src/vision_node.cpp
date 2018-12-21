@@ -4,7 +4,8 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task, previous_task;
+std::string current_task = red_buoy;
+std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
 {
