@@ -137,15 +137,25 @@ void Buoy::spinThread(){
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
-			blue_filtered = image_;
+			int64 t0_ = cv::getTickCount();
+			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			int64 t1_ = cv::getTickCount();
+			ROS_INFO("Time taken by blue-filter: %lf", (t1_-t0_)/cv::getTickFrequency());
+
+			//blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{	
+				int64 t0 = cv::getTickCount();
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
+				int64 t1 = cv::getTickCount();
+				ROS_INFO("Time taken by thresholding: %lf", (t1-t0)/cv::getTickFrequency());
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
+				int64 t2 = cv::getTickCount();
 				contours = vision_commons::Contour::getBestX(image_thresholded, 2);
+				int64 t3 = cv::getTickCount();
+				ROS_INFO("Time taken by contours: %lf", (t3-t2)/cv::getTickFrequency());
 				if (contours.size() != 0)
 				{
 					int index = 0;
