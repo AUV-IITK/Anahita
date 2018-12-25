@@ -1,6 +1,6 @@
 <launch>
-    <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" output="screen"/>
     <node pkg="hardware_imu" name="px4" type="px4" output="screen"/>
+    <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" output="screen"/>
     <node pkg="master_layer" name="motion_server" type="motion_server" output="screen"/>
-    <node pkg="master_layer" name="master" type="master" output="screen"/>  
+    <node pkg="master_layer" name="master" type="master" output="screen"/>
 </launch>

@@ -48,8 +48,8 @@ public:
     void setThrust(int);
     void setReferenceAngle(double);
     void setReferenceDepth(double);
-    void imuAngleCB(const std_msgs::Float64Ptr &_msg);
-    void depthCB(const std_msgs::Float64Ptr &_msg);
+    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
+    void depthCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
     void spinThread_();
 };

@@ -25,7 +25,7 @@ void imu_data_callback(sensor_msgs::Imu msg)
   // convert form quaternion to euler angle (pitch)
   imu_pitch.data = TO_DEG(-asin(2 * q1 * q3 + 2 * q0 * q2));
    
-	// ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_roll.data, imu_pitch.data, imu_yaw.data);
+	 ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_pitch.data, imu_roll.data, imu_yaw.data);
    
   imu_yaw_pub.publish(imu_yaw);  
   imu_roll_pub.publish(imu_roll);
@@ -40,16 +40,17 @@ int main(int argc, char **argv)
 
   // initializing publishers
   std::string imu_yaw_pub_topic = "/mavros/imu/yaw";
-  std::string imu_roll_pub_topic = "/mavros/imu/roll";
-  std::string imu_pitch_pub_topic = "/mavros/imu/pitch";
-     
+  std::string imu_roll_pub_topic = "/mavros/imu/pitch";
+  std::string imu_pitch_pub_topic = "/mavros/imu/roll";
+  std::cout << "Pixhawk setup" << std::endl;
+
   imu_yaw_pub = nh.advertise<std_msgs::Float32>(imu_yaw_pub_topic, 1000);
   imu_roll_pub = nh.advertise<std_msgs::Float32>(imu_roll_pub_topic, 1000);
   imu_pitch_pub = nh.advertise<std_msgs::Float32>(imu_pitch_pub_topic, 1000);
 
   //initializing subscribers
   ros::Subscriber imu_data_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data", 1000, &imu_data_callback);
-
+  
   ros::spin();
 
   return 0;

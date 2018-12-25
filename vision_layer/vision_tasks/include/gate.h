@@ -64,6 +64,8 @@ protected:
     int bottom_closing_mat_point_ = 1;
     int bottom_closing_iter_ = 1;
 
+    bool task_done = false;
+
     std::string camera_frame_ = "auv-iitk";
 	void frontCallback(vision_tasks::gateFrontRangeConfig &config, double level);
 	void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);    

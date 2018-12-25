@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
+  hyperion_msgs
   roscpp
   rospy
   std_msgs
@@ -70,7 +71,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs
+  actionlib_msgs std_msgs hyperion_msgs
 )
 
 ################################################
@@ -105,7 +106,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer hyperion_msgs
 #  DEPENDS system_lib
 )
 
@@ -144,7 +145,7 @@ add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TAR
 target_link_libraries(master singleBuoy gate moveSideward moveStraight moveForward task_handler ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
-target_link_libraries(motion_server sidewardPIDServer upwardPIDServer anglePIDServer forwardPIDServer ${catkin_LIBRARIES})
+target_link_libraries(motion_server sidewardPIDServer upwardPIDServer anglePIDServer forwardPIDServer rollPIDServer pitchPIDServer ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

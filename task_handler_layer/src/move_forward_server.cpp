@@ -4,13 +4,11 @@ moveForward::moveForward(int pwm_): upwardPIDClient_("upwardPID"), anglePIDClien
                                     sidewardPIDClient_("sidewardPID") 
 {
     angle_sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveForward::imuAngleCB, this);
-    depth_sub_ = nh.subscribe("/varun/sensors/depth", 1, &moveForward::depthCB, this);
-    nh.setParam("/pwm_forward_right", pwm_);
-    nh.setParam("/pwm_forward_left", pwm_);
+    depth_sub_ = nh.subscribe("/pressure_sensor/depth", 1, &moveForward::depthCB, this);
+    nh.setParam("/pwm_surge", pwm_);
 
     depthGoalReceived = false;
     angleGoalReceived = false;
-    spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
 }
 
 moveForward::~moveForward() {
@@ -18,6 +16,7 @@ moveForward::~moveForward() {
 
 void moveForward::setActive(bool status) {
     if (status == true) {
+        spin_thread_ = new boost::thread(boost::bind(&moveForward::spinThread_, this));
         spin_thread = new boost::thread(boost::bind(&moveForward::spinThread, this));
     }
 
@@ -30,6 +29,8 @@ void moveForward::setActive(bool status) {
         }
         sidewardPIDClient_.cancelGoal();
         spin_thread->join();
+        nh.setParam("/kill_signal", 1);
+        spin_thread_->join();
     }
 }
 
@@ -46,7 +47,7 @@ void moveForward::spinThread() {
     ROS_INFO("Waiting for upwardPID server to start.");
     upwardPIDClient_.waitForServer();
 
-    while (depthGoalReceived) {}
+    while (!depthGoalReceived) {}
 
     ROS_INFO("upwardPID server started, sending goal.");
     upward_PID_goal.target_depth = depth;
@@ -57,14 +58,16 @@ void moveForward::spinThread() {
     ROS_INFO("Waiting for anglePID server to start.");
     anglePIDClient_.waitForServer();
     
-    while (angleGoalReceived) {}
+    if (!angleGoalReceived) {}
 
     ROS_INFO("anglePID server started, sending goal.");
     angle_PID_goal.target_angle = angle;
     anglePIDClient_.sendGoal(angle_PID_goal);
+
 }
 
 void moveForward::spinThread_() {
+    ROS_INFO("Spinning the ros spin thread");
     ros::spin();
 }
 
@@ -84,17 +87,16 @@ void moveForward::setReferenceDepth(double depth_) {
     upwardPIDClient_.sendGoal(upward_PID_goal);
 }
 
-void moveForward::imuAngleCB(const std_msgs::Float64Ptr &_msg) {
+void moveForward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
     angle = _msg->data;
     angleGoalReceived = true;
 }
 
-void moveForward::depthCB(const std_msgs::Float64Ptr &_msg) {
+void moveForward::depthCB(const std_msgs::Float32Ptr &_msg) {
     depth = _msg->data;
     depthGoalReceived = true;
 }
 
 void moveForward::setThrust(int _pwm) {
-    nh.setParam("/pwm_forward_right", _pwm);
-    nh.setParam("/pwm_forward_left", _pwm);
+    nh.setParam("/pwm_surge", _pwm);
 }

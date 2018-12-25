@@ -4,9 +4,7 @@ moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") {
     sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveSideward::imuAngleCB, this);
     goalReceived = false;
     
-    nh.setParam("/pwm_sideward_front_straight", pwm_);
-    nh.setParam("/pwm_sideward_back_straight", pwm_);
-    spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
+    nh.setParam("/pwm_sway", pwm_);
 }
 
 moveSideward::~moveSideward() {
@@ -15,15 +13,17 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
+        spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
+    	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
-
     else {
         if (goalReceived) {
-            anglePIDClient.cancelGoal();
+           anglePIDClient.cancelGoal();
         }
-        spin_thread_->join();
+        close_loop = true; 
         spin_thread->join();
+        nh.setParam("/kill_signal", true);
+        spin_thread_->join();
     }
 }
 
@@ -33,10 +33,11 @@ void moveSideward::spinThread() {
     double then = ros::Time::now().toSec();
     while(!goalReceived) {
         double now = ros::Time::now().toSec();
-        if (now - then > 5) {
+        if (now - then > 5 || close_loop) {
+            std::cout<<"Hello"<<std::endl;
             break;
         }
-    } 
+    }
     if (goalReceived) {
         ROS_INFO("turnPID server started, sending goal.");
         angle_PID_goal.target_angle = angle;
@@ -45,6 +46,7 @@ void moveSideward::spinThread() {
 }
 
 void moveSideward::spinThread_() {
+    ROS_INFO("Spinning the ros spin thread");
     ros::spin();
 }
 
@@ -54,6 +56,5 @@ void moveSideward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
 }
 
 void moveSideward::setThrust(int _pwm) {
-    nh.setParam("/pwm_sideward_front_straight", _pwm);
-    nh.setParam("/pwm_sideward_back_straight", _pwm);
+    nh.setParam("/pwm_sway", _pwm);
 }

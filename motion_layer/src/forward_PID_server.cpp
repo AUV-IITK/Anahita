@@ -59,6 +59,5 @@ void forwardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_forward_right", x_coord.getPWM());
-    nh_.setParam("/pwm_forward_left", x_coord.getPWM());
+    nh_.setParam("/pwm_surge", x_coord.getPWM());
 }

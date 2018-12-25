@@ -55,12 +55,14 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[3] = {0, 100, 0};
-	int data_high_h[3] = {10, 250, 10};
-	int data_low_s[3] = {251, 251, 251};
-	int data_high_s[3] = {255, 255, 255};
-	int data_low_v[3] = {160, 200, 160};
-	int data_high_v[3] = {255, 255, 255};
+	int data_low_h[3] = {2, 7, 7};
+	int data_high_h[3] = {91, 157, 17};
+	int data_low_s[3] = {14, 0, 0};
+	int data_high_s[3] = {190, 173, 255};
+	int data_low_v[3] = {91, 0, 21};
+	int data_high_v[3] = {189, 255, 117};
+
+	bool close_task = false;
 
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);

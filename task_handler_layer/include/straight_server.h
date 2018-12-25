@@ -24,6 +24,7 @@ protected:
     motion_layer::anglePIDGoal angle_PID_goal;
 
     bool goalReceived;
+    bool close_loop = false;
     bool& goalReceived_ref = goalReceived;
     double angle;
     ros::Subscriber sub_;

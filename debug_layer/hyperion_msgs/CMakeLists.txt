@@ -21,6 +21,7 @@ add_message_files(
   FILES
     Depth.msg
     Pressure.msg
+    Thrust.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -57,7 +58,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES hyperion_msgs
+   #LIBRARIES hyperion_msgs
    CATKIN_DEPENDS geometry_msgs message_generation message_runtime sensor_msgs std_msgs
   #  geographic_msgs
 #  DEPENDS system_lib

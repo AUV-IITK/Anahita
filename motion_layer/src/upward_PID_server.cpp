@@ -6,13 +6,13 @@ upwardPIDAction::upwardPIDAction(std::string name) :
 {
     //register the goal and feeback callbacks
     as_.registerGoalCallback(boost::bind(&upwardPIDAction::goalCB, this));
-    as_.registerPreemptCallback(boost::bind(&upwardPIDAction::preemptCB, this));
+   
     goal_ = 0;
 
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &upwardPIDAction::depthCB, this);
+    sub_ = nh_.subscribe("/pressure_sensor/pressure", 1, &upwardPIDAction::depthCB, this);
     pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/z", 1);
-    z_coord.setPID(2.5, 0, 0.5, 15);
+   z_coord.setPID(2.5, 0, 0.5, 15);
 
     as_.start();
     ROS_INFO("upward_PID_server Initiated");
@@ -57,8 +57,7 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
         msg_.data = true;
         pub_.publish(msg_);
     }
-
-    nh_.setParam("/pwm_upward_front", z_coord.getPWM());
-    nh_.setParam("/pwm_upward_back", z_coord.getPWM());
+    ROS_INFO("PWM set as %d", z_coord.getPWM());
+    nh_.setParam("/pwm_heave", z_coord.getPWM());
 }
 

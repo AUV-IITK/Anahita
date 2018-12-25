@@ -1,17 +1,59 @@
 #include <Arduino.h>
 #include <Wire.h>
-
+#include <Servo.h>
 #include <ros.h>
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
-// #include <hyperion_msgs/Depth.h>
-// #include <hyperion_msgs/Pressure.h>
+#include <hyperion_msgs/Depth.h>
+#include <hyperion_msgs/Pressure.h>
+#include <hyperion_msgs/Thrust.h>
 
-#include "../include/MS5837.h"
-// #include "../include/Thruster.h"
-#include "../include/ArduinoConfig.h"
-#include "../include/ESC.h"
+#include <MS5837.h>
+
+#define MDpin1 25
+#define MDpin2 24
+
+#define servoEastPin 40       // pin definitions for forward thrusters
+#define servoWestPin 43
+
+#define servoNorthSwayPin 31   // pin definitions for sideward thrusters
+#define servoSouthSwayPin 30
+
+#define servoNorthWestUpPin 28// pin definitions for upward thrusters
+#define servoSouthWestUpPin 32
+#define servoNorthEastUpPin 27 
+#define servoSouthEastUpPin 33
+
+#define permanentGround1 29
+#define permanentGround2 26
+#define permanentGround3 41
+#define permanentGround4 42
+
+#define analogPinPressureSensor A0      //pin definition for depth sensor
+
+Servo servoEast;
+Servo servoWest;
+Servo servoNorthSway;
+Servo servoSouthSway;
+Servo servoNorthWestUp;
+Servo servoNorthEastUp;
+Servo servoSouthWestUp;
+Servo servoSouthEastUp;
+
+void PWMCb(const hyperion_msgs::Thrust& msg_);
+void TEast(const int data);
+void TWest(const int data);
+void TNorth(const int data);
+void TSouth(const int data);
+void TNEUp(const int data);
+void TNWUp(const int data);
+void TSWEUp(const int data);
+void TSWIUp(const int data);
+
+int ESC_Zero = 1500;
+int deadZone = 25;
+ros::NodeHandle nh;
 
 // define rate at which sensor data should be published (in Hz)
 #define PRESSURE_PUBLISH_RATE 10
@@ -19,141 +61,79 @@
 // pressure sensor
 MS5837 pressure_sensor;
 
-/*
-ROBOT ORIENTATION
-                       NORTH
-                    -----------
-       NORTH-WEST-UP|         |NORTH-EAST-UP
-                    |         |
-                    |    -    |
-               WEST |    -    | EAST
-                    |    -    |
-                    |         |
-       SOUTH-WEST-UP|         |SOUTH-EAST-UP
-                    -----------  
-                       SOUTH
-*/
-
-// declaration of ESC objects for T200 thrusters 
-ESC T_EAST(servoPinEast,1100,1900,1500);
-ESC T_WEST(servoPinWest,1100,1900,1500);
-ESC T_NORTH(servoPinNorthSway,1100,1900,1500);
-ESC T_SOUTH(servoPinSouthSway,1100,1900,1500);
-ESC T_SOUTH_WEST_UP(servoPinSouthWestUp,1100,1900,1500);
-ESC T_SOUTH_EAST_UP(servoPinSouthEastUp,1100,1900,1500);
-ESC T_NORTH_WEST_UP(servoPinNorthWestUp,1100,1900,1500);
-ESC T_NORTH_EAST_UP(servoPinNorthEastUp,1100,1900,1500);
-
-// for upward thrusters
-// Thruster T_NORTH_EAST_UP(pwmPinNorthEastUp, directionPinNorthEastUp1, directionPinNorthEastUp2);
-// Thruster T_NORTH_WEST_UP(pwmPinNorthWestUp, directionPinNorthWestUp1, directionPinNorthWestUp2);
-// Thruster T_SOUTH_WEST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
-// Thruster T_SOUTH_EAST_UP(pwmPinSouthEastUp, directionPinSouthEastUp1, directionPinSouthEastUp2);
+// declare subscribers
+ros::Subscriber<hyperion_msgs::Thrust> PWM_Sub("/pwm", &PWMCb);
 
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
 
 // declaration of callback functions for all thrusters
-void TEastCb(const std_msgs::Int32& msg);
-void TWestCb(const std_msgs::Int32& msg);
-void TNorthCb(const std_msgs::Int32& msg);
-void TSouthCb(const std_msgs::Int32& msg);
-void TNEUpCb(const std_msgs::Int32& msg);
-void TNWUpCb(const std_msgs::Int32& msg);
-void TSEUpCb(const std_msgs::Int32& msg);
-void TSWUpCb(const std_msgs::Int32& msg);
-
-// defining rosnode handle
-ros::NodeHandle nh;
-
-// declare subscribers
-ros::Subscriber<std_msgs::Int32> TEast_PWM_Sub("/pwm/forwardRight", &TEastCb);
-ros::Subscriber<std_msgs::Int32> TWest_PWM_Sub("/pwm/forwardLeft", &TWestCb);
-ros::Subscriber<std_msgs::Int32> TNorth_PWM_Sub("/pwm/sidewardFront", &TNorthCb);
-ros::Subscriber<std_msgs::Int32> TSouth_PWM_Sub("/pwm/sidewardBack", &TSouthCb);
-ros::Subscriber<std_msgs::Int32> TNW_PWM_Sub("/pwm/upwardNorthWest", &TNWUpCb);
-ros::Subscriber<std_msgs::Int32> TNE_PWM_Sub("/pwm/upwardNorthEast", &TNEUpCb);
-ros::Subscriber<std_msgs::Int32> TSE_PWM_Sub("/pwm/upwardSouthEast", &TSEUpCb);
-ros::Subscriber<std_msgs::Int32> TSW_PWM_Sub("/pwm/upwardSouthWest", &TSWUpCb);
-
 // declare publishers
 std_msgs::Float32 pressure_msg;
 ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
-// hyperion_msgs::Pressure depth_msg;
-// ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
+std_msgs::Float32 depth_msg;
+ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 void setup()
 {
-    //setting up thruster pins
-    // T_NORTH_EAST_UP.setup();
-    // T_NORTH_WEST_UP.setup();
-    // T_SOUTH_EAST_UP.setup();
-    // T_SOUTH_WEST_UP.setup();
+    servoEast.attach(servoEastPin);
+    servoEast.writeMicroseconds(ESC_Zero);
+    servoNorthSway.attach(servoNorthSwayPin);
+    servoNorthSway.writeMicroseconds(ESC_Zero);
+    servoWest.attach(servoWestPin);
+    servoWest.writeMicroseconds(ESC_Zero);
+    servoSouthSway.attach(servoSouthSwayPin);
+    servoSouthSway.writeMicroseconds(ESC_Zero);
+    
+    servoNorthWestUp.attach(servoNorthWestUpPin);
+    servoNorthWestUp.writeMicroseconds(ESC_Zero);
+    servoNorthEastUp.attach(servoNorthEastUpPin);
+    servoNorthEastUp.writeMicroseconds(ESC_Zero);
+    servoSouthWestUp.attach(servoSouthWestUpPin);
+    servoSouthWestUp.writeMicroseconds(ESC_Zero);
+    servoSouthEastUp.attach(servoSouthEastUpPin);
+    servoSouthEastUp.writeMicroseconds(ESC_Zero);
+    
+    pinMode(permanentGround1, OUTPUT);
+    pinMode(permanentGround2, OUTPUT);
+    pinMode(permanentGround3, OUTPUT);
+    pinMode(permanentGround4, OUTPUT);
 
-    // calibrating ESCs
-    T_EAST.calibrate();
-    T_WEST.calibrate();
-    T_NORTH.calibrate();
-    T_SOUTH.calibrate();
-    T_NORTH_EAST_UP.calibrate();
-    T_NORTH_WEST_UP.calibrate();
-    T_SOUTH_EAST_UP.calibrate();
-    T_SOUTH_WEST_UP.calibrate();
- 
+    digitalWrite(permanentGround1, LOW);
+    digitalWrite(permanentGround2, LOW);
+    digitalWrite(permanentGround3, LOW);
+    digitalWrite(permanentGround4, LOW);
+    
+    delay(7000);
+    Serial.print("Successfully started servos");    
+    
     // setting up pressure sensor
     Wire.begin();
     // We can't continue with the rest of the program unless we can initialize the sensor
-    while (!pressure_sensor.init())
-    {
-        nh.loginfo("Init failed!");
-        nh.loginfo("Are SDA/SCL connected correctly?");
-        nh.loginfo("Blue Robotics Bar30: White=SDA, Green=SCL");
-        nh.loginfo("\n\n");
-        delay(5000);
-    }
-    pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)
-
-    // initialize ROS node
+    pressure_sensor.init();
+    pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)*/
+    
+    //initialize ROS node
     nh.initNode();
     nh.getHardware()->setBaud(57600);
-    // subscribers
-    nh.subscribe(TEast_PWM_Sub);
-    nh.subscribe(TWest_PWM_Sub);
-    nh.subscribe(TNorth_PWM_Sub);
-    nh.subscribe(TSouth_PWM_Sub);
-    nh.subscribe(TNW_PWM_Sub);
-    nh.subscribe(TNE_PWM_Sub);
-    nh.subscribe(TSW_PWM_Sub);
-    nh.subscribe(TSE_PWM_Sub);
 
-    // sending initial message to all thrusters to stop
-    std_msgs::Int32 v;
-    v.data = 1500;
-    TEastCb(v);
-    TWestCb(v);
-    TNorthCb(v);
-    TSouthCb(v);
-    
-    // v.data = 0;
-    TNEUpCb(v);
-    TNWUpCb(v);
-    TSEUpCb(v);
-    TSWUpCb(v);
+    //start ros_node
+    nh.subscribe(PWM_Sub);
 
     // publisher
     nh.advertise(ps_pressure_pub);
-    // nh.advertise(ps_depth_pub);
-
+    nh.advertise(ps_depth_pub);
+    
     while (!nh.connected())
     {
-        nh.spinOnce();
+         nh.spinOnce();
     }
-    nh.loginfo("Hyperion CONNECTED");
+    nh.loginfo("Anahita CONNECTED");
 }
 
 void loop()
 {
-    static unsigned long prev_pressure_time = 0;
+     static unsigned long prev_pressure_time = 0;
 
     //this block publishes the pressure sensor data based on defined rate
     if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
@@ -161,7 +141,10 @@ void loop()
         publish_pressure_data();
         prev_pressure_time = millis();
     }
-
+    
+    nh.loginfo("Data being recieved");
+    delay(10);
+    
     nh.spinOnce();
 }
 
@@ -169,57 +152,100 @@ void loop()
 void publish_pressure_data()
 {
     pressure_sensor.read();
-    // pressure_msg.header.frame_id = "pressure_sensor_link";
-    // pressure_msg.header.stamp = nh.now();
-    pressure_msg.data = pressure_sensor.pressure(100);
-    // pressure_msg.fluid_pressure = pressure_sensor.pressure(100);
+    pressure_msg.data = pressure_sensor.pressure();
 
-    // depth_msg.header.frame_id = "depth_sensor_link"
-    // depth_msg.header.stamp = pressure_sensor.header.time;
-    // depth_msg.depth = pressure_sensor.depth();
+    /** Depth returned in meters (valid for operation in incompressible
+    *  liquids only. Uses density that is set for fresh or seawater.
+    */
+    depth_msg.data = -100*pressure_sensor.depth(); //convert to centimeters
 
-    // ps_depth_pub.publish(depth);
+    ps_depth_pub.publish(&depth_msg);
     ps_pressure_pub.publish(&pressure_msg);
 }
 
-// definition of callback functions
-void TEastCb(const std_msgs::Int32& msg)
+void TEast(const int data)
 {
-    T_EAST.speed(msg.data);
+  if(data>0)
+    servoEast.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoEast.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoEast.writeMicroseconds(ESC_Zero);
+}
+void TWest(const int data)
+{
+  if(data>0)
+    servoWest.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoWest.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoWest.writeMicroseconds(ESC_Zero);
+}
+void TNorth(const int data)
+{
+  if(data>0)
+    servoNorthSway.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoNorthSway.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoNorthSway.writeMicroseconds(ESC_Zero);
+}
+void TSouth(const int data)
+{
+  if(data>0)
+    servoSouthSway.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoSouthSway.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoSouthSway.writeMicroseconds(ESC_Zero);
+}
+void TNEUp(const int data)
+{
+  if(data>0)
+    servoNorthEastUp.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoNorthEastUp.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoNorthEastUp.writeMicroseconds(ESC_Zero);
+}
+void TNWUp(const int data)
+{
+  if(data>0)
+    servoNorthWestUp.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoNorthWestUp.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoNorthWestUp.writeMicroseconds(ESC_Zero);
+}
+void TSEUp(const int data)
+{
+  if(data>0)
+    servoSouthEastUp.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoSouthEastUp.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoSouthEastUp.writeMicroseconds(ESC_Zero);
+}
+void TSWUp(const int data)
+{
+  if(data>0)
+    servoSouthWestUp.writeMicroseconds(ESC_Zero + data + deadZone);
+  else if(data<0)
+    servoSouthWestUp.writeMicroseconds(ESC_Zero + data - deadZone);
+  else
+    servoSouthWestUp.writeMicroseconds(ESC_Zero);
 }
 
-
-void TWestCb(const std_msgs::Int32& msg)
+void PWMCb(const hyperion_msgs::Thrust& msg_)
 {
-    T_WEST.speed(msg.data);
+    nh.loginfo("Inside PWM Callback");
+    TEast(msg_.forward_right);
+    TWest(msg_.forward_left);
+    TNorth(msg_.sideward_front);
+    TSouth(msg_.sideward_back);
+    TNEUp(msg_.upward_north_east);
+    TNWUp(msg_.upward_north_west);
+    TSEUp(msg_.upward_south_east);
+    TSWUp(msg_.upward_south_west); 
 }
 
-void TNorthCb(const std_msgs::Int32& msg)
-{
-   T_NORTH.speed(msg.data);
-}
-
-void TSouthCb(const std_msgs::Int32& msg)
-{
-    T_SOUTH.speed(msg.data);
-}
-
-void TNEUpCb(const std_msgs::Int32& msg)
-{
-    T_NORTH_EAST_UP.speed(msg.data);
-}
-
-void TSEUpCb(const std_msgs::Int32& msg)
-{
-    T_NORTH_WEST_UP.speed(msg.data);
-}
-
-void TNWUpCb(const std_msgs::Int32& msg)
-{
-    T_SOUTH_WEST_UP.speed(msg.data);
-}
-
-void TSWUpCb(const std_msgs::Int32& msg)
-{
-    T_SOUTH_EAST_UP.speed(msg.data);
-}

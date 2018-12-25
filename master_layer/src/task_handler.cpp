@@ -5,6 +5,8 @@ taskHandler::taskHandler (double _timeout) {
     topic_map_["sideward"] = "/anahita/y_coordinate";
     topic_map_["forward"] = "/anahita/x_coordinate";
     topic_map_["angle"] = "/mavros/imu/yaw";
+    topic_map_["pitch"] = "/mavros/imu/pitch";
+    topic_map_["roll"] = "/mavros/imu/roll";
 
     task_map_["red_buoy"] = false;
     task_map_["green_buoy"] = false;
@@ -12,6 +14,8 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["gate"] = false;
 
     time_out_ =  _timeout;
+
+    ros::Time::init();
 
     spin_thread_ = new boost::thread(boost::bind(&taskHandler::spinThread, this));
     vision_sub_ = nh_.subscribe("/detected", 1, &taskHandler::visionCB, this);

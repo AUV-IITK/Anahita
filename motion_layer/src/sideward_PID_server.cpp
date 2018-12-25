@@ -9,8 +9,8 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&sidewardPIDAction::preemptCB, this));
     goal_ = 0;
 
-    y_coord.setPID(5.5, 0, 0, 15);
     
+    y_coord.setPID(1.5, 0, 0.15, 15);
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
     pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/y", 1);
@@ -40,6 +40,7 @@ void sidewardPIDAction::preemptCB()
 }
 
 void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
+    ROS_INFO("INside vidsion callback");
     if (!as_.isActive())
         return;
     
@@ -57,7 +58,6 @@ void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
         pub_.publish(msg_);
     }
 
-    nh_.setParam("/pwm_sideward_front_straight", y_coord.getPWM());
-    nh_.setParam("/pwm_sideward_back_straight", y_coord.getPWM());
+    nh_.setParam("/pwm_sway", y_coord.getPWM());
 }
 

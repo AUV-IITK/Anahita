@@ -15,7 +15,6 @@
 #include <std_msgs/Bool.h>
 #include <boost/thread.hpp> 
 
-
 #include <vision_tasks/gateBottomRangeConfig.h>
 #include <vision_tasks/gateFrontRangeConfig.h>
 #include <vision_commons/filter.h>
@@ -96,53 +95,54 @@ void Gate::TaskHandling(bool status){
 	}
 	else 
 	{
+		task_done = true;
         spin_thread_front->join();
         spin_thread_bottom->join();
+		std::cout << "Task Handling function over" << std::endl;	
 	}
-	std::cout << "Task Handling function over" << std::endl;	
 }
 
 void Gate::frontCallback(vision_tasks::gateFrontRangeConfig &config, double level)
 {
-    Gate::front_clahe_clip_ = config.clahe_clip;
-	Gate::front_clahe_grid_size_ = config.clahe_grid_size;
-	Gate::front_clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	Gate::front_balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	Gate::front_denoise_h_ = config.denoise_h;
-	Gate::front_low_h_ = config.low_h;
-	Gate::front_high_h_ = config.high_h;
-	Gate::front_low_s_ = config.low_s;
-	Gate::front_high_s_ = config.high_s;
-	Gate::front_low_v_ = config.low_v;
-	Gate::front_high_v_ = config.high_v;
-	Gate::front_closing_mat_point_ = config.closing_mat_point;
-	Gate::front_closing_iter_ = config.closing_iter;
-	Gate::front_canny_threshold_low_ = config.canny_threshold_low;
-	Gate::front_canny_threshold_high_ = config.canny_threshold_high;
-	Gate::front_canny_kernel_size_ = config.canny_kernel_size;
-	Gate::front_hough_threshold_ = config.hough_threshold;
-	Gate::front_hough_minline_ = config.hough_minline;
-	Gate::front_hough_maxgap_ = config.hough_maxgap;
-	Gate::front_hough_angle_tolerance_ = config.hough_angle_tolerance;
-	Gate::front_gate_distance_tolerance_ = config.gate_distance_tolerance;
-	Gate::front_gate_angle_tolerance_ = config.gate_angle_tolerance;
+    this->front_clahe_clip_ = config.clahe_clip;
+	this->front_clahe_grid_size_ = config.clahe_grid_size;
+	this->front_clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	this->front_balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	this->front_denoise_h_ = config.denoise_h;
+	this->front_low_h_ = config.low_h;
+	this->front_high_h_ = config.high_h;
+	this->front_low_s_ = config.low_s;
+	this->front_high_s_ = config.high_s;
+	this->front_low_v_ = config.low_v;
+	this->front_high_v_ = config.high_v;
+	this->front_closing_mat_point_ = config.closing_mat_point;
+	this->front_closing_iter_ = config.closing_iter;
+	this->front_canny_threshold_low_ = config.canny_threshold_low;
+	this->front_canny_threshold_high_ = config.canny_threshold_high;
+	this->front_canny_kernel_size_ = config.canny_kernel_size;
+	this->front_hough_threshold_ = config.hough_threshold;
+	this->front_hough_minline_ = config.hough_minline;
+	this->front_hough_maxgap_ = config.hough_maxgap;
+	this->front_hough_angle_tolerance_ = config.hough_angle_tolerance;
+	this->front_gate_distance_tolerance_ = config.gate_distance_tolerance;
+	this->front_gate_angle_tolerance_ = config.gate_angle_tolerance;
 }
 
 void Gate::bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level)
 {
-    Gate::bottom_clahe_clip_ = config.clahe_clip;
-    Gate::bottom_clahe_grid_size_ = config.clahe_grid_size;
-    Gate::bottom_clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-    Gate::bottom_balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-    Gate::bottom_denoise_h_ = config.denoise_h;
-    Gate::bottom_low_h_ = config.low_h;
-    Gate::bottom_high_h_ = config.high_h;
-    Gate::bottom_low_s_ = config.low_s;
-    Gate::bottom_high_s_ = config.high_s;
-    Gate::bottom_low_v_ = config.low_v;
-    Gate::bottom_high_v_ = config.high_v;
-    Gate::bottom_closing_mat_point_ = config.closing_mat_point;
-    Gate::bottom_closing_iter_ = config.closing_iter;
+    this->bottom_clahe_clip_ = config.clahe_clip;
+    this->bottom_clahe_grid_size_ = config.clahe_grid_size;
+    this->bottom_clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+    this->bottom_balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+    this->bottom_denoise_h_ = config.denoise_h;
+    this->bottom_low_h_ = config.low_h;
+    this->bottom_high_h_ = config.high_h;
+    this->bottom_low_s_ = config.low_s;
+    this->bottom_high_s_ = config.high_s;
+    this->bottom_low_v_ = config.low_v;
+    this->bottom_high_v_ = config.high_v;
+    this->bottom_closing_mat_point_ = config.closing_mat_point;
+    this->bottom_closing_iter_ = config.closing_iter;
 }
 
 void Gate::bottomTaskHandling()
@@ -152,37 +152,24 @@ void Gate::bottomTaskHandling()
 	f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
 	server.setCallback(f_bottom);
 
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::ImageTransport it(nh);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher blue_filtered_pub = it.advertise("/gate_task/bottom/blue_filtered", 1);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher thresholded_pub = it.advertise("/gate_task/bottom/thresholded", 1);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Publisher marked_pub = it.advertise("/gate_task/bottom/marked", 1);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     ros::Publisher coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     ros::Publisher task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     image_transport::Subscriber bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageCallback, this);
 
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar pipe_center_color(255, 255, 255);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar image_center_color(0, 0, 0);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Scalar bounding_rectangle_color(255, 0, 0);
 
     cv::Mat blue_filtered;
     cv::Mat image_hsv;
     cv::Mat image_thresholded;
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     geometry_msgs::PointStamped pipe_point_message;
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     pipe_point_message.header.frame_id = camera_frame_.c_str();
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     std::vector<std::vector<cv::Point> > contours;
     cv::RotatedRect bounding_rectangle;
     std_msgs::Bool task_done_message;
@@ -192,47 +179,44 @@ void Gate::bottomTaskHandling()
 
     while (ros::ok())
     {
+		if (task_done) {
+			break;
+		}
         if (!image_.empty())
         {
-        image_.copyTo(image_marked);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-        blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-        if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
-        {
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-            cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-            image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-            image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
-            contours = vision_commons::Contour::getBestX(image_thresholded, 1);
-            if (contours.size() != 0)
-            {
-            bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
-            pipe_point_message.header.stamp = ros::Time();
-            pipe_point_message.point.x = (image_.size().height) / 2 - bounding_rectangle.center.y;
-            pipe_point_message.point.y = bounding_rectangle.center.x - (image_.size().width) / 2;
-            pipe_point_message.point.z = 0.0;
-            task_done_message.data = pipe_point_message.point.x < 0;
-            bounding_rectangle.points(vertices2f);
-            for (int i = 0; i < 4; ++i)
-            {
-                vertices[i] = vertices2f[i];
-            }
-            cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
-            cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
-            cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
-            }
-        }
-        blue_filtered_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
-        thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-        coordinates_pub.publish(pipe_point_message);
-        ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
-        task_done_pub.publish(task_done_message);
-        ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
-        marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
+			image_.copyTo(image_marked);
+			blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
+			{
+				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
+				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
+				contours = vision_commons::Contour::getBestX(image_thresholded, 1);
+				if (contours.size() != 0)
+				{
+				bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
+				pipe_point_message.header.stamp = ros::Time();
+				pipe_point_message.point.x = (image_.size().height) / 2 - bounding_rectangle.center.y;
+				pipe_point_message.point.y = bounding_rectangle.center.x - (image_.size().width) / 2;
+				pipe_point_message.point.z = 0.0;
+				task_done_message.data = pipe_point_message.point.x < 0;
+				bounding_rectangle.points(vertices2f);
+				for (int i = 0; i < 4; ++i)
+				{
+					vertices[i] = vertices2f[i];
+				}
+				cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
+				}
+			}
+			blue_filtered_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
+			coordinates_pub.publish(pipe_point_message);
+			ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
+			task_done_pub.publish(task_done_message);
+			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
+			marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
         }
         else
             ROS_INFO("Image empty");
@@ -290,6 +274,9 @@ void Gate::frontTaskHandling()
 
 	while (ros::ok())
 	{
+		if (task_done) {
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);

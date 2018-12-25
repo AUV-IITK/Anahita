@@ -30,9 +30,10 @@ protected:
 
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
-    ros::Publisher coordinates_pub;
-	
     image_transport::Subscriber image_raw_sub;
+
+	ros::Publisher coordinates_pub;
+	
 	std::string camera_frame_;
 
     int low_h_;
@@ -45,9 +46,13 @@ protected:
 	int opening_iter_;
 	int closing_mat_point_;
 	int closing_iter_;
-ros::Publisher x_coordinates_pub;
+
+	bool task_done = false;
+	
+	ros::Publisher x_coordinates_pub;
 	ros::Publisher y_coordinates_pub;
 	ros::Publisher z_coordinates_pub;
+	
 	void callback(vision_tasks::lineRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
     double computeMean(std::vector<double> &newAngles);
@@ -55,15 +60,13 @@ ros::Publisher x_coordinates_pub;
 public:
     Line();
     ros::NodeHandle nh;
-std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;	
 	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;
 	void TaskHandling();
-
-    
 };
 #endif // LINE_TASK_H
 
