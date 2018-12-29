@@ -21,7 +21,6 @@ protected:
     motion_layer::anglePIDResult result_;
     double goal_;
     ros::Subscriber sub_;
-    ros::Publisher pub_;
     ErrorDescriptor angle;
 
     boost::thread* spin_thread;

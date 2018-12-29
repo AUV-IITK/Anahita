@@ -22,7 +22,6 @@ protected:
     motion_layer::sidewardPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
-    ros::Publisher pub_;
     ErrorDescriptor y_coord;
 
 public:

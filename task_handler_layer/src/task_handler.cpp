@@ -28,7 +28,7 @@ void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
 }
 
 void taskHandler::spinThread () {
-    ros::spin();
+    // ros::spin();
 }
 
 bool taskHandler::isAchieved (double _target, double _band, std::string _topic) {

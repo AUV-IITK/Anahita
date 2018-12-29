@@ -144,6 +144,10 @@ add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sidewa
 add_dependencies(moveSideward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveSideward ${catkin_LIBRARIES})
 
+add_library(moveDownward SHARED src/move_downward_server.cpp include/move_downward_server.h)
+add_dependencies(moveDownward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveDownward ${catkin_LIBRARIES})
+
 add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
 add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveStraight ${catkin_LIBRARIES})

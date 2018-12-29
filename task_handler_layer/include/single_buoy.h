@@ -39,8 +39,6 @@ private:
     ros::Subscriber angle_sub_;
     ros::Subscriber upward_sub_;
 
-    ros::Publisher pub_;
-
     bool angleGoalReceived = false;
     bool forwardGoalReceived = false;
 

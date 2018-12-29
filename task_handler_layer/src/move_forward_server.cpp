@@ -67,8 +67,7 @@ void moveForward::spinThread() {
 }
 
 void moveForward::spinThread_() {
-    ROS_INFO("Spinning the ros spin thread");
-    ros::spin();
+    // ros::spin();
 }
 
 void moveForward::setReferenceAngle(double angle_) {

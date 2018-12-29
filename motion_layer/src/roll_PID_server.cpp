@@ -11,7 +11,6 @@ rollPIDAction::rollPIDAction(std::string name) :
 
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/mavros/imu/roll", 1, &rollPIDAction::callBack, this);
-    pub_ = nh_.advertise<std_msgs::Bool>("/kill/angularvelocity/x", 1);
 
     roll.setPID(2.0, 0, 0.65, 1);
 
@@ -48,20 +47,17 @@ void rollPIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     if (!as_.isActive()) {
         return;
     }
-  ROS_INFO("INSIDE CALLBACK -----------_");
+
     roll.errorToPWM(msg->data);
 
     feedback_.current_roll = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->data <= goal_ + 0.2 && msg->data >= goal_ - 0.2) {
-        ROS_INFO("%s: Succeeded", action_name_.c_str());
+    // if (msg->data <= goal_ + 0.2 && msg->data >= goal_ - 0.2) {
+        // ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         // as_.setSucceeded(result_);
-        std_msgs::Bool msg_;
-        msg_.data = true;
-        pub_.publish(msg_);
-    }
+    // }
 
     nh_.setParam("/pwm_roll", roll.getPWM());
 }

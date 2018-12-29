@@ -21,7 +21,6 @@ protected:
     motion_layer::rollPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
-    ros::Publisher pub_;
     ErrorDescriptor roll;
 
     boost::thread* spin_thread;

@@ -21,7 +21,6 @@ protected:
     motion_layer::pitchPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
-    ros::Publisher pub_;
     ErrorDescriptor pitch;
 
     boost::thread* spin_thread;

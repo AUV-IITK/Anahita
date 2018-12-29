@@ -26,56 +26,7 @@ int main(int argc, char** argv) {
     std_msgs::String current_task;
     ros::Rate loop_rate(10);
     taskHandler th(15); // time out 15 seconds
-
-    // TO MAINTAIN UPWARD
-    // actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
-    // motion_layer::upwardPIDGoal upwardPIDgoal;
-    // ROS_INFO("Waiting for upwardPID server to start, constant height");
-    // upwardPIDClient.waitForServer();
-    // ROS_INFO("upwardPID server started, sending goal, constant height"); // task handler node
-
-    // upwardPIDgoal.target_depth = 1020; // some number based on the data getting from the pressure sensor
-    // upwardPIDClient.sendGoal(upwardPIDgoal);
-    // th.isAchieved(980, 2, "upward"); // target is 40, band is 10 and task is upward
-    
-    // ros::Duration(10).sleep();
-
-    // upwardPIDgoal.target_depth = 980; // some number based on the data getting from the pressure sensor
-    // upwardPIDClient.sendGoal(upwardPIDgoal); 
-    // th.isAchieved(1020, 2, "upward"); // target is 40, band is 10 and task is upward
-    
-    // ros::Duration(10).sleep();
-    
-    // upwardPIDgoal.target_depth = 1020; // some number based on the data getting from the pressure sensor
-    // upwardPIDClient.sendGoal(upwardPIDgoal); 
-    // th.isAchieved(102, 2, "upward"); // target is 40, band is 10 and task is upward
-    
-    // ros::Duration(10).sleep();
-
-    // object.setActive(false);
    
-    // TO MAINTAIN PITCH
-    // actionlib::SimpleActionClient<motion_layer::pitchPIDAction> pitchPIDClient("pitchPID");
-    // motion_layer::pitchPIDGoal pitchPIDgoal;
-    // ROS_INFO("Waiting for pitchPID server to start, constant pitch");
-    // pitchPIDClient.waitForServer();
-    // ROS_INFO("upwardPID server started, sending goal, constant pitch"); // task handler node
-    // pitchPIDgoal.target_pitch = 14.33;
-    // pitchPIDClient.sendGoal(pitchPIDgoal); 
-    // th.isAchieved(14.33, 1.5, "pitch"); // target is 40, band is 10 and task is upward
- 
-    // TO MAINTAIN ROLL
-    // actionlib::SimpleActionClient<motion_layer::rollPIDAction> rollPIDClient("rollPID");
-    // motion_layer::rollPIDGoal rollPIDgoal;
-    // ROS_INFO("Waiting for rollPID server to start, constant roll");
-    // rollPIDClient.waitForServer();
-    // ROS_INFO("rollPID server started, sending goal, constant roll"); // task handler node
-    // rollPIDgoal.target_roll = 15.28; // some number based on the data getting from the pressure sensor
-    // rollPIDClient.sendGoal(rollPIDgoal); 
-    // th.isAchieved(15.28, 1.5, "roll"); // target is 40, band is 10 and task is upward
-
-    // ros::Duration(500).sleep();
-
     /////////////////////////////////////////////
 
     current_task.data = "red_buoy";
@@ -144,24 +95,9 @@ int main(int argc, char** argv) {
     move_sideward.setActive(false);
 
     single_buoy.setActive(true); // blocking function, will terminalte after completion
+    single_buoy.setActive(false);
   
     ////////////////////////////////////////////////
-
-    // current_task.data = "buoy-gate";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "buoy-gate");
-    // ROS_INFO("Current task: Buoy-Gate");
-
-    // // to get vertically below the buoy
-
-    // nh.setParam("/pwm/heave", -50);
-    // ros::Duration(1).sleep();
-    // nh.setParam("/pwm/heave", 0);
 
     // Example for sideward, forward, and angle PIDs
 
@@ -196,30 +132,32 @@ int main(int argc, char** argv) {
     // anglePIDGoal.target_angle = angle_;
     // anglePIDClient.sendGoal(anglePIDGoal);
 
-    // After the alignment
-
     ////////////////////////////////////////////////
 
-    // current_task.data = "gate";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "gate");
-    // ROS_INFO("Current task: Gate");
+    current_task.data = "gate";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "gate");
+    ROS_INFO("Current task: Gate");
 
-    // move_sideward.setThrust(-100);
-    // move_sideward.setActive(true); // until gate is detected
+    move_sideward.setThrust(-100);
+    move_sideward.setActive(true); // until gate is detected
     
-    // // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
-    // th.isDetected("gate", 10);
+    th.isDetected("gate", 10);
+
+    move_sideward.setActive(false);
     
-    // gateTask gate_task;
-    // gate_task.setActive(true); // blocking function, will terminalte after completion
-    // nh.setParam("/kill_signal", true);
+    gateTask gate_task;
+    gate_task.setActive(true); // blocking function, will terminalte after completion
+    nh.setParam("/kill_signal", true);
+
+    ros::spin();
 
     return 0;
 }

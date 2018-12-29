@@ -23,7 +23,6 @@ protected:
     motion_layer::upwardPIDResult result_;
     double goal_;
     ros::Subscriber sub_;
-    ros::Publisher pub_;
     ErrorDescriptor z_coord;
 
 public:

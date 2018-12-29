@@ -192,7 +192,7 @@ void Buoy::spinThread(){
 					detection_pub.publish(detection_bool);
 				}	
 			}
-			blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			// coordinates_pub.publish(buoy_point_message);
 

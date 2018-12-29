@@ -4,16 +4,15 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     as_(nh_, name, false),
     action_name_(name), y_coord("Y_COORD")
 {
-    //register the goal and feeback callbacks
+    // register the goal and feeback callbacks
     as_.registerGoalCallback(boost::bind(&sidewardPIDAction::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&sidewardPIDAction::preemptCB, this));
     goal_ = 0;
 
     
     y_coord.setPID(1.5, 0, 0.15, 10);
-    //subscribe to the data topic of interest
+    // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
-    pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/y", 1);
 
     as_.start();
     ROS_INFO("sideward_PID_server Initiated");
@@ -49,14 +48,11 @@ void sidewardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
     feedback_.current_distance = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->data <= goal_ + 15 && msg->data >= goal_ - 15) {
+    // if (msg->data <= goal_ + 15 && msg->data >= goal_ - 15) {
         // ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         // as_.setSucceeded(result_);
-        std_msgs::Bool msg_;
-        msg_.data = true;
-        pub_.publish(msg_);
-    }
+    // }
 
     nh_.setParam("/pwm_sway", y_coord.getPWM());
 }

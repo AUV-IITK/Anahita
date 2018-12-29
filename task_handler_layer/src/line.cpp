@@ -49,5 +49,5 @@ void lineTask::setActive(bool value) {
 }
 
 void lineTask::spinThread() {
-    ros::spin();
+    // ros::spin();
 }

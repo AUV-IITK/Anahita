@@ -7,7 +7,6 @@ singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sid
     sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &singleBuoy::sidewardCB, this);
     upward_sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &singleBuoy::upwardCB, this);
     angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);
-    pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/x", 1);
     spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
 }
 singleBuoy::~singleBuoy() {}
@@ -112,7 +111,7 @@ void singleBuoy::setActive(bool status) {
 }
 
 void singleBuoy::spinThread() {
-    ros::spin();
+    // ros::spin();
 }
 
 void singleBuoy::forwardCB(const std_msgs::Float32ConstPtr &_msg) {

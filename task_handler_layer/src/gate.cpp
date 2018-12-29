@@ -1,8 +1,8 @@
 #include <gate.h>
 
 gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID") {
-    forward_sub_ = nh_.subscribe("/gate_task/gate_coordinates", 1, &gateTask::forwardCB, this);
-    sideward_sub_ = nh_.subscribe("/gate_task/gate_coordinates", 1, &gateTask::sidewardCB, this);
+    forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &gateTask::forwardCB, this);
+    sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &gateTask::sidewardCB, this);
     angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &gateTask::angleCB, this);
     angleGoalReceived = false;
     spin_thread = new boost::thread(boost::bind(&gateTask::spinThread, this));
@@ -57,7 +57,7 @@ void gateTask::setActive(bool status) {
 }
 
 void gateTask::spinThread() {
-    ros::spin();
+    // ros::spin();
 }
 
 void gateTask::forwardCB(const std_msgs::Float32Ptr &_msg) {

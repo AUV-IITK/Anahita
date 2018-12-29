@@ -52,8 +52,7 @@ void moveStraight::spinThread() {
 }
 
 void moveStraight::spinThread_() {
-    ROS_INFO("Spinng the ros spin thread");
-    ros::spin();
+    // ros::spin();
 }
 
 void moveStraight::setThrust(int _pwm) {
