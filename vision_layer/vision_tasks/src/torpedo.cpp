@@ -18,10 +18,12 @@ Torpedo::Torpedo(){
 	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
 	image_transport::ImageTransport it(nh);
+	
 	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
+	
 	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
 }
 

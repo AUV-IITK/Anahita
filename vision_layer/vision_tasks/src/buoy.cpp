@@ -22,7 +22,6 @@ Buoy::Buoy(){
 	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	this->marked_pub = it.advertise("/buoy_task/marked", 1);
-	// this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/buoy_task/buoy_coordinates", 1000);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
@@ -129,7 +128,7 @@ void Buoy::spinThread(){
 	geometry_msgs::PointStamped buoy_point_message;
 	buoy_point_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(25);
 
 	std_msgs::Bool detection_bool;
 
@@ -141,36 +140,41 @@ void Buoy::spinThread(){
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
-			blue_filtered = image_;
+
+			int64 t0_ = cv::getTickCount();
+			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			int64 t1_ = cv::getTickCount();
+			ROS_INFO("Time taken by blue-filter: %lf", (t1_-t0_)/cv::getTickFrequency());
+
+			//blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{	
+
+				int64 t0 = cv::getTickCount();
 				std::cout<<"Colour being detected is: " << current_color << std::endl;
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
+				int64 t1 = cv::getTickCount();
+				ROS_INFO("Time taken by thresholding: %lf", (t1-t0)/cv::getTickFrequency());
+
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
+
+				int64 t2 = cv::getTickCount();
 				contours = vision_commons::Contour::getBestX(image_thresholded, 2);
+				int64 t3 = cv::getTickCount();
+				ROS_INFO("Time taken by contours: %lf", (t3-t2)/cv::getTickFrequency());
+
 				if (contours.size() != 0)
 				{
 					int index = 0;
 					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
-					if (contours.size() >= 2)
-					{
-						cv::Rect bounding_rectangle2 = cv::boundingRect(cv::Mat(contours[1]));
-						if ((bounding_rectangle2.br().y + bounding_rectangle2.tl().y) > (bounding_rectangle.br().y + bounding_rectangle.tl().y))
-						{
-							index = 1;
-							bounding_rectangle = bounding_rectangle2;
-						}
-					}
 					cv::minEnclosingCircle(contours[index], center[0], radius[0]);
 					buoy_point_message.header.stamp = ros::Time();
 					x_coordinate.data = pow(radius[0] / 7526.5, -.92678);
  					y_coordinate.data = center[0].x - ((float)image_.size().width) / 2;
 					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
-
 					if(contourArea(contours[index]) > 20 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
@@ -184,6 +188,9 @@ void Buoy::spinThread(){
 					{
 						cv::drawContours(image_marked, contours, i, contour_color, 1);
 					}
+					int64 tend_ = cv::getTickCount();
+					ROS_INFO("Time taken by entire buoy node: %lf", (tend_-t0_)/cv::getTickFrequency());				
+					
 				}
 				else
 				{
@@ -194,8 +201,6 @@ void Buoy::spinThread(){
 			}
 			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
-			// coordinates_pub.publish(buoy_point_message);
-
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);

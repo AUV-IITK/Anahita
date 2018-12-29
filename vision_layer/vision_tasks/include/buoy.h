@@ -32,7 +32,6 @@ protected:
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
-	ros::Publisher coordinates_pub;
 	ros::Publisher x_coordinates_pub;
 	ros::Publisher y_coordinates_pub;
 	ros::Publisher z_coordinates_pub;

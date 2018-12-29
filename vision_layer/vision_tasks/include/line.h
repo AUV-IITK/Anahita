@@ -32,6 +32,7 @@ protected:
 	image_transport::Publisher marked_pub;
     image_transport::Subscriber image_raw_sub;
 
+   	ros::Publisher detection_pub;
 	ros::Publisher coordinates_pub;
 	
 	std::string camera_frame_;
