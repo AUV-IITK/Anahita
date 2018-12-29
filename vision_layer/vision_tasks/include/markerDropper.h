@@ -15,6 +15,7 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
+#include <std_msgs/Bool.h>
 #include <boost/thread.hpp> 
 
 #include <vision_tasks/markerDropperFrontRangeConfig.h>
@@ -41,6 +42,7 @@ protected:
 
 	image_transport::Subscriber front_image_raw_sub;
 	image_transport::Subscriber bottom_image_raw_sub;
+  	ros::Publisher detection_pub;
 
 	std::string camera_frame_;
 

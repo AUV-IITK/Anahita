@@ -152,6 +152,7 @@ void MarkerDropper::BottomTaskHandling()
 	geometry_msgs::PointStamped bin_center_message;
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
+	std_msgs::Bool detection_bool;
 
 	while (1)
 	{
@@ -235,6 +236,8 @@ void MarkerDropper::FrontTaskHandling(){
 	geometry_msgs::PointStamped bin_center_message;
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
+	std_msgs::Bool detection_bool;
+
 
 	while (1)
 	{
@@ -280,6 +283,8 @@ void MarkerDropper::FrontTaskHandling(){
 					{
 						cv::drawContours(image_marked, polygons, i, contour_color, 1);
 					}
+					detection_bool.data = true;
+					
 				}
 			}
 			// front_blue_filtered_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", blue_filtered).toImageMsg());
@@ -287,6 +292,7 @@ void MarkerDropper::FrontTaskHandling(){
 			front_coordinates_pub.publish(bin_center_message);
 			ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 			front_marked_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", image_marked).toImageMsg());
+			detection_pub.publish(detection_bool);
 		}
 		else
 			ROS_INFO("Image empty");

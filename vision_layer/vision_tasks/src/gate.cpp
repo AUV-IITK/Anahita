@@ -50,14 +50,13 @@ Gate::Gate(){
 	this->canny_pub_front = it.advertise("/gate_task/front/canny", 1);
 	this->lines_pub_front = it.advertise("/gate_task/front/lines", 1);
 	this->marked_pub_front = it.advertise("/gate_task/front/marked", 1);
-	this->coordinates_pub_front = nh.advertise<geometry_msgs::PointStamped>("/gate_task/front/gate_coordinates", 1000);
 
     this->blue_filtered_pub_bottom = it.advertise("/gate_task/bottom/blue_filtered", 1);
     this->thresholded_pub_bottom = it.advertise("/gate_task/bottom/thresholded", 1);
     this->marked_pub_bottom = it.advertise("/gate_task/bottom/marked", 1);
     this->coordinates_pub_bottom = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
-    this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
-
+    
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 
@@ -199,7 +198,7 @@ void Gate::bottomTaskHandling()
 			}
 			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-			coordinates_pub_bottom.publish(pipe_point_message);
+//			coordinates_pub_bottom.publish(pipe_point_message);
 			ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
@@ -367,11 +366,17 @@ void Gate::frontTaskHandling()
 			}
 			detection_bool.data = found;
 			detection_pub.publish(detection_bool);
+			x_coordinate.data = gate_point_message.point.x;
+			y_coordinate.data = gate_point_message.point.y;
+			z_coordinate.data = gate_point_message.point.z;
+			x_coordinates_pub.publish(x_coordinate);
+			y_coordinates_pub.publish(y_coordinate);
+			z_coordinates_pub.publish(z_coordinate);
+		
 			blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
 			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
 			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
-			coordinates_pub_front.publish(gate_point_message);
 			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else

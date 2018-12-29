@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <boost/thread.hpp> 
 
 #include <vision_tasks/gateFrontRangeConfig.h>
@@ -76,7 +77,9 @@ protected:
 	image_transport::Publisher canny_pub_front;
 	image_transport::Publisher lines_pub_front;
 	image_transport::Publisher marked_pub_front;
-	ros::Publisher coordinates_pub_front;
+	ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
 
     image_transport::Publisher blue_filtered_pub_bottom;
     image_transport::Publisher thresholded_pub_bottom;
@@ -102,5 +105,8 @@ public:
     void TaskHandling(bool status);
 	void bottomTaskHandling();
     void frontTaskHandling();   
+    std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;
 };
 #endif // GATE_TASK_H
