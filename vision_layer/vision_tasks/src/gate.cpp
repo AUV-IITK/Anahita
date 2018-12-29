@@ -42,8 +42,8 @@ Gate::Gate(){
 
     image_transport::ImageTransport it(nh);
 
-	this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageCallback, this);
-    this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageCallback, this);
+	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageCallback, this);
+    // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageCallback, this);
 
 	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
 	this->thresholded_pub_front = it.advertise("/gate_task/front/thresholded", 1);
@@ -54,7 +54,10 @@ Gate::Gate(){
     this->blue_filtered_pub_bottom = it.advertise("/gate_task/bottom/blue_filtered", 1);
     this->thresholded_pub_bottom = it.advertise("/gate_task/bottom/thresholded", 1);
     this->marked_pub_bottom = it.advertise("/gate_task/bottom/marked", 1);
-    this->coordinates_pub_bottom = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
+    // this->coordinates_pub_bottom = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
     
 	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
@@ -82,20 +85,20 @@ cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, floa
 	}
 };
 
-void Gate::TaskHandling(bool status){
-	if(status)
-	{
-		spin_thread_front = new boost::thread(&Gate::frontTaskHandling, this); 
-		spin_thread_bottom = new boost::thread(&Gate::bottomTaskHandling, this); 
-	}
-	else 
-	{
-		task_done = true;
-        spin_thread_front->join();
-        spin_thread_bottom->join();
-		std::cout << "Task Handling function over" << std::endl;	
-	}
-}
+// void Gate::TaskHandling(bool status){
+// 	if(status)
+// 	{
+// 		spin_thread_front = new boost::thread(&Gate::frontTaskHandling, this); 
+// 		spin_thread_bottom = new boost::thread(&Gate::bottomTaskHandling, this); 
+// 	}
+// 	else 
+// 	{
+// 		task_done = true;
+//         spin_thread_front->join();
+//         spin_thread_bottom->join();
+// 		std::cout << "Task Handling function over" << std::endl;	
+// 	}
+// }
 
 void Gate::frontCallback(vision_tasks::gateFrontRangeConfig &config, double level)
 {
@@ -140,7 +143,20 @@ void Gate::bottomCallback(vision_tasks::gateBottomRangeConfig &config, double le
     this->bottom_closing_iter_ = config.closing_iter;
 }
 
-void Gate::bottomTaskHandling()
+void Gate::bottomTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_bottom = new boost::thread(&Gate::spinThreadBottom, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_bottom->join();
+		std::cout << "Bottom Task Handling function over" << std::endl;	
+	}
+}
+
+void Gate::spinThreadBottom()
 {
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
@@ -166,6 +182,7 @@ void Gate::bottomTaskHandling()
     while (ros::ok())
     {
 		if (task_done) {
+			task_done = false;
 			break;
 		}
         if (!image_.empty())
@@ -196,11 +213,11 @@ void Gate::bottomTaskHandling()
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
 				}
 			}
-			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			// blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-//			coordinates_pub_bottom.publish(pipe_point_message);
+			// coordinates_pub_bottom.publish(pipe_point_message);
 			ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
-			task_done_pub.publish(task_done_message);
+			// task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
 			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
         }
@@ -210,7 +227,20 @@ void Gate::bottomTaskHandling()
     }
 }
 
-void Gate::frontTaskHandling()
+void Gate::frontTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&Gate::spinThreadFront, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_front->join();
+		std::cout << "Front Task Handling function over" << std::endl;	
+	}
+}
+
+void Gate::spinThreadFront()
 {
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
@@ -233,7 +263,7 @@ void Gate::frontTaskHandling()
 	std::vector<cv::Vec4i> lines;
 	std::vector<cv::Vec4i> lines_filtered;
 	std::vector<double> angles;
-	int found = 0;
+	bool found = false;
 	cv::Point2i pi1;
 	cv::Point2i pi2;
 	cv::Point2i pj1;
@@ -251,12 +281,13 @@ void Gate::frontTaskHandling()
 	while (ros::ok())
 	{
 		if (task_done) {
+			task_done = false;
 			break;
 		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			//blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
 			{
 				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
@@ -316,7 +347,7 @@ void Gate::frontTaskHandling()
 									vertical1.y = pi1.y;
 									vertical2.x = pi2.x;
 									vertical2.y = pi2.y;
-									found = 1;
+									found = true;
 								}
 								else if (abs(angles[j] - 90.0) > abs(angles[i] - 90.0) && (vision_commons::Geometry::distance(pi1, pi2) > vision_commons::Geometry::distance(horizontal1, horizontal2) || vision_commons::Geometry::distance(pj1, pj2) > vision_commons::Geometry::distance(vertical1, vertical2)))
 								{
@@ -328,7 +359,7 @@ void Gate::frontTaskHandling()
 									vertical1.y = pj1.y;
 									vertical2.x = pj2.x;
 									vertical2.y = pj2.y;
-									found = 1;
+									found = true;
 								}
 							}
 						}
@@ -364,19 +395,22 @@ void Gate::frontTaskHandling()
 				cv::circle(image_marked, cv::Point(gate_point_message.point.y + image_.size().width / 2, image_.size().height / 2 - gate_point_message.point.z), 1, gate_center_color, 8, 0);
 				cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 			}
+			
 			detection_bool.data = found;
 			detection_pub.publish(detection_bool);
+
 			x_coordinate.data = gate_point_message.point.x;
 			y_coordinate.data = gate_point_message.point.y;
 			z_coordinate.data = gate_point_message.point.z;
+			
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
 		
-			blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
-			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
-			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
+			// canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
+			// lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
 			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else

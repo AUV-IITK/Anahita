@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
                 buoy.TaskHandling(false);
             }
             if (current_task == "gate") {
-                gate.TaskHandling(true);
+                gate.frontTaskHandling(true);
             }
             if (previous_task == "gate") {
-                gate.TaskHandling(false);
+                gate.frontTaskHandling(false);
             }
             previous_task = current_task;
         }

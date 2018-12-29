@@ -11,6 +11,7 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["red_buoy"] = false;
     task_map_["green_buoy"] = false;
     task_map_["yellow_buoy"] = false;
+    task_map_["buoy-gate"] = false;
     task_map_["gate"] = false;
 
     time_out_ =  _timeout;
@@ -102,7 +103,7 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
             task_map_["gate"] = true;
         }
         else if (current_task == "buoy-gate") {
-            task_map_["green_buoy"] = true;
+            task_map_["buoy-gate"] = true;
         }
     } 
 }

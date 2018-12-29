@@ -152,9 +152,11 @@ int main(int argc, char** argv) {
     th.isDetected("gate", 10);
 
     move_sideward.setActive(false);
-    
+
     gateTask gate_task;
     gate_task.setActive(true); // blocking function, will terminalte after completion
+    gate_task.setActive(false);
+
     nh.setParam("/kill_signal", true);
 
     ros::spin();

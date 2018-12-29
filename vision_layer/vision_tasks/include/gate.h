@@ -102,9 +102,11 @@ public:
 	cv::Mat image_marked;
     boost::thread* spin_thread_bottom; 
     boost::thread* spin_thread_front; 
-    void TaskHandling(bool status);
-	void bottomTaskHandling();
-    void frontTaskHandling();   
+    // void TaskHandling(bool status);
+	void bottomTaskHandling(bool status);
+    void frontTaskHandling(bool status);
+    void spinThreadFront();
+    void spinThreadBottom();
     std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;
