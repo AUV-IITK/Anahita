@@ -23,6 +23,7 @@ void moveSideward::setActive(bool status) {
         close_loop = true; 
         spin_thread->join();
         nh.setParam("/kill_signal", true);
+        nh.setParam("/kill_signal", false);
         spin_thread_->join();
     }
 }
@@ -34,7 +35,6 @@ void moveSideward::spinThread() {
     while(!goalReceived) {
         double now = ros::Time::now().toSec();
         if (now - then > 5 || close_loop) {
-            std::cout<<"Hello"<<std::endl;
             break;
         }
     }

@@ -68,7 +68,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
             this->error_ = this->error_value_;
     }
 
-    std::cout << this->name_ << " ERROR: " << this->error_ << std::endl;
+    // std::cout << this->name_ << " ERROR: " << this->error_ << std::endl;
     integral += (this->error_ * dt);
     derivative = (this->current_value_ - this->previous_value_) / dt;
     

@@ -134,9 +134,6 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_library(task_handler SHARED src/task_handler.cpp include/task_handler.h)
-target_link_libraries(task_handler ${catkin_LIBRARIES})
-
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 

@@ -74,7 +74,7 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
     double then = ros::Time::now().toSec();
     double now;
     double diff;
-    while (!task_map_[_task]) {
+    while (!task_map_[_task] && ros::ok()) {
         now = ros::Time::now().toSec();
         diff = now - then;
         if (diff > vision_time_out_) {
@@ -82,28 +82,29 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
         }
     }
     task_map_[_task] = false;
-    return true;
 }
 
 void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
     std::string current_task;
     nh_.getParam("/current_task", current_task);
 
-    if (current_task == "green_buoy") {
-        task_map_["green_buoy"] = true;
-    }
-    else if (current_task == "yellow_buoy") {
-        task_map_["yellow_buoy"] = true;
-    }
-    else if (current_task == "red_buoy") {
-        task_map_["red_buoy"] = true;
-    }
-    else if (current_task == "gate") {
-        task_map_["gate"] = true;
-    }
-    else if (current_task == "buoy-gate") {
-        task_map_["green_buoy"] = true;
-    }
+    if (_msg->data) {
+        if (current_task == "green_buoy") {
+            task_map_["green_buoy"] = true;
+        }
+        else if (current_task == "yellow_buoy") {
+            task_map_["yellow_buoy"] = true;
+        }
+        else if (current_task == "red_buoy") {
+            task_map_["red_buoy"] = true;
+        }
+        else if (current_task == "gate") {
+            task_map_["gate"] = true;
+        }
+        else if (current_task == "buoy-gate") {
+            task_map_["green_buoy"] = true;
+        }
+    } 
 }
 
 void taskHandler::setTimeout (double _time) {

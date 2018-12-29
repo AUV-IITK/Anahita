@@ -1,13 +1,13 @@
 #include <single_buoy.h>
 
 singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID") 
+                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(15)
 {
     forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::forwardCB, this);
     sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &singleBuoy::sidewardCB, this);
     upward_sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &singleBuoy::upwardCB, this);
-    angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);    
-    angleGoalReceived = false;
+    angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);
+    pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/x", 1);
     spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
 }
 singleBuoy::~singleBuoy() {}
@@ -26,12 +26,12 @@ void singleBuoy::setActive(bool status) {
 
         ///////////////////////////////////////////////////
 
-        // ROS_INFO("Waiting for upwardPID server to start.");
-        // upwardPIDClient.waitForServer();
+        ROS_INFO("Waiting for upwardPID server to start.");
+        upwardPIDClient.waitForServer();
 
-        // ROS_INFO("upwardPID server started, sending goal.");
-        // upwardPIDgoal.target_depth = 0;
-        // upwardPIDClient.sendGoal(upwardPIDgoal);
+        ROS_INFO("upwardPID server started, sending goal.");
+        upwardPIDgoal.target_depth = 0; // for gazebo
+        upwardPIDClient.sendGoal(upwardPIDgoal);
 
         ///////////////////////////////////////////////////
 
@@ -46,70 +46,68 @@ void singleBuoy::setActive(bool status) {
         anglePIDClient.sendGoal(anglePIDGoal);
 
         /////////////////////////////////////////////////////
-        ROS_INFO("SETTING FRWARD PWM TO 50");
+        ROS_INFO("SETTING F0RWARD PWM TO 50");
         nh_.setParam("/pwm_surge", 50);
 
-        while(forward_distance_ >= 40) {
-            ROS_INFO("to maintain the distance move forward");
-            continue;
+        while (!forwardGoalReceived && ros::ok()) {}
+
+        ROS_INFO("forward distance received");
+
+        while(forward_distance_ >= 100 && ros::ok()) {
         }
-       
-        std::cout<<forward_distance_<<std::endl;
+
+        ROS_INFO("forward distance less than 100");
 
         sidewardPIDClient.cancelGoal();
+        upwardPIDClient.cancelGoal();
         nh_.setParam("/pwm_sway", 0);
-        // upwardPIDClient.cancelGoal();
-        // ros::Duration(6).sleep();
 
         nh_.setParam("/pwm_surge", 50);
 
-        ros::Duration(6).sleep();
+        ros::Duration(6).sleep(); // 8 for gazebo and 6 for real world
         //////////////////////////////////////////////////////
         nh_.setParam("/pwm_surge", -50);
+
+        ROS_INFO("Buoy Task, moving backward");
         
-        ros::Duration(8).sleep();
+        ros::Duration(10).sleep(); // 10 for gazebo and 8 for real world
         
+        nh_.setParam("/pwm_surge", 0);
+
+        ROS_INFO("moving backward finished");
+
         ROS_INFO("SidewardPID Client sending goal again, task buoy.");
         sidewardPIDgoal.target_distance = 0;
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
         
-        // ros::Duration(5).sleep();
-        // ROS_INFO("UpwardPID Client sending goal again, task buoy.");
-        // upwardPIDgoal.target_depth = 0;
-        // upwardPIDClient.sendGoal(upwardPIDgoal);
+        ROS_INFO("UpwardPID Client sending goal again, task buoy.");
+        upwardPIDgoal.target_depth = 0;
+        upwardPIDClient.sendGoal(upwardPIDgoal);
 
         //////////////////////////////////////////////////////
 
-        ROS_INFO("ForwardPID Client sending goal again, task buoy.");
-        nh_.setParam("/kill_signal", true);
-        bool temp;
-        nh_.getParam("/kill_signal", temp);
-        ROS_INFO("kill signal is  %d", temp);
+        ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
+        forwardPIDgoal.target_distance = 50;
+        forwardPIDClient.sendGoal(forwardPIDgoal);
 
-        
-        // forwardPIDgoal.target_distance = 100;
-        // forwardPIDClient.sendGoal(forwardPIDgoal);
-        // while(forward_distance_ <= 100) {
+        // while(forward_distance_ <= 50 && ros::ok()) {
         //     continue;
         // }
-        // ros::Duration(2).sleep();
 
-        // forwardPIDClient.cancelGoal();
+        th.isAchieved(50, 15, "forward");
+
+        forwardPIDClient.cancelGoal();
         
-
-        // nh_.setParam("/pwm_forward_right", 0);
-        // nh_.setParam("/pwm_forward_left", 0);
-        // nh_.setParam("/pwm_sideward_front", 0);
-        // nh_.setParam("/pwm_sideward_back", 0);
-	
-	    // nh_.setParam("/kill_signal", true);
+        ROS_INFO("Killing the thrusters");
+	    nh_.setParam("/kill_signal", true);
+        nh_.setParam("/kill_signal", false);
 
         anglePIDClient.cancelGoal();
     }
     else {
         spin_thread->join();
-        forwardPIDClient.cancelGoal();
-        anglePIDClient.cancelGoal();
+        upwardPIDClient.cancelGoal();
+        sidewardPIDClient.cancelGoal();
     }
 }
 
@@ -119,6 +117,7 @@ void singleBuoy::spinThread() {
 
 void singleBuoy::forwardCB(const std_msgs::Float32ConstPtr &_msg) {
     forward_distance_ = _msg->data;
+    forwardGoalReceived = true;
 }
 
 void singleBuoy::sidewardCB(const std_msgs::Float32ConstPtr &_msg) {

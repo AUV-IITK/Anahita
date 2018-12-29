@@ -27,7 +27,7 @@ Buoy::Buoy(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)
@@ -133,7 +133,7 @@ void Buoy::spinThread(){
 
 	std_msgs::Bool detection_bool;
 
-	while (1)
+	while (ros::ok())
 	{	
 		if (close_task) {
 			break;

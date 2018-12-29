@@ -24,11 +24,8 @@ int main(int argc, char** argv) {
     ros::Time::init();
     int pub_count = 0;
     std_msgs::String current_task;
-
-    // taskHandler th(5); // time out 15 seconds
-
-    // moveStraight object(50);
-    // object.setActive(true);
+    ros::Rate loop_rate(10);
+    taskHandler th(15); // time out 15 seconds
 
     // TO MAINTAIN UPWARD
     // actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
@@ -78,10 +75,11 @@ int main(int argc, char** argv) {
     // th.isAchieved(15.28, 1.5, "roll"); // target is 40, band is 10 and task is upward
 
     // ros::Duration(500).sleep();
-    
-    ros::Rate loop_rate(10);
+
+    /////////////////////////////////////////////
+
+    current_task.data = "red_buoy";
     while (ros::ok() && pub_count <= 5) {
-        current_task.data = "red_buoy";
         task_pub.publish(current_task);
         pub_count++;
         loop_rate.sleep();
@@ -90,111 +88,81 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "red_buoy");
     ROS_INFO("Current task: Red Buoy");
     
-    // ROS_INFO("Starting buoy task");
-    // singleBuoy single_buoy;
-    // single_buoy.setActive(true); // blocking function, will terminalte after completion 
+    singleBuoy single_buoy;
+    single_buoy.setActive(true); // blocking function, will terminalte after completion 
+    single_buoy.setActive(false);
     
-    // ROS_INFO("Completed the first buoy task, Now let's move on to the second");
-    // nh.setParam("/kill_signal", true);
-    // ros::Duration(4).sleep();
-    // nh.setParam("/kill_signal", false);
+    ROS_INFO("Completed the first buoy task, Now let's move on to the second");
 
-    ////////////////////////////////////////////////
+    //////////////////////////////////////////
 
-    // moveSideward move_sideward1(50);
-    // move_sideward1.setActive(true);
-    // ros::Duration(4).sleep();
-    // move_sideward1.setActive(false);
-    // ROS_INFO("Sideawrd moving completed");
-    // nh.setParam("/kill_signal", true);
-    
-    // ros::Duration(1).sleep();
-    // nh.setParam("/kill_signal", false);    
-    
-    // ros::Duration(1).sleep();
-    // ROS_INFO("started buoy task for yellow");
-    // current_task.data = "yellow_buoy";
-    // task_pub.publish(current_task);
-    // nh.setParam("/current_task", "red_buoy");
-    // ROS_INFO("Currently publishing the colour");
-    // ros::Duration(5).sleep();
-    // single_buoy.setActive(true);
+    current_task.data = "yellow_buoy";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "yellow_buoy");
+    ROS_INFO("Current task: Yellow Buoy");
+
+    moveSideward move_sideward(-100);
+    move_sideward.setActive(true);
+    th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    move_sideward.setActive(false);
+
+    single_buoy.setActive(true);
+    single_buoy.setActive(false);
+
+    ROS_INFO("Yellow Buoy done");
   
-    // nh.setParam("/kill_signal", true);
-    
-    // moveSideward move_sideward(100);
-    // move_sideward.setActive(true); // until the yellow buoy is detected (for vision node)
+    //////////////////////////////////////////////
 
-    // ros::Duration(5).sleep(); // duration may vary depending upon the time observed in testing
-    
-    // move_sideward.setActive(false);
+    current_task.data = "green_buoy";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "green_buoy");
+    ROS_INFO("Current task: Green Buoy");
 
-    // ROS_INFO("Move sideward completed");
-    // singleBuoy single_buoy;
-    // single_buoy.setActive(true);
+    nh.setParam("/pwm_heave", -50);
+    ROS_INFO("Green Buoy Task, Going Down");
+    ros::Duration(6).sleep();
+    ROS_INFO("Green Buoy Task, At bottom");
+    nh.setParam("/pwm_heave", 0);
 
-    // ROS_INFO("Done buoy task");
-
-    // th.isDetected("yellow_buoy", 15); // time out of 15 seconds
-    // move_sideward.setActive(false);
-
-    // single_buoy.setActive(true); // blocking function, will terminalte after completion
-
-    ////////////////////////////////////////////////
-
-    // current_task.data = "green_buoy";
-    // task_pub.publish(current_task);
-    // nh.setParam("/current_task", "green_buoy");
-
-    // move_sideward.setThrust(100);
-    // move_sideward.setActive(true); // until the green buoy is detected (for vision node)
+    move_sideward.setThrust(100);
+    move_sideward.setActive(true); // until the green buoy is detected (for vision node)
     
     // ros::Duration(10).sleep(); // should move approx. 10m straight sideways
     
-    // th.isDetected("green_buoy", 15); // time out of 15 seconds
-    // move_sideward.setActive(false);
+    th.isDetected("green_buoy", 25); // time out of 15 seconds
+    ROS_INFO("Green Buoy Detected");
+    move_sideward.setActive(false);
 
-    // single_buoy.setActive(true); // blocking function, will terminalte after completion
+    single_buoy.setActive(true); // blocking function, will terminalte after completion
   
-    // moveStraight object(50);
-    // object.setActive(true);
-    // ros::Duration(20).sleep();
-    // object.setActive(false);
-
-    // ROS_INFO("Move forward completed");
-
     ////////////////////////////////////////////////
 
     // current_task.data = "buoy-gate";
-    // task_pub.publish(current_task);
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
     // nh.setParam("/current_task", "buoy-gate");
+    // ROS_INFO("Current task: Buoy-Gate");
 
-    // Example for upward PID
+    // // to get vertically below the buoy
 
-    // actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
-    // motion_layer::upwardPIDGoal upwardPIDgoal;
+    // nh.setParam("/pwm/heave", -50);
+    // ros::Duration(1).sleep();
+    // nh.setParam("/pwm/heave", 0);
 
-    // ROS_INFO("Waiting for upwardPID server to start, Buoy-Gate transition.");
-    // upwardPIDClient.waitForServer();
-
-    // ROS_INFO("upwardPID server started, sending goal, Buoy-Gate transition."); // task handler node
-    // upwardPIDgoal.target_depth = 40; // some number based on the data getting from the pressure sensor
-    // upwardPIDClient.sendGoal(upwardPIDgoal); 
-
-    // to get vertically above the buoy
-    // NEED to have a node or class to notify when something's done
-
-    // th.isAchieved(40, 10, "upward"); // target is 40, band is 10 and task is upward
-
-    // when upward target is achieved/
-    // moveStraight moveStraight(50); // for vision node
-    // moveStraight.setActive(true); // until the green buoy is detected under the bottom camera
-
-    // th.isDetected("green_buoy", 10);
-
-    //ros::Duration(10).sleep();
-    //move_straight.setActive(false);
-    // Align to its center
     // Example for sideward, forward, and angle PIDs
 
     // actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
@@ -228,20 +196,24 @@ int main(int argc, char** argv) {
     // anglePIDGoal.target_angle = angle_;
     // anglePIDClient.sendGoal(anglePIDGoal);
 
-    // th.isAchieved(0, 10, "forward"); // blocks until forward task is done
-
     // After the alignment
 
     ////////////////////////////////////////////////
 
     // current_task.data = "gate";
-    // task_pub.publish(current_task);
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
     // nh.setParam("/current_task", "gate");
+    // ROS_INFO("Current task: Gate");
 
     // move_sideward.setThrust(-100);
     // move_sideward.setActive(true); // until gate is detected
     
-    // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    // // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
     // th.isDetected("gate", 10);
     

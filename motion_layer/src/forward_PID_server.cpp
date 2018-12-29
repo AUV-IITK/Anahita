@@ -9,7 +9,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&forwardPIDAction::preemptCB, this));
     goal_ = 0;
 
-    x_coord.setPID(3.5, 0, 0.5, 15);
+    x_coord.setPID(3.5, 0, 0.5, 10);
     
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &forwardPIDAction::visionCB, this);
@@ -50,8 +50,8 @@ void forwardPIDAction::visionCB(const std_msgs::Float32ConstPtr &msg) {
 
     as_.publishFeedback(feedback_);
 
-    if (msg->data <= goal_ + 25 && msg->data >= goal_ - 25) {
-        ROS_INFO("%s: Succeeded", action_name_.c_str());
+    if (msg->data <= goal_ + 15 && msg->data >= goal_ - 15) {
+        // ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         // as_.setSucceeded(result_);
         std_msgs::Bool msg_;

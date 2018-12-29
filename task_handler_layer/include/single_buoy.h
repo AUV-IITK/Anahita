@@ -11,9 +11,9 @@
 #include <actionlib/client/terminal_state.h>
 
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
-
+#include <std_msgs/Bool.h>
+#include <task_handler.h>
 #include <boost/thread.hpp>
 #include <string>
 
@@ -39,12 +39,17 @@ private:
     ros::Subscriber angle_sub_;
     ros::Subscriber upward_sub_;
 
-    bool angleGoalReceived;
+    ros::Publisher pub_;
+
+    bool angleGoalReceived = false;
+    bool forwardGoalReceived = false;
 
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
     motion_layer::anglePIDGoal anglePIDGoal;
     motion_layer::upwardPIDGoal upwardPIDgoal;
+
+    taskHandler th;
 
     boost::thread* spin_thread;
 

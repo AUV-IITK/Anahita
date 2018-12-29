@@ -48,14 +48,14 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     if (!as_.isActive()) {
         return;
     }
-    ROS_INFO("INSIDE CALLBACK -----------");
+    // ROS_INFO("INSIDE CALLBACK -----------");
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;
     as_.publishFeedback(feedback_);
 
     if (msg->data <= goal_ + 1 && msg->data >= goal_ - 1) {
-        ROS_INFO("%s: Succeeded", action_name_.c_str());
+        // ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         // as_.setSucceeded(result_);
         std_msgs::Bool msg_;

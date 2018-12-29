@@ -10,7 +10,7 @@ upwardPIDAction::upwardPIDAction(std::string name) :
     goal_ = 0;
 
     //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/pressure_sensor/pressure", 1, &upwardPIDAction::depthCB, this);
+    sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &upwardPIDAction::depthCB, this);
     pub_ = nh_.advertise<std_msgs::Bool>("/kill/linearvelocity/z", 1);
    z_coord.setPID(2.5, 0, 0.5, 15);
 
@@ -50,14 +50,14 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
     as_.publishFeedback(feedback_);
 
     if (msg->data <= goal_ + 10 && msg->data >= goal_ - 10) {
-        ROS_INFO("%s: Succeeded", action_name_.c_str());
+        // ROS_INFO("%s: Succeeded", action_name_.c_str());
         // set the action state to succeeded
         // as_.setSucceeded(result_);
         std_msgs::Bool msg_;
         msg_.data = true;
         pub_.publish(msg_);
     }
-    ROS_INFO("PWM set as %d", z_coord.getPWM());
+    // ROS_INFO("PWM set as %d", z_coord.getPWM());
     nh_.setParam("/pwm_heave", z_coord.getPWM());
 }
 

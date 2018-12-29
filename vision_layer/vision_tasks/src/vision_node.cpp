@@ -4,7 +4,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = red_buoy;
+std::string current_task = "red_buoy";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -26,12 +26,12 @@ int main(int argc, char *argv[])
     ros::Rate loop_rate(10);
 
     ROS_INFO("Vision Node started");
+    buoy.TaskHandling(true);
 
     while (ros::ok()) {
         if (current_task != previous_task) {
             if (current_task == "red_buoy") {
                 buoy.switchColor(0);
-                buoy.TaskHandling(true);
             }
             if (current_task == "yellow_buoy") {
                 buoy.switchColor(1);

@@ -133,6 +133,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
+add_library(task_handler SHARED src/task_handler.cpp include/task_handler.h)
+target_link_libraries(task_handler ${catkin_LIBRARIES})
+
 add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
 add_dependencies(moveForward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveForward ${catkin_LIBRARIES})
@@ -147,7 +150,7 @@ target_link_libraries(moveStraight ${catkin_LIBRARIES})
 
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(singleBuoy ${catkin_LIBRARIES})
+target_link_libraries(singleBuoy task_handler ${catkin_LIBRARIES})
 
 add_library(line SHARED src/line.cpp include/line.h)
 add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
