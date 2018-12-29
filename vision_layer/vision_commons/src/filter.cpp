@@ -95,7 +95,7 @@ cv::Mat vision_commons::Filter::blue_filter(
 		int64 t0_ = cv::getTickCount();
     cv::Mat blue_filtered = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
     int64 t1_ = cv::getTickCount();
-		ROS_INFO("Time taken by CLAHE: %lf", (t1_-t0_)/cv::getTickFrequency());    
+		// ROS_INFO("Time taken by CLAHE: %lf", (t1_-t0_)/cv::getTickFrequency());    
     cv::Mat temp = blue_filtered.clone();
     cv::Mat temp2;
     int64 t3_ = cv::getTickCount();
@@ -105,7 +105,7 @@ cv::Mat vision_commons::Filter::blue_filter(
       temp2.copyTo(temp);
     }
     int64 t4_ = cv::getTickCount();
-		ROS_INFO("Time taken by first CLAHE Bilateral: %lf", (t4_-t3_)/cv::getTickFrequency());    
+		// ROS_INFO("Time taken by first CLAHE Bilateral: %lf", (t4_-t3_)/cv::getTickFrequency());    
     blue_filtered = vision_commons::Filter::balance_white(temp);
     int64 t5_ = cv::getTickCount();
     temp = blue_filtered.clone();
@@ -115,7 +115,7 @@ cv::Mat vision_commons::Filter::blue_filter(
       temp2.copyTo(temp);
     }
     int64 t6_ = cv::getTickCount();
-		ROS_INFO("Time taken by second CLAHE Bilateral: %lf", (t6_-t5_)/cv::getTickFrequency());   
+		// ROS_INFO("Time taken by second CLAHE Bilateral: %lf", (t6_-t5_)/cv::getTickFrequency());   
 
     /*
     int64 t7_ = cv::getTickCount();

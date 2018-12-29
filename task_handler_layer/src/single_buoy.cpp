@@ -7,7 +7,7 @@ singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sid
     sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &singleBuoy::sidewardCB, this);
     upward_sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &singleBuoy::upwardCB, this);
     angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);
-    spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
+    // spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
 }
 singleBuoy::~singleBuoy() {}
 
@@ -104,9 +104,10 @@ void singleBuoy::setActive(bool status) {
         anglePIDClient.cancelGoal();
     }
     else {
-        spin_thread->join();
+        // spin_thread->join();
         upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
+        ROS_INFO("Closing Single Buoy");
     }
 }
 

@@ -144,7 +144,7 @@ void Buoy::spinThread(){
 			int64 t0_ = cv::getTickCount();
 			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			int64 t1_ = cv::getTickCount();
-			ROS_INFO("Time taken by blue-filter: %lf", (t1_-t0_)/cv::getTickFrequency());
+			// ROS_INFO("Time taken by blue-filter: %lf", (t1_-t0_)/cv::getTickFrequency());
 
 			//blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
@@ -155,7 +155,7 @@ void Buoy::spinThread(){
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				int64 t1 = cv::getTickCount();
-				ROS_INFO("Time taken by thresholding: %lf", (t1-t0)/cv::getTickFrequency());
+				// ROS_INFO("Time taken by thresholding: %lf", (t1-t0)/cv::getTickFrequency());
 
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
@@ -163,7 +163,7 @@ void Buoy::spinThread(){
 				int64 t2 = cv::getTickCount();
 				contours = vision_commons::Contour::getBestX(image_thresholded, 2);
 				int64 t3 = cv::getTickCount();
-				ROS_INFO("Time taken by contours: %lf", (t3-t2)/cv::getTickFrequency());
+				// ROS_INFO("Time taken by contours: %lf", (t3-t2)/cv::getTickFrequency());
 
 				if (contours.size() != 0)
 				{
@@ -175,7 +175,7 @@ void Buoy::spinThread(){
  					y_coordinate.data = center[0].x - ((float)image_.size().width) / 2;
 					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
-					if(contourArea(contours[index]) > 20 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					if(contourArea(contours[index]) > 10 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
 						detection_bool.data = false;						
@@ -189,7 +189,7 @@ void Buoy::spinThread(){
 						cv::drawContours(image_marked, contours, i, contour_color, 1);
 					}
 					int64 tend_ = cv::getTickCount();
-					ROS_INFO("Time taken by entire buoy node: %lf", (tend_-t0_)/cv::getTickFrequency());				
+					// ROS_INFO("Time taken by entire buoy node: %lf", (tend_-t0_)/cv::getTickFrequency());				
 					
 				}
 				else

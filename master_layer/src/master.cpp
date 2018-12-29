@@ -14,8 +14,14 @@
 #include <actionlib/client/terminal_state.h>
 #include <std_msgs/String.h>
 #include <task_handler.h>
+#include <boost/thread.hpp>
 
 using namespace std;
+
+void spinThread() {
+    ROS_INFO("Spinning");
+    ros::spin();
+}
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "master");
@@ -26,6 +32,9 @@ int main(int argc, char** argv) {
     std_msgs::String current_task;
     ros::Rate loop_rate(10);
     taskHandler th(15); // time out 15 seconds
+    singleBuoy single_buoy;
+
+    boost::thread spin_thread(&spinThread);
    
     /////////////////////////////////////////////
 
@@ -39,13 +48,12 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "red_buoy");
     ROS_INFO("Current task: Red Buoy");
     
-    singleBuoy single_buoy;
     single_buoy.setActive(true); // blocking function, will terminalte after completion 
     single_buoy.setActive(false);
     
     ROS_INFO("Completed the first buoy task, Now let's move on to the second");
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////
 
     current_task.data = "yellow_buoy";
     while (ros::ok() && pub_count <= 5) {
@@ -59,7 +67,9 @@ int main(int argc, char** argv) {
 
     moveSideward move_sideward(-100);
     move_sideward.setActive(true);
+    ROS_INFO("Finding Yellow Buoy....");
     th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    ROS_INFO("Yellow Buoy Detected");
     move_sideward.setActive(false);
 
     single_buoy.setActive(true);
@@ -79,12 +89,19 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "green_buoy");
     ROS_INFO("Current task: Green Buoy");
 
-    nh.setParam("/pwm_heave", -50);
+    while (ros::ok() && pub_count <= 5) {
+        nh.setParam("/pwm_heave", -50);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    
     ROS_INFO("Green Buoy Task, Going Down");
     ros::Duration(6).sleep();
     ROS_INFO("Green Buoy Task, At bottom");
     nh.setParam("/pwm_heave", 0);
 
+    // moveSideward move_sideward(100);
     move_sideward.setThrust(100);
     move_sideward.setActive(true); // until the green buoy is detected (for vision node)
     
@@ -96,6 +113,8 @@ int main(int argc, char** argv) {
 
     single_buoy.setActive(true); // blocking function, will terminalte after completion
     single_buoy.setActive(false);
+
+    ROS_INFO("Green Buoy Done");
   
     ////////////////////////////////////////////////
 
@@ -134,32 +153,33 @@ int main(int argc, char** argv) {
 
     ////////////////////////////////////////////////
 
-    current_task.data = "gate";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "gate");
-    ROS_INFO("Current task: Gate");
+    // current_task.data = "gate";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "gate");
+    // ROS_INFO("Current task: Gate");
 
-    move_sideward.setThrust(-100);
-    move_sideward.setActive(true); // until gate is detected
+    // move_sideward.setThrust(-100);
+    // move_sideward.setActive(true); // until gate is detected
     
-    // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    // // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
-    th.isDetected("gate", 10);
+    // th.isDetected("gate", 10);
 
-    move_sideward.setActive(false);
+    // move_sideward.setActive(false);
 
-    gateTask gate_task;
-    gate_task.setActive(true); // blocking function, will terminalte after completion
-    gate_task.setActive(false);
+    // gateTask gate_task;
+    // gate_task.setActive(true); // blocking function, will terminalte after completion
+    // gate_task.setActive(false);
 
     nh.setParam("/kill_signal", true);
+    nh.setParam("/kill_signal", false);
 
-    ros::spin();
+    spin_thread.join();
 
     return 0;
 }
