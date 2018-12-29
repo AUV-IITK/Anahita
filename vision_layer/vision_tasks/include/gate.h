@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string>
 #include <std_msgs/Bool.h>
+#include <boost/thread.hpp> 
 
 #include <vision_tasks/gateFrontRangeConfig.h>
 #include <vision_tasks/gateBottomRangeConfig.h>
@@ -23,6 +24,7 @@
 #include <vision_commons/contour.h>
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
+#include <vision_commons/geometry.h>
 
 class Gate
 {
@@ -66,7 +68,24 @@ protected:
 
     bool task_done = false;
 
-    std::string camera_frame_ = "auv-iitk";
+    image_transport::Subscriber front_image_sub;
+    image_transport::Subscriber bottom_image_sub;
+
+	image_transport::Publisher blue_filtered_pub_front;
+	image_transport::Publisher thresholded_pub_front; 
+	image_transport::Publisher canny_pub_front;
+	image_transport::Publisher lines_pub_front;
+	image_transport::Publisher marked_pub_front;
+	ros::Publisher coordinates_pub_front;
+
+    image_transport::Publisher blue_filtered_pub_bottom;
+    image_transport::Publisher thresholded_pub_bottom;
+    image_transport::Publisher marked_pub_bottom;
+    ros::Publisher coordinates_pub_bottom;
+    ros::Publisher task_done_pub;
+   	ros::Publisher detection_pub;
+
+    std::string camera_frame_;
 	void frontCallback(vision_tasks::gateFrontRangeConfig &config, double level);
 	void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);    
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);

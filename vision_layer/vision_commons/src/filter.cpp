@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "ros/ros.h"
 #include "vision_commons/filter.h"
 
 cv::Mat vision_commons::Filter::clahe(cv::Mat &image, double clahe_clip, int clahe_grid_size)
@@ -91,22 +92,38 @@ cv::Mat vision_commons::Filter::blue_filter(
 
   if (!image.empty())
   {
+		int64 t0_ = cv::getTickCount();
     cv::Mat blue_filtered = vision_commons::Filter::clahe(image, clahe_clip, clahe_grid_size);
+    int64 t1_ = cv::getTickCount();
+		ROS_INFO("Time taken by CLAHE: %lf", (t1_-t0_)/cv::getTickFrequency());    
     cv::Mat temp = blue_filtered.clone();
     cv::Mat temp2;
+    int64 t3_ = cv::getTickCount();
     for (int i = 0; i < clahe_bilateral_iter; i++)
     {
-      cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
+      cv::bilateralFilter(temp, temp2, 5, 8.0, 8.0);
       temp2.copyTo(temp);
     }
+    int64 t4_ = cv::getTickCount();
+		ROS_INFO("Time taken by first CLAHE Bilateral: %lf", (t4_-t3_)/cv::getTickFrequency());    
     blue_filtered = vision_commons::Filter::balance_white(temp);
+    int64 t5_ = cv::getTickCount();
     temp = blue_filtered.clone();
     for (int i = 0; i < balanced_bilateral_iter / 2; i++)
     {
       cv::bilateralFilter(temp, temp2, 6, 8.0, 8.0);
       temp2.copyTo(temp);
     }
+    int64 t6_ = cv::getTickCount();
+		ROS_INFO("Time taken by second CLAHE Bilateral: %lf", (t6_-t5_)/cv::getTickFrequency());   
+
+    /*
+    int64 t7_ = cv::getTickCount();
     cv::fastNlMeansDenoisingColored(temp, blue_filtered, denoise_h, denoise_h, 7, 11);
+    int64 t8_ = cv::getTickCount();
+    ROS_INFO("Time taken by Denoising: %lf", (t8_-t7_)/cv::getTickFrequency());    
+    */
+    
     return blue_filtered;
   }
   else

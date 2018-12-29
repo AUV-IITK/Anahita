@@ -39,6 +39,21 @@ MarkerDropper::MarkerDropper(){
     this->bottom_closing_iter_ = 1;
 
     this->camera_frame_ = "auv-iitk";
+
+	image_transport::ImageTransport it(nh);
+	
+	this->bottom_blue_filtered_pub = it.advertise("/markerdropper_task/bottom/blue_filtered", 1);
+	this->bottom_thresholded_pub = it.advertise("/markerdropper_task/bottom/thresholded", 1);
+	this->bottom_marked_pub = it.advertise("/markerdropper_task/bottom/marked", 1);
+	this->bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/bottom_bin_coordinates", 1000);
+	
+	this->front_blue_filtered_pub = it.advertise("/markerdropper_task/front/blue_filtered", 1);
+	this->front_thresholded_pub = it.advertise("/markerdropper_task/front/thresholded", 1);
+	this->front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
+	this->front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
+
+	this->bottom_image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
+	this->front_image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
 }
 
 
@@ -118,15 +133,6 @@ void MarkerDropper::BottomTaskHandling()
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
 	server.setCallback(f);
-
-	image_transport::ImageTransport it(nh);
-	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/markerdropper_task/bottom/blue_filtered", 1);
-	image_transport::Publisher bottom_thresholded_pub = it.advertise("/markerdropper_task/bottom/thresholded", 1);
-	image_transport::Publisher bottom_marked_pub = it.advertise("/markerdropper_task/bottom/marked", 1);
-	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/bottom_bin_coordinates", 1000);
-
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
-
 
 	cv::Scalar bin_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -211,20 +217,10 @@ void MarkerDropper::FrontTaskHandling(){
 	f = boost::bind(&MarkerDropper::frontCallback, this, _1, _2);
 	server.setCallback(f);
 	
-		std::cout << "front Task Handling function start" << std::endl;	
-
-	  image_transport::ImageTransport it(nh);
-		image_transport::Publisher front_blue_filtered_pub = it.advertise("/markerdropper_task/front/blue_filtered", 1);
-		image_transport::Publisher front_thresholded_pub = it.advertise("/markerdropper_task/front/thresholded", 1);
-		image_transport::Publisher front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
-		ros::Publisher front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
-
-		image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
-
-		cv::Scalar bin_center_color(255, 255, 255);
-		cv::Scalar image_center_color(0, 0, 0);
-		cv::Scalar enclosing_circle_color(149, 255, 23);
-		cv::Scalar contour_color(255, 0, 0);
+	cv::Scalar bin_center_color(255, 255, 255);
+	cv::Scalar image_center_color(0, 0, 0);
+	cv::Scalar enclosing_circle_color(149, 255, 23);
+	cv::Scalar contour_color(255, 0, 0);
 
 	cv::Mat blue_filtered;
 	cv::Mat image_hsv;
@@ -239,9 +235,6 @@ void MarkerDropper::FrontTaskHandling(){
 	geometry_msgs::PointStamped bin_center_message;
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
-
-		std::cout << "front Task Handling function over" << std::endl;	
-	
 
 	while (1)
 	{

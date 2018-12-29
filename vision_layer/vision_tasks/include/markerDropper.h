@@ -28,11 +28,19 @@ class MarkerDropper
 {
 protected:
 	ros::NodeHandle nh;
-    image_transport::Publisher blue_filtered_pub;
-	image_transport::Publisher thresholded_pub;
-	image_transport::Publisher marked_pub;
-	ros::Publisher coordinates_pub;
-	image_transport::Subscriber image_raw_sub;
+    
+    image_transport::Publisher bottom_blue_filtered_pub;
+	image_transport::Publisher bottom_thresholded_pub;
+	image_transport::Publisher bottom_marked_pub;
+	ros::Publisher bottom_coordinates_pub;
+	
+	image_transport::Publisher front_blue_filtered_pub;
+	image_transport::Publisher front_thresholded_pub;
+	image_transport::Publisher front_marked_pub;
+	ros::Publisher front_coordinates_pub;
+
+	image_transport::Subscriber front_image_raw_sub;
+	image_transport::Subscriber bottom_image_raw_sub;
 
 	std::string camera_frame_;
 
