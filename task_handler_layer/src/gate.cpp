@@ -1,16 +1,14 @@
 #include <gate.h>
 
-gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID") {
+gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), th(15) {
     forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &gateTask::forwardCB, this);
     sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &gateTask::sidewardCB, this);
-    angle_sub_ = nh_.subscribe("/varun/sensors/imu/yaw", 1, &gateTask::angleCB, this);
+    angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &gateTask::angleCB, this);
     angleGoalReceived = false;
-    spin_thread = new boost::thread(boost::bind(&gateTask::spinThread, this));
+    // spin_thread = new boost::thread(boost::bind(&gateTask::spinThread, this));
 }
 
-gateTask::~gateTask() {
-
-}
+gateTask::~gateTask() {}
 
 void gateTask::setActive(bool status) {
     if (status) {
@@ -32,7 +30,7 @@ void gateTask::setActive(bool status) {
 
         ROS_INFO("anglePID server started, sending goal.");
 
-        anglePIDGoal.target_angle = angle_;
+        anglePIDGoal.target_angle = 0;
         anglePIDClient.sendGoal(anglePIDGoal);
 
         /////////////////////////////////////////////////////
@@ -40,9 +38,9 @@ void gateTask::setActive(bool status) {
         nh_.setParam("/pwm_surge", 100);
         nh_.setParam("/pwm_surge", 100);
 
-        while(forward_distance_ >= 100) {
-            continue;
-        }
+        // while(forward_distance_ >= 100) {
+        //     continue;
+        // }
 
         sidewardPIDClient.cancelGoal();
         ros::Duration(6).sleep();
@@ -50,15 +48,16 @@ void gateTask::setActive(bool status) {
         anglePIDClient.cancelGoal();
 
         nh_.setParam("/kill_signal", true);
+        nh_.setParam("/kill_signal", false);
     }
     else {
-        spin_thread->join();
+        // spin_thread->join();
     }
 }
 
-void gateTask::spinThread() {
-    // ros::spin();
-}
+// void gateTask::spinThread() {
+//     ros::spin();
+// }
 
 void gateTask::forwardCB(const std_msgs::Float32Ptr &_msg) {
     forward_distance_ = _msg->data;

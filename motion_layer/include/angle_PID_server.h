@@ -20,6 +20,7 @@ protected:
     motion_layer::anglePIDFeedback feedback_;
     motion_layer::anglePIDResult result_;
     double goal_;
+    double current_angle_ = 0;
     ros::Subscriber sub_;
     ErrorDescriptor angle;
 

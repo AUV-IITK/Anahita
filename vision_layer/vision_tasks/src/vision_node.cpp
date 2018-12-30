@@ -1,10 +1,14 @@
 #include "buoy.h"
 #include "gate.h"
+#include "markerDropper.h"
+// #include "octagon.h"
+#include "torpedo.h"
+
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "gate";
+std::string current_task = "red_buoy";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -20,6 +24,9 @@ int main(int argc, char *argv[])
 
     Buoy buoy;
     Gate gate;
+    Torpedo torpedo;
+    MarkerDropper md;
+    // Octagon octagon;
 
     ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);
 
@@ -48,6 +55,40 @@ int main(int argc, char *argv[])
             if (previous_task == "gate") {
                 gate.frontTaskHandling(false);
             }
+            // if (current_task == "red_torpedo") {
+            //     torpedo.switchColor(0);
+            //     torpedo.TaskHandling(true);
+            // }
+            // if (current_task == "green_torpedo") {
+            //     torpedo.switchColor(1);
+            // }
+            // if (previous_task == "green_torpedo") {
+            //     torpedo.TaskHandling(false);     
+            // }
+            // if (current_task == "torpedo-marker_dropper") {
+            //     md.frontTaskHandling(true);
+            // }
+            // if (previous_task == "torpedo-marker_dropper") {
+            //     md.frontTaskHandling(false);
+            // }
+            // if (current_task == "marker_dropper") {
+            //     md.bottomTaskHandling(true);
+            // }
+            // if (previous_task == "marker_dropper") {
+            //     md.bottomTaskHandling(false);
+            // }
+            // if (current_task == "marker_dropper-octagon") {
+            //     octagon.frontTaskHandling(true);
+            // }
+            // if (previous_task == "marker_dropper-octagon") {
+            //     octagon.frontTaskHandling(false);
+            // }
+            // if (current_task == "octagon") {
+            //     octagon.bottomTaskHandling(true);
+            // }
+            // if (previous_task == "octagon") {
+            //     octagon.bottomTaskHandling(false);
+            // }
             previous_task = current_task;
         }
         loop_rate.sleep();

@@ -162,7 +162,11 @@ target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
 
 add_library(gate SHARED src/gate.cpp include/gate.h)
 add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(gate moveStraight moveForward ${catkin_LIBRARIES})
+target_link_libraries(gate ${catkin_LIBRARIES})
+
+add_library(torpedo SHARED src/torpedo.cpp include/torpedo.h)
+add_dependencies(torpedo ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(torpedo ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

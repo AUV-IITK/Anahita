@@ -139,7 +139,7 @@ target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
 add_executable(master src/master.cpp)
 add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master singleBuoy gate moveSideward moveStraight moveForward task_handler ${catkin_LIBRARIES})
+target_link_libraries(master singleBuoy gate moveSideward moveStraight moveForward task_handler torpedo moveDownward ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server sidewardPIDServer upwardPIDServer anglePIDServer forwardPIDServer rollPIDServer pitchPIDServer ${catkin_LIBRARIES})

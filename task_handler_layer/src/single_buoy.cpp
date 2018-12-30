@@ -41,7 +41,7 @@ void singleBuoy::setActive(bool status) {
 
         ROS_INFO("anglePID server started, sending goal.");
 
-        anglePIDGoal.target_angle = angle_;
+        anglePIDGoal.target_angle = 0;
         anglePIDClient.sendGoal(anglePIDGoal);
 
         /////////////////////////////////////////////////////

@@ -1,16 +1,23 @@
 #include <ros/ros.h>
+
 #include <gate.h>
 #include <single_buoy.h>
+#include <torpedo.h>
+
 #include <straight_server.h>
 #include <move_sideward_server.h>
 #include <move_forward_server.h>
+#include <move_downward_server.h>
+
 #include <actionlib/client/simple_action_client.h>
+
 #include <motion_layer/anglePIDAction.h>
 #include <motion_layer/rollPIDAction.h>
 #include <motion_layer/pitchPIDAction.h>
 #include <motion_layer/forwardPIDAction.h>
 #include <motion_layer/sidewardPIDAction.h>
 #include <motion_layer/upwardPIDAction.h>
+
 #include <actionlib/client/terminal_state.h>
 #include <std_msgs/String.h>
 #include <task_handler.h>
@@ -89,17 +96,22 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "green_buoy");
     ROS_INFO("Current task: Green Buoy");
 
-    while (ros::ok() && pub_count <= 5) {
-        nh.setParam("/pwm_heave", -50);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
+    moveDownward move_downward(-50); // for real world
+    move_downward.setActive(true);
+    ros::Duration(4).sleep();
+    move_downward.setActive(false);
+
+    // while (ros::ok() && pub_count <= 5) { // for gazebo
+    //     nh.setParam("/pwm_heave", -50);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
     
-    ROS_INFO("Green Buoy Task, Going Down");
-    ros::Duration(6).sleep();
-    ROS_INFO("Green Buoy Task, At bottom");
-    nh.setParam("/pwm_heave", 0);
+    // ROS_INFO("Green Buoy Task, Going Down");
+    // ros::Duration(6).sleep();
+    // ROS_INFO("Green Buoy Task, At bottom");
+    // nh.setParam("/pwm_heave", 0);
 
     // moveSideward move_sideward(100);
     move_sideward.setThrust(100);
@@ -151,30 +163,88 @@ int main(int argc, char** argv) {
     // anglePIDGoal.target_angle = angle_;
     // anglePIDClient.sendGoal(anglePIDGoal);
 
-    ////////////////////////////////////////////////
+    //////////////////////////////////////////////////
 
-    // current_task.data = "gate";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "gate");
-    // ROS_INFO("Current task: Gate");
+    current_task.data = "gate";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "gate");
+    ROS_INFO("Current task: Gate");
 
-    // move_sideward.setThrust(-100);
-    // move_sideward.setActive(true); // until gate is detected
+    ROS_INFO("Gate Task, going down");
+    move_downward.setActive(true);
+    ros::Duration(4).sleep();
+    move_downward.setActive(false);
+    ROS_INFO("Gate Task, at the bottom");
+
+    move_sideward.setThrust(-100);
+    move_sideward.setActive(true); // until gate is detected
     
-    // // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
-    // th.isDetected("gate", 10);
+    th.isDetected("gate", 10);
 
-    // move_sideward.setActive(false);
+    move_sideward.setActive(false);
 
-    // gateTask gate_task;
-    // gate_task.setActive(true); // blocking function, will terminalte after completion
-    // gate_task.setActive(false);
+    gateTask gate_task;
+    gate_task.setActive(true); // blocking function, will terminalte after completion
+    gate_task.setActive(false);
+
+    ///////////////////////////////////////////////////
+
+    // Gate-Torpedo Transition
+
+    ///////////////////////////////////////////////////
+
+    current_task.data = "red_torpedo";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "red_torpedo");
+    ROS_INFO("Current task: Red Torpedo");
+
+    Torpedo torpedo;
+
+    torpedo.setActive(true);
+    torpedo.setActive(false);
+
+    ////////////////////////////////////////////////////
+
+    current_task.data = "green_torpedo";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "green_torpedo");
+    ROS_INFO("Current task: Green Torpedo");
+
+    move_sideward.setThrust(100);
+    move_sideward.setActive(true);
+
+    th.isDetected("green_torpedo", 5);
+
+    move_sideward.setActive(false);
+
+    torpedo.setActive(true);
+    torpedo.setActive(false);
+
+    /////////////////////////////////////////////////////
+
+    // Torpedo-MarkerDropper Transition
+
+    /////////////////////////////////////////////////////
+
+    
+    /////////////////////////////////////////////////////
 
     nh.setParam("/kill_signal", true);
     nh.setParam("/kill_signal", false);

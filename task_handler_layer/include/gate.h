@@ -14,6 +14,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
+#include <task_handler.h>
+
 class gateTask
 {
 private:
@@ -37,6 +39,8 @@ private:
     double forward_distance_;
     double sideward_distance_;
     double angle_;
+
+    taskHandler th;
 
 public:
     gateTask();

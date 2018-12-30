@@ -13,12 +13,18 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["yellow_buoy"] = false;
     task_map_["buoy-gate"] = false;
     task_map_["gate"] = false;
+    task_map_["red_torpedo"] = false;
+    task_map_["green_torpedo"] = false;
+    task_map_["marker_dropper"] = false;
+    task_map_["octagon"] = false;
+    task_map_["torpedo-marker_dropper"] = false;
+    task_map_["marker_dropper-octagon"] = false;
 
     time_out_ =  _timeout;
 
     ros::Time::init();
 
-    spin_thread_ = new boost::thread(boost::bind(&taskHandler::spinThread, this));
+    // spin_thread_ = new boost::thread(boost::bind(&taskHandler::spinThread, this));
     vision_sub_ = nh_.subscribe("/detected", 1, &taskHandler::visionCB, this);
 }
 
@@ -28,9 +34,9 @@ void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
     data_ = _msg->data;
 }
 
-void taskHandler::spinThread () {
-    // ros::spin();
-}
+// void taskHandler::spinThread () {
+//     ros::spin();
+// }
 
 bool taskHandler::isAchieved (double _target, double _band, std::string _topic) {
 
@@ -104,6 +110,24 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         }
         else if (current_task == "buoy-gate") {
             task_map_["buoy-gate"] = true;
+        }
+        else if (current_task == "red_torpedo") {
+            task_map_["red_torpedo"] = true;
+        }
+        else if (current_task == "green_torpedo") {
+            task_map_["green_torpedo"] = true;
+        }
+        else if (current_task == "octagon") {
+            task_map_["octagon"] = true;
+        }
+        else if (current_task == "marker_dropper") {
+            task_map_["marker_dropper"] = true;
+        }
+        else if (current_task == "torpedo-marker_dropper") {
+            task_map_["torpedo-marker_dropper"] = true;
+        }
+        else if (current_task == "marker_dropper-octagon") {
+            task_map_["marker_dropper-octagon"] = true;
         }
     } 
 }

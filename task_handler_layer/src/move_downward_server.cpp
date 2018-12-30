@@ -13,7 +13,7 @@ moveDownward::~moveDownward() {
 void moveDownward::setActive(bool status) {
     
     if (status == true) {
-        spin_thread_ = new boost::thread(boost::bind(&moveDownward::spinThread_, this));
+        // spin_thread_ = new boost::thread(boost::bind(&moveDownward::spinThread_, this));
     	spin_thread = new boost::thread(boost::bind(&moveDownward::spinThread, this));
     }
     else {
@@ -24,7 +24,7 @@ void moveDownward::setActive(bool status) {
         spin_thread->join();
         nh.setParam("/kill_signal", true);
         nh.setParam("/kill_signal", false);
-        spin_thread_->join();
+        // spin_thread_->join();
     }
 }
 
@@ -40,14 +40,14 @@ void moveDownward::spinThread() {
     }
     if (goalReceived) {
         ROS_INFO("turnPID server started, sending goal.");
-        angle_PID_goal.target_angle = angle;
+        angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
     }
 }
 
-void moveDownward::spinThread_() {
-    // ros::spin();
-}
+// void moveDownward::spinThread_() {
+//     ros::spin();
+// }
 
 void moveDownward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
 	angle = _msg->data;

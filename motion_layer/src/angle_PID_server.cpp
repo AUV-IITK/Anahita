@@ -25,7 +25,7 @@ anglePIDAction::~anglePIDAction(void)
 void anglePIDAction::goalCB()
 {
     ROS_INFO("Inside goal callback");
-    goal_ = as_.acceptNewGoal()->target_angle;
+    goal_ = as_.acceptNewGoal()->target_angle + current_angle_;
 
     angle.setReference(goal_);
     ROS_INFO("Goal set as referecnce");
@@ -47,7 +47,9 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     if (!as_.isActive()) {
         return;
     }
-    // ROS_INFO("INSIDE CALLBACK -----------");
+
+    current_angle_ = msg->data;
+
     angle.errorToPWM(msg->data);
 
     feedback_.current_angle = msg->data;

@@ -61,7 +61,7 @@ void moveForward::spinThread() {
     if (!angleGoalReceived) {}
 
     ROS_INFO("anglePID server started, sending goal.");
-    angle_PID_goal.target_angle = angle;
+    angle_PID_goal.target_angle = 0;
     anglePIDClient_.sendGoal(angle_PID_goal);
 
 }

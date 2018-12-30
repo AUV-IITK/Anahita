@@ -45,7 +45,7 @@ void moveStraight::spinThread() {
     }
     if (goalReceived_ref) { 
         ROS_INFO("turnPID server started, sending goal.");
-        angle_PID_goal.target_angle = angle;
+        angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
         ROS_INFO("Sent the goal to client");
     }
