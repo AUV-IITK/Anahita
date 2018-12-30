@@ -260,9 +260,7 @@ void Gate::spinThreadFront()
 	cv::Mat image_canny;
 	cv::Mat image_lines;
 	cv::Mat image_marked;
-	std::vector<cv::Vec4i> lines;
-	std::vector<cv::Vec4i> lines_filtered;
-	std::vector<double> angles;
+
 	bool found = false;
 	cv::Point2i pi1;
 	cv::Point2i pi2;
@@ -286,6 +284,10 @@ void Gate::spinThreadFront()
 		}
 		if (!image_.empty())
 		{
+			std::vector<cv::Vec4i> lines;
+			std::vector<cv::Vec4i> lines_filtered;
+			std::vector<double> angles;
+
 			image_.copyTo(image_marked);
 			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
