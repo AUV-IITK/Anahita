@@ -168,6 +168,14 @@ add_library(torpedo SHARED src/torpedo.cpp include/torpedo.h)
 add_dependencies(torpedo ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(torpedo ${catkin_LIBRARIES})
 
+add_library(marker_dropper SHARED src/marker_dropper.cpp include/marker_dropper.h)
+add_dependencies(marker_dropper ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(marker_dropper ${catkin_LIBRARIES})
+
+add_library(octagon SHARED src/octagon.cpp include/octagon.h)
+add_dependencies(octagon ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(octagon ${catkin_LIBRARIES})
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use

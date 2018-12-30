@@ -3,6 +3,8 @@
 #include <gate.h>
 #include <single_buoy.h>
 #include <torpedo.h>
+#include <marker_dropper.h>
+#include <octagon.h>
 
 #include <straight_server.h>
 #include <move_sideward_server.h>
@@ -130,30 +132,6 @@ int main(int argc, char** argv) {
   
     ////////////////////////////////////////////////
 
-    // Example for sideward, forward, and angle PIDs
-
-    // actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
-    // motion_layer::sidewardPIDGoal sidewardPIDgoal;
-
-    // ROS_INFO("Waiting for sidewardPID server to start, Buoy-Gate transition.");
-    // sidewardPIDClient.waitForServer();
-
-    // ROS_INFO("sidewardPID server started, sending goal, Buoy-Gate transition.");
-    // sidewardPIDgoal.target_distance = 0;
-    // sidewardPIDClient.sendGoal(sidewardPIDgoal);
-
-    // actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");
-    // motion_layer::forwardPIDGoal forwardPIDgoal;
-
-    // ROS_INFO("Waiting for forwardPID server to start, Buoy-Gate transition.");
-    // forwardPIDClient.waitForServer();
-
-    // ROS_INFO("forwardPID server started, sending goal, Buoy-Gate transition.");
-    // forwardPIDgoal.target_distance = 0;
-    // forwardPIDClient.sendGoal(forwardPIDgoal); // task_handler node
-
-    //////////////////////////////////////////////////
-
     current_task.data = "gate";
     while (ros::ok() && pub_count <= 5) {
         task_pub.publish(current_task);
@@ -210,6 +188,8 @@ int main(int argc, char** argv) {
 
     th.isAchieved(60, 2, "angle");
 
+    anglePIDClient.cancelGoal();
+
     th.isDetected("red_torpedo", 5);
 
     ///////////////////////////////////////////////////
@@ -244,15 +224,110 @@ int main(int argc, char** argv) {
     /////////////////////////////////////////////////////
 
     // Torpedo-MarkerDropper Transition
+    
+    // After finishing torpedo task turn 120 degree anticlockwise and then move straight
+    ROS_INFO("Master layer, anglePID server started, sending goal."); 
+
+    anglePIDGoal.target_angle = -120;
+    anglePIDClient.sendGoal(anglePIDGoal);
+
+    th.isAchieved(-120, 2, "angle"); // wait till the bot has rotated 120 degrees
+
+    anglePIDClient.cancelGoal();
+
+    moveStraight move_straight(100);
+    move_straight.setActive(true);
+    ros::Duration(6).sleep();
+    move_straight.setActive(false);
 
     /////////////////////////////////////////////////////
 
     // MarkerDropper
+    current_task.data = "marker_dropper_front";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "marker_dropper_front");
+    ROS_INFO("Current task: Marker Dropper Front");
+
+    th.isDetected("marker_dropper_front", 5);
+
+    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
+    motion_layer::sidewardPIDGoal sidewardPIDGoal;
+
+    ROS_INFO("Waiting for anglePID server to start.");
+    sidewardPIDClient.waitForServer();
+
+    ROS_INFO("anglePID server started, sending goal.");
+
+    sidewardPIDGoal.target_distance = 0;
+    sidewardPIDClient.sendGoal(sidewardPIDGoal);
+
+    move_straight.setActive(true);
+
+    // Until the bin is visible in the front camera
+
+    sidewardPIDClient.cancelGoal(); // dangerous
+
+    current_task.data = "marker_dropper_bottom";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "marker_dropper_bottom");
+    ROS_INFO("Current task: Marker Dropper Bottom");
+
+    move_straight.setThrust(50);
+
+    th.isDetected("marker_dropper_bottom", 6);
+
+    move_straight.setActive(false);
+
+    MarkerDropper md;
+    md.setActive(true);
+    md.setActive(false);
 
     /////////////////////////////////////////////////////
 
     // Octagon
 
+    ROS_INFO("Waiting for anglePID server to start.");
+    anglePIDClient.waitForServer();
+
+    ROS_INFO("anglePID server started, sending goal.");
+
+    anglePIDGoal.target_angle = 60;
+    anglePIDClient.sendGoal(anglePIDGoal);
+
+    th.isAchieved(60, 2, "angle");
+
+    anglePIDClient.cancelGoal();
+
+    current_task.data = "octagon";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "octagon");
+    ROS_INFO("Current task: Octagon");
+
+    move_straight.setActive(true);
+
+    th.isDetected("octagon", 10);
+
+    move_straight.setActive(false);
+
+    Octagon octagon;
+    octagon.setActive(true);
+    octagon.setActive(false);
+    
     /////////////////////////////////////////////////////
     
     nh.setParam("/kill_signal", true);

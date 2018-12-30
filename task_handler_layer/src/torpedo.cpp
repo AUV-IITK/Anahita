@@ -74,7 +74,7 @@ void Torpedo::setActive(bool status) {
         upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         anglePIDClient.cancelGoal();
-        ROS_INFO("Closing Single Buoy");
+        ROS_INFO("Closing Torpedo");
     }
 }
 
