@@ -24,8 +24,8 @@ class ErrorDescriptor {
     private: double reference_value_;
     
     private: double seed_;
-    private: double previous_time_stamp_;
-    private: double present_time_stamp_;
+    private: double previous_time_stamp_ = 0;
+    private: double current_time_stamp_ = 0;
     
     public: ErrorDescriptor(std::string _name);
     public: ~ErrorDescriptor();

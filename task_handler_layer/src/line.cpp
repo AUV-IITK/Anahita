@@ -1,7 +1,10 @@
 #include <line.h>
 
-lineTask::lineTask(): move_straight_(100), sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), move_forward_(100) {
-    spin_thread = new boost::thread(boost::bind(&lineTask::spinThread, this));
+lineTask::lineTask(): sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), 
+                    upwardPIDClient("upwardPID"), th(15) {
+    // spin_thread = new boost::thread(boost::bind(&lineTask::spinThread, this));
+
+    sub_ = nh_.subscribe("/mavros/imu/data", 1, &lineTask::angleCB, this);
 }
 
 lineTask::~lineTask() {
@@ -10,14 +13,6 @@ lineTask::~lineTask() {
 
 void lineTask::setActive(bool value) {
     if (value) {
-        move_straight_.setActive(true);
-        bool line_detected_signal_ = false;
-        bool target_acheived_ = false;
-        while(!line_detected_signal_) {
-            continue;
-        }
-        move_straight_.setActive(false);
-
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();
 
@@ -25,29 +20,40 @@ void lineTask::setActive(bool value) {
         sideward_PID_goal.target_distance = 0;
         sidewardPIDClient.sendGoal(sideward_PID_goal);
 
+        ROS_INFO("Waiting for upwardPID server to start.");
+        upwardPIDClient.waitForServer();
+
+        ROS_INFO("upwardPID server started, sending goal.");
+        upward_PID_goal.target_depth = 0;
+        upwardPIDClient.sendGoal(upward_PID_goal);
+
+        th.isAchieved(0, 5, "upward");
+
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
 
+        while (ros::ok() && !angleReceived) { continue; }
+
         ROS_INFO("anglePID server started, sending goal.");
-        angle_PID_goal.target_angle = 0;
+        angle_PID_goal.target_angle = angle_;
         anglePIDClient.sendGoal(angle_PID_goal);
 
-        while(!target_acheived_) {
-            continue;
-        }
-        anglePIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
-        move_forward_.setActive(true);
+        th.isAchieved(0, 5, "angle");
+
     }
     else {
-        move_straight_.setActive(false);
         anglePIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
-        move_forward_.setActive(false);
-        spin_thread->join();
+        upwardPIDClient.cancelGoal();
+        // spin_thread->join();
     }
 }
 
-void lineTask::spinThread() {
-    // ros::spin();
+// void lineTask::spinThread() {
+//     ros::spin();
+// }
+
+void lineTask::angleCB(const std_msgs::Float32ConstPtr& _msg) {
+    angle_ = _msg->data;
+    angleReceived = true;
 }

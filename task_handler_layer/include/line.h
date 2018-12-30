@@ -10,32 +10,37 @@
 #include <actionlib/client/terminal_state.h>
 
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
 
 #include <boost/thread.hpp>
 #include <string>
 
-#include <move_forward_server.h>
-#include <straight_server.h>
+#include <task_handler.h>
 
 class lineTask {
 public:
-    lineTask();
-    ~lineTask();
-    void setActive(bool);
-    void spinThread();
+    lineTask ();
+    ~lineTask ();
+    void setActive (bool);
+    void spinThread ();
+    void angleCB (const std_msgs::Float32ConstPtr&);
 
 private:
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
-    moveForward move_forward_;
-    moveStraight move_straight_;
-    ros::NodeHandle nh_;
-    double angle;
-    boost::thread* spin_thread;
+    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;
+
     motion_layer::sidewardPIDGoal sideward_PID_goal;
     motion_layer::upwardPIDGoal upward_PID_goal;
     motion_layer::anglePIDGoal angle_PID_goal;
+
+    ros::NodeHandle nh_;
+    ros::Subscriber sub_;
+
+    boost::thread* spin_thread;
+
+    taskHandler th;
+
+    double angle_ = 0;
+    bool angleReceived = false;
 };
 #endif // LINE_H

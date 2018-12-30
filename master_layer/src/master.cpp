@@ -152,17 +152,6 @@ int main(int argc, char** argv) {
     // forwardPIDgoal.target_distance = 0;
     // forwardPIDClient.sendGoal(forwardPIDgoal); // task_handler node
 
-    // actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
-    // motion_layer::anglePIDGoal anglePIDgoal;
-
-    // ROS_INFO("Waiting for anglePID server to start.");
-    // anglePIDClient.waitForServer();
-
-    // ROS_INFO("anglePID server started, sending goal.");
-
-    // anglePIDGoal.target_angle = angle_;
-    // anglePIDClient.sendGoal(anglePIDGoal);
-
     //////////////////////////////////////////////////
 
     current_task.data = "gate";
@@ -198,8 +187,6 @@ int main(int argc, char** argv) {
 
     // Gate-Torpedo Transition
 
-    ///////////////////////////////////////////////////
-
     current_task.data = "red_torpedo";
     while (ros::ok() && pub_count <= 5) {
         task_pub.publish(current_task);
@@ -209,6 +196,23 @@ int main(int argc, char** argv) {
     pub_count = 0;
     nh.setParam("/current_task", "red_torpedo");
     ROS_INFO("Current task: Red Torpedo");
+
+    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+    motion_layer::anglePIDGoal anglePIDGoal;
+
+    ROS_INFO("Waiting for anglePID server to start.");
+    anglePIDClient.waitForServer();
+
+    ROS_INFO("anglePID server started, sending goal.");
+
+    anglePIDGoal.target_angle = 60;
+    anglePIDClient.sendGoal(anglePIDGoal);
+
+    th.isAchieved(60, 2, "angle");
+
+    th.isDetected("red_torpedo", 5);
+
+    ///////////////////////////////////////////////////
 
     Torpedo torpedo;
 
@@ -243,9 +247,14 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////////////
 
-    
+    // MarkerDropper
+
     /////////////////////////////////////////////////////
 
+    // Octagon
+
+    /////////////////////////////////////////////////////
+    
     nh.setParam("/kill_signal", true);
     nh.setParam("/kill_signal", false);
 

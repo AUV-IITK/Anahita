@@ -28,7 +28,7 @@ void anglePIDAction::goalCB()
     goal_ = as_.acceptNewGoal()->target_angle + current_angle_;
 
     angle.setReference(goal_);
-    ROS_INFO("Goal set as referecnce");
+    // ROS_INFO("Goal set as referecnce");
 
     // publish info to the console for the user
     ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);

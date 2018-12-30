@@ -5,10 +5,10 @@
 
 ErrorDescriptor::ErrorDescriptor(std::string _name): p_(0), i_(0), d_(0),
     band_(1), seed_(0), error_(0), reference_value_(0), previous_value_(0), 
-    pwm_(0), previous_time_stamp_(0), present_time_stamp_(0)
+    pwm_(0), previous_time_stamp_(0), current_time_stamp_(0)
 {   
     this->name_ = _name;
-    std::cout << this->name_ << " type ErrorDecriptor is constructed." << std::endl;
+    ROS_INFO("%s type ErrorDecriptor is constructed.", this->name_);
 }
 
 ErrorDescriptor::~ErrorDescriptor() {}
@@ -23,8 +23,18 @@ void ErrorDescriptor::setPID(float new_p, float new_i, float new_d, float new_ba
 
 void ErrorDescriptor::setReference(double _value) {
     this->reference_value_ = _value;
-    this->current_value_ = _value;
-    std::cout << this->name_ << " Reference set to: " << _value << std::endl;
+    // this->current_value_ = _value;
+
+    if (this->name_ == "ANGLE") {
+        if (this->reference_value_ >= 180) {
+            this->reference_value_ = this->reference_value_ - 360;
+        }
+        else if (this->reference_value_ <= -180) {
+            this->reference_value_ = this->reference_value_ + 360;
+        }
+    }
+
+    ROS_INFO("%s, Reference set to: %f", this->name_, reference_value_);
 }
 
 void ErrorDescriptor::setType(std::string _name) {
@@ -36,17 +46,13 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     this->previous_value_ = this->current_value_;
     this->current_value_ = _current_value;
 
-    if (this->name_ == "ANGLE") {
-        if (this->reference_value_ >= 180) {
-            this->reference_value_ = this->reference_value_ - 360;
-        }
-        else if (this->reference_value_ <= -180) {
-            this->reference_value_ = this->reference_value_ + 360;
-        }
-    }
+    previous_time_stamp_ = current_time_stamp_;
+    current_time_stamp_ = ros::Time::now().toSec();
 
     float derivative = 0, integral = 0;
     double dt = 0;
+
+    // dt = current_time_stamp_ - previous_time_stamp_;
     
     if (this->name_ == "ANGLE") { dt = 0.02; }
     else { dt = 0.1; }
@@ -59,7 +65,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     }
 
     if (this->name_ == "ANGLE") {
-        if (this->error_ < 0)
+        if (this->error_ < 0) 
             this->error_value_ = this->error_ + 360;
         else
             this->error_value_ = this->error_ - 360;

@@ -11,6 +11,8 @@
 int main(int argc, char** argv) {
     ros::init(argc, argv, "motion");
     ROS_INFO("Motion Server Activated");
+
+    ros::Time::init();
     
     forwardPIDAction forward_motion("forwardPID");
     sidewardPIDAction sideward_motion("sidewardPID");
