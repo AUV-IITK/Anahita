@@ -12,6 +12,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
@@ -29,7 +31,11 @@ protected:
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
-	ros::Publisher coordinates_pub;
+	ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
+	ros::Publisher detection_pub;		
+	
 	image_transport::Subscriber image_raw_sub;
 	std::string camera_frame_;
 
@@ -58,7 +64,9 @@ public:
 	cv::Mat image_;
 	cv::Mat image_marked;
 	void TaskHandling();
-	
+	std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;
 };
 #endif // TORPEDO_TASK_H
 

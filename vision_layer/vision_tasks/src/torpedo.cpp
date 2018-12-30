@@ -18,11 +18,13 @@ Torpedo::Torpedo(){
 	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
 	image_transport::ImageTransport it(nh);
-	
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
-	this->coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/torpedo_task/torpedo_coordinates", 1000);
 	
 	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
 }
@@ -82,6 +84,7 @@ void Torpedo::TaskHandling()
 	cv::Rect bounding_rectangle;
 	geometry_msgs::PointStamped torpedo_point_message;
 	torpedo_point_message.header.frame_id = camera_frame_.c_str();
+	std_msgs::Bool detection_bool;
 
 	while (1)
 	{
@@ -135,6 +138,12 @@ void Torpedo::TaskHandling()
 						else
 							bounding_rectangle = bounding_rectangle2;
 					}
+
+					if(contours.size()>0)
+						detection_bool.data=true;
+					else
+						detection_bool.data=false;
+
 					torpedo_point_message.header.stamp = ros::Time();
 					torpedo_point_message.point.x = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x) / 7526.5, -.92678);
 					torpedo_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2 - (image_.size().width) / 2;
@@ -146,9 +155,16 @@ void Torpedo::TaskHandling()
 						cv::drawContours(image_marked, contours, i, contour_color, 1, 8);
 				}
 			}
+			detection_pub.publish(detection_bool);
+			x_coordinate.data = torpedo_point_message.point.x;
+			y_coordinate.data = torpedo_point_message.point.y;
+			z_coordinate.data = torpedo_point_message.point.z;
+			x_coordinates_pub.publish(x_coordinate);
+			y_coordinates_pub.publish(y_coordinate);
+			z_coordinates_pub.publish(z_coordinate);
+			
 			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
-			coordinates_pub.publish(torpedo_point_message);
 			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", torpedo_point_message.point.x, torpedo_point_message.point.y, torpedo_point_message.point.z);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}

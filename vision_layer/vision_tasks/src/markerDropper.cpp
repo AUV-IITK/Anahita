@@ -238,7 +238,6 @@ void MarkerDropper::FrontTaskHandling(){
 	cv::RotatedRect min_ellipse;
 	std_msgs::Bool detection_bool;
 
-
 	while (1)
 	{
 		if (!image_.empty())
