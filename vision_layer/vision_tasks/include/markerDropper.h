@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <boost/thread.hpp> 
 
 #include <vision_tasks/markerDropperFrontRangeConfig.h>

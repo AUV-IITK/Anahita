@@ -12,9 +12,12 @@
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <string>
+#include <boost/thread.hpp> 
 
 #include <vision_tasks/torpedoRangeConfig.h>
 #include <vision_commons/filter.h>
@@ -29,7 +32,11 @@ protected:
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
 	image_transport::Publisher marked_pub;
-	ros::Publisher coordinates_pub;
+	ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
+	ros::Publisher detection_pub;		
+	
 	image_transport::Subscriber image_raw_sub;
 	std::string camera_frame_;
 
@@ -48,6 +55,16 @@ protected:
 	int opening_iter_;
 	int closing_mat_point_;
 	int closing_iter_;
+
+	int data_low_h[2] = {7, 7};
+	int data_high_h[2] = {157, 17};
+	int data_low_s[2] = {0, 0};
+	int data_high_s[2] = {173, 255};
+	int data_low_v[2] = {0, 21};
+	int data_high_v[2] = {255, 117};
+
+	bool close_task = false;
+
 	void callback(vision_tasks::torpedoRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
@@ -57,8 +74,14 @@ public:
 	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;
-	void TaskHandling();
-	
+	boost::thread* spin_thread; 
+	void TaskHandling(bool);
+	void switchColor(int);
+	void spinThread();
+	int current_color;
+	std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;
 };
 #endif // TORPEDO_TASK_H
 
