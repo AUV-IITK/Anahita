@@ -112,23 +112,36 @@ void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 };
 
-void MarkerDropper::TaskHandling(bool status){
+// void MarkerDropper::TaskHandling(bool status){
+// 	if(status)
+// 	{
+// 		spin_thread_front = new boost::thread(&MarkerDropper::FrontTaskHandling, this); 
+// 		spin_thread_bottom = new boost::thread(&MarkerDropper::BottomTaskHandling, this); 
+// 	}
+// 	else 
+// 	{
+//         spin_thread_front->join();
+//         spin_thread_bottom->join();
+// 	}
+// 	std::cout << "Task Handling function over" << std::endl;	
+// }
+
+void MarkerDropper::BottomTaskHandling(bool status)
+{
 	if(status)
 	{
-		spin_thread_front = new boost::thread(&MarkerDropper::FrontTaskHandling, this); 
-		spin_thread_bottom = new boost::thread(&MarkerDropper::BottomTaskHandling, this); 
+		spin_thread_bottom = new boost::thread(&MarkerDropper::spinThreadBottom, this); 
 	}
 	else 
 	{
-        spin_thread_front->join();
+		close_task = true;
         spin_thread_bottom->join();
-	}
-	std::cout << "Task Handling function over" << std::endl;	
+		std::cout << "Bottom Task Handling function over" << std::endl;
+	}	
+
 }
 
-
-void MarkerDropper::BottomTaskHandling()
-{
+void MarkerDropper::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
@@ -154,12 +167,16 @@ void MarkerDropper::BottomTaskHandling()
 	cv::RotatedRect min_ellipse;
 	std_msgs::Bool detection_bool;
 
-	while (1)
+	while (ros::ok())
 	{
+		if (close_task) {
+			close_task = false;
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			//blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			// blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
 			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
 			{
 				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
@@ -212,7 +229,20 @@ void MarkerDropper::BottomTaskHandling()
 	}
 }
 
-void MarkerDropper::FrontTaskHandling(){
+void MarkerDropper::FrontTaskHandling (bool status) {
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&MarkerDropper::spinThreadFront, this); 
+	}
+	else 
+	{
+		close_task = true;
+        spin_thread_front->join();
+		std::cout << "Front Task Handling function over" << std::endl;
+	}
+}
+
+void MarkerDropper::spinThreadFront () {
 	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig>::CallbackType f;
 	f = boost::bind(&MarkerDropper::frontCallback, this, _1, _2);
@@ -238,8 +268,12 @@ void MarkerDropper::FrontTaskHandling(){
 	cv::RotatedRect min_ellipse;
 	std_msgs::Bool detection_bool;
 
-	while (1)
+	while (ros::ok())
 	{
+		if (close_task) {
+			close_task = false;
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);

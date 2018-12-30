@@ -100,7 +100,7 @@ void Buoy::TaskHandling(bool status){
 	{
 		close_task = true;
         spin_thread->join();
-		std::cout << "Task Handling function over" << std::endl;	
+		std::cout << "Buoy Task Handling function over" << std::endl;	
 	}
 }
 

@@ -25,7 +25,7 @@ Torpedo::Torpedo(){
 	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
-	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
 }
 
 void Torpedo::switchColor(int color)
@@ -128,7 +128,7 @@ void Torpedo::spinThread(){
 	ros::Rate loop_rate(25);
 	std_msgs::Bool detection_bool;
 
-	while (1)
+	while (ros::ok())
 	{
 		if (close_task) {
 			break;
@@ -136,7 +136,8 @@ void Torpedo::spinThread(){
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			blue_filtered = image_;
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
@@ -208,7 +209,7 @@ void Torpedo::spinThread(){
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
 			
-			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
+			// blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", torpedo_point_message.point.x, torpedo_point_message.point.y, torpedo_point_message.point.z);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
