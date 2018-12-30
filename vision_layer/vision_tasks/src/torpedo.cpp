@@ -25,27 +25,54 @@ Torpedo::Torpedo(){
 	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
-	
 	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Torpedo::imageCallback, this);
 }
 
+void Torpedo::switchColor(int color)
+{
+	if(color > 1)
+		std::cerr << "Changing to wrong torpedo color, use 0-1 for the the different colors" << std::endl;
+	else
+	{
+		current_color = color;		
+		this->low_h_ = this->data_low_h[current_color];
+		this->high_h_ = this->data_high_h[current_color];
+		this->low_s_ = this->data_low_s[current_color];
+		this->high_s_ = this->data_high_s[current_color];
+		this->low_v_ = this->data_low_v[current_color];
+		this->high_v_ = this->data_high_v[current_color];
+	}
+	std::cout << "Colour changed successfully" << std::endl;
+}
+
+
 void Torpedo::callback(vision_tasks::torpedoRangeConfig &config, double level)
 {
-	Torpedo::clahe_clip_ = config.clahe_clip;
-	Torpedo::clahe_grid_size_ = config.clahe_grid_size;
-	Torpedo::clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	Torpedo::balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	Torpedo::denoise_h_ = config.denoise_h;
-	Torpedo::low_h_ = config.low_h;
-	Torpedo::high_h_ = config.high_h;
-	Torpedo::low_s_ = config.low_s;
-	Torpedo::high_s_ = config.high_s;
-	Torpedo::low_v_ = config.low_v;
-	Torpedo::high_v_ = config.high_v;
-	Torpedo::opening_mat_point_ = config.opening_mat_point;
-	Torpedo::opening_iter_ = config.opening_iter;
-	Torpedo::closing_mat_point_ = config.closing_mat_point;
-	Torpedo::closing_iter_ = config.closing_iter;
+	if(Torpedo::current_color != config.color)
+	{
+		config.color = current_color;
+		config.low_h = this->data_low_h[current_color];
+		config.high_h = this->data_high_h[current_color];
+		config.low_s = this->data_low_s[current_color];
+		config.high_s = this->data_high_s[current_color];
+		config.low_v = this->data_low_v[current_color];
+		config.high_v = this->data_high_v[current_color];
+	}
+	this->clahe_clip_ = config.clahe_clip;
+	this->clahe_grid_size_ = config.clahe_grid_size;
+	this->clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	this->balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	this->denoise_h_ = config.denoise_h;
+	this->low_h_ = config.low_h;
+	this->high_h_ = config.high_h;
+	this->low_s_ = config.low_s;
+	this->high_s_ = config.high_s;
+	this->low_v_ = config.low_v;
+	this->high_v_ = config.high_v;
+	this->opening_mat_point_ = config.opening_mat_point;
+	this->opening_iter_ = config.opening_iter;
+	this->closing_mat_point_ = config.closing_mat_point;
+	this->closing_iter_ = config.closing_iter;
 };
 
 void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -64,8 +91,22 @@ void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-void Torpedo::TaskHandling()
-{
+void Torpedo::TaskHandling(bool status){
+	if(status)
+	{
+		spin_thread = new boost::thread(boost::bind(&Torpedo::spinThread, this)); 
+	}
+	else 
+	{
+		close_task = true;
+        spin_thread->join();
+		std::cout << "Task Handling function over" << std::endl;	
+	}
+}
+
+
+void Torpedo::spinThread(){
+
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
 	f = boost::bind(&Torpedo::callback, this, _1, _2);
@@ -84,10 +125,14 @@ void Torpedo::TaskHandling()
 	cv::Rect bounding_rectangle;
 	geometry_msgs::PointStamped torpedo_point_message;
 	torpedo_point_message.header.frame_id = camera_frame_.c_str();
+	ros::Rate loop_rate(25);
 	std_msgs::Bool detection_bool;
 
 	while (1)
 	{
+		if (close_task) {
+			break;
+		}
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -170,6 +215,7 @@ void Torpedo::TaskHandling()
 		}
 		else
 			ROS_INFO("Image empty");
+		loop_rate.sleep();
 		ros::spinOnce();
 	}
 }

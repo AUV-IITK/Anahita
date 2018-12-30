@@ -28,6 +28,7 @@
 class Buoy
 {
 protected:
+
     ros::NodeHandle nh;
     image_transport::Publisher blue_filtered_pub;
 	image_transport::Publisher thresholded_pub;
@@ -37,6 +38,7 @@ protected:
 	ros::Publisher z_coordinates_pub;
 	ros::Publisher detection_pub;
 	image_transport::Subscriber image_raw_sub;
+
 	std::string camera_frame_;
     double clahe_clip_;
 	int clahe_grid_size_;
