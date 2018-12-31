@@ -15,7 +15,8 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["gate"] = false;
     task_map_["red_torpedo"] = false;
     task_map_["green_torpedo"] = false;
-    task_map_["marker_dropper"] = false;
+    task_map_["marker_dropper_bottom"] = false;
+    task_map_["marker_dropper_front"] = false;
     task_map_["octagon"] = false;
     task_map_["torpedo-marker_dropper"] = false;
     task_map_["marker_dropper-octagon"] = false;
@@ -50,6 +51,17 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
 
     int count = 0;
     double then = ros::Time::now().toSec();
+
+    if (_topic == "angle") {
+        int temp = data_ + _target;
+        if (temp > 180) {
+            temp = temp - 360;
+        }
+        else if (temp < -180) {
+            temp = temp + 360;
+        }
+        _target = temp;
+    }
 
     while (ros::ok()) {
         if (std::abs(data_ - _target) <= _band) {
@@ -120,8 +132,11 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         else if (current_task == "octagon") {
             task_map_["octagon"] = true;
         }
-        else if (current_task == "marker_dropper") {
-            task_map_["marker_dropper"] = true;
+        else if (current_task == "marker_dropper_front") {
+            task_map_["marker_dropper_front"] = true;
+        }
+        else if (current_task == "marker_dropper_bottom") {
+            task_map_["marker_dropper_bottom"] = true;
         }
         else if (current_task == "torpedo-marker_dropper") {
             task_map_["torpedo-marker_dropper"] = true;
