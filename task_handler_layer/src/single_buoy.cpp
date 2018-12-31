@@ -4,10 +4,6 @@ singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sid
                         anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(15)
 {
     forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::forwardCB, this);
-    sideward_sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &singleBuoy::sidewardCB, this);
-    upward_sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &singleBuoy::upwardCB, this);
-    angle_sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &singleBuoy::angleCB, this);
-    // spin_thread = new boost::thread(boost::bind(&singleBuoy::spinThread, this));
 }
 singleBuoy::~singleBuoy() {}
 
@@ -36,8 +32,6 @@ void singleBuoy::setActive(bool status) {
 
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
-
-        while (!angleGoalReceived) {}
 
         ROS_INFO("anglePID server started, sending goal.");
 
@@ -104,31 +98,13 @@ void singleBuoy::setActive(bool status) {
         anglePIDClient.cancelGoal();
     }
     else {
-        // spin_thread->join();
         upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         ROS_INFO("Closing Single Buoy");
     }
 }
 
-void singleBuoy::spinThread() {
-    // ros::spin();
-}
-
 void singleBuoy::forwardCB(const std_msgs::Float32ConstPtr &_msg) {
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
-}
-
-void singleBuoy::sidewardCB(const std_msgs::Float32ConstPtr &_msg) {
-    sideward_distance_ = _msg->data;
-}
-
-void singleBuoy::upwardCB(const std_msgs::Float32Ptr &_msg) {
-    depth_ = _msg->data;
-}
-
-void singleBuoy::angleCB(const std_msgs::Float32Ptr &_msg) {
-    angle_ = _msg->data;
-    angleGoalReceived = true;
 }

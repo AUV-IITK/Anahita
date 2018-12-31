@@ -26,19 +26,9 @@ private:
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
 
-    ros::Subscriber forward_sub_;
-    ros::Subscriber sideward_sub_;
-    ros::Subscriber angle_sub_;
-
-    bool angleGoalReceived;
-
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
     motion_layer::anglePIDGoal anglePIDGoal;
-
-    double forward_distance_;
-    double sideward_distance_;
-    double angle_;
 
     taskHandler th;
 
@@ -47,10 +37,6 @@ public:
     ~gateTask();
 
     void setActive(bool);
-    void spinThread();
-    void forwardCB(const std_msgs::Float32Ptr &_msg);
-    void sidewardCB(const std_msgs::Float32Ptr &_msg);
-    void angleCB(const std_msgs::Float32Ptr &_msg);
 };
 
 #endif // GATE_H
