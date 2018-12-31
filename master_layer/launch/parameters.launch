@@ -12,4 +12,6 @@
 
   <param name="/kill_signal" value="false" type="int" />
 
+  <param name="/reference_yaw" value="0" type="double" />
+
 </launch>
