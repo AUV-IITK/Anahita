@@ -101,17 +101,17 @@ int main(int argc, char** argv) {
     ros::Duration(4).sleep();
     move_downward.setActive(false);
 
-    // while (ros::ok() && pub_count <= 5) { // for gazebo
-    //     nh.setParam("/pwm_heave", -50);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
+    while (ros::ok() && pub_count <= 5) { // for gazebo
+        nh.setParam("/pwm_heave", -50);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
     
-    // ROS_INFO("Green Buoy Task, Going Down");
-    // ros::Duration(6).sleep();
-    // ROS_INFO("Green Buoy Task, At bottom");
-    // nh.setParam("/pwm_heave", 0);
+    ROS_INFO("Green Buoy Task, Going Down");
+    ros::Duration(6).sleep();
+    ROS_INFO("Green Buoy Task, At bottom");
+    nh.setParam("/pwm_heave", 0);
 
     // moveSideward move_sideward(100);
     move_sideward.setThrust(100);
