@@ -42,8 +42,6 @@ private:
 
     taskHandler th;
 
-    boost::thread* spin_thread;
-
     double forward_distance_;
 };
 #endif // SINGLE_BUOY_H

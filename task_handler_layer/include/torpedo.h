@@ -34,8 +34,6 @@ private:
 
     taskHandler th;
 
-    boost::thread* spin_thread;
-
     ros::NodeHandle nh_;
 };
 #endif // TORPEDO_H

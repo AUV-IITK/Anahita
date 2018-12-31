@@ -77,6 +77,8 @@ protected:
     int bottom_opening_iter_ = 1;    
     int bottom_opening_mat_point_ = 1;
 
+    bool task_done = false;
+
 	void frontCallback(vision_tasks::octagonFrontRangeConfig &config, double level);
 	void bottomCallback(vision_tasks::octagonBottomRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
@@ -89,9 +91,10 @@ public:
     boost::thread* spin_thread_front; 
 
 	cv::Mat image_marked;
-	void TaskHandling(bool status);
-	void BottomTaskHandling();
-	void FrontTaskHandling();  
+    void spinThreadBottom();
+    void spinThreadFront();
+	void BottomTaskHandling(bool status);
+	void FrontTaskHandling(bool status);
 };
 #endif // OCTAGON_TASK_H
 
