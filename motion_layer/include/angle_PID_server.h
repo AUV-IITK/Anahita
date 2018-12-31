@@ -21,6 +21,7 @@ protected:
     motion_layer::anglePIDResult result_;
     double goal_;
     double current_angle_ = 0;
+    bool goalReceived = false;
     ros::Subscriber sub_;
     ErrorDescriptor angle;
 
