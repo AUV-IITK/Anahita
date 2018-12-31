@@ -25,18 +25,15 @@ anglePIDAction::~anglePIDAction(void)
 void anglePIDAction::goalCB()
 {
     ROS_INFO("Inside goal callback");
-    goal_ = as_.acceptNewGoal()->target_angle + current_angle_;
+    goal_ = as_.acceptNewGoal()->target_angle;
 
-    angle.setReference(goal_);
-    // ROS_INFO("Goal set as referecnce");
-
-    // publish info to the console for the user
-    ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);
+    goalReceived = true;
 }
 
 void anglePIDAction::preemptCB()
 {
     ROS_INFO("%s: Preempted", action_name_.c_str());
+
     // set the action state to preempted
     as_.setPreempted();
 }
@@ -49,6 +46,16 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     }
 
     current_angle_ = msg->data;
+
+    if (goalReceived) {
+        goal_ = goal_ + current_angle_;
+        angle.setReference(goal_);
+
+        // publish info to the console for the user
+        ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);
+
+        goalReceived = false;
+    }
 
     angle.errorToPWM(msg->data);
 

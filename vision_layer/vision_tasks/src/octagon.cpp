@@ -58,7 +58,7 @@ void Octagon::frontCallback(vision_tasks::octagonFrontRangeConfig &config, doubl
 	Octagon::front_opening_iter_ = config.front_opening_iter;
 	Octagon::front_closing_mat_point_ = config.front_closing_mat_point;
 	Octagon::front_closing_iter_ = config.front_closing_iter;
-};
+}
 
 void Octagon::bottomCallback(vision_tasks::octagonBottomRangeConfig &config, double level)
 {
@@ -77,7 +77,7 @@ void Octagon::bottomCallback(vision_tasks::octagonBottomRangeConfig &config, dou
 	Octagon::bottom_opening_iter_ = config.bottom_opening_iter;
 	Octagon::bottom_closing_mat_point_ = config.bottom_closing_mat_point;
 	Octagon::bottom_closing_iter_ = config.bottom_closing_iter;
-};
+}
 
 void Octagon::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -94,25 +94,9 @@ void Octagon::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-};
-
-void Octagon::TaskHandling(bool status)
-{
-	if(status)
-	{
-		spin_thread_front = new boost::thread(&Octagon::FrontTaskHandling, this); 
-		spin_thread_bottom = new boost::thread(&Octagon::BottomTaskHandling, this); 
-	}
-	else 
-	{
-        spin_thread_front->join();
-        spin_thread_bottom->join();
-	}
-	std::cout << "Task Handling function over" << std::endl;	
 }
 
-void Octagon::BottomTaskHandling()
-{
+void Octagon::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&Octagon::bottomCallback, this, _1, _2);
@@ -145,8 +129,13 @@ void Octagon::BottomTaskHandling()
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
 
-	while (1)
+	while (ros::ok())
 	{
+		if (task_done) {
+			task_done = false;
+			break;
+		}
+
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -203,7 +192,7 @@ void Octagon::BottomTaskHandling()
 	}
 }
 
-void Octagon::FrontTaskHandling(){
+void Octagon::spinThreadFront() {
 	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig>::CallbackType f;
 	f = boost::bind(&Octagon::frontCallback, this, _1, _2);
@@ -241,8 +230,13 @@ void Octagon::FrontTaskHandling(){
 		std::cout << "front Task Handling function over" << std::endl;	
 	
 
-	while (1)
+	while (ros::ok())
 	{
+		if (task_done) {
+			task_done = false;
+			break;
+		}
+
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -296,6 +290,33 @@ void Octagon::FrontTaskHandling(){
 		else
 			ROS_INFO("Image empty");
 		ros::spinOnce();
+	}	
+}
+
+void Octagon::BottomTaskHandling(bool status)
+{
+	if(status)
+	{
+		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
+	}
+	else 
+	{	
+		task_done = true;
+        spin_thread_bottom->join();
+		std::cout << "Octagon, Bottom Task Handling function over" << std::endl;	
+	}
+}
+
+void Octagon::FrontTaskHandling(bool status){
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_front->join();
+		std::cout << "Octagon, Front Task Handling function over" << std::endl;	
 	}
 }
 
