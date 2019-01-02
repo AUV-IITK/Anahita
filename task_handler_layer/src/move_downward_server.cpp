@@ -23,7 +23,6 @@ void moveDownward::setActive(bool status) {
         close_loop = true; 
         spin_thread->join();
         nh.setParam("/kill_signal", true);
-        nh.setParam("/kill_signal", false);
         // spin_thread_->join();
     }
 }

@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     int pwm_pitch;
     int pwm_heave;
 
-    int kill_signal = 0;
+    bool kill_signal = false;
 
     nh.setParam("/pwm_sway", 0);
     nh.setParam("/pwm_surge", 0);
@@ -23,10 +23,10 @@ int main(int argc, char** argv) {
     nh.setParam("/pwm_roll", 0);
     nh.setParam("/pwm_pitch", 0);
 
-    nh.setParam("/kill_signal", 0);
+    nh.setParam("/kill_signal", false);
 
     ros::Rate r(50);
-    
+
     hyperion_msgs::Thrust pwm;
 
     while(ros::ok()) {
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         nh.getParam("/pwm_roll", pwm_roll);
         nh.getParam("/pwm_pitch", pwm_pitch);
 
-	nh.getParam("/kill_signal", kill_signal);
+	    nh.getParam("/kill_signal", kill_signal);
 
         pwm.forward_left = -pwm_surge - pwm_yaw;
         pwm.forward_right = -pwm_surge + pwm_yaw;
@@ -55,19 +55,16 @@ int main(int argc, char** argv) {
 
 	if (kill_signal) {
 
-            ROS_INFO("KILL SIGNAL RECIEVED === %d ++++++++++++++ ", kill_signal);
-            
-            pwm.forward_left = 0;
-            pwm.forward_right = 0;
-            
-            pwm.sideward_back = 0;
-            pwm.sideward_front = 0;
-            
-            pwm.upward_north_east = 0;
-            pwm.upward_north_west = 0;
-            
-            pwm.upward_south_east = 0;
-            pwm.upward_south_west = 0;
+        ROS_INFO("KILL SIGNAL RECIEVED");
+        
+        nh.setParam("/pwm_sway", 0);
+        nh.setParam("/pwm_surge", 0);
+        nh.setParam("/pwm_heave", 0);
+        nh.setParam("/pwm_yaw", 0);
+        nh.setParam("/pwm_roll", 0);
+        nh.setParam("/pwm_pitch", 0);
+
+        nh.setParam("/kill_signal", false);
 	}
 		
 	pwmPublisher.publish(pwm);
