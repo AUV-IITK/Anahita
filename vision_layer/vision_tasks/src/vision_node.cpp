@@ -1,7 +1,7 @@
 #include "buoy.h"
 #include "gate.h"
 #include "markerDropper.h"
-#include "octagon.h"
+//#include "octagon.h"
 #include "torpedo.h"
 
 #include "ros/ros.h"
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     Gate gate;
     Torpedo torpedo;
     MarkerDropper md;
-    Octagon octagon;
+    // Octagon octagon;
 
     ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);
 
@@ -77,12 +77,12 @@ int main(int argc, char *argv[])
             if (previous_task == "marker_dropper_bottom") {
                 md.bottomTaskHandling(false);
             }
-            if (current_task == "octagon") {
-                octagon.bottomTaskHandling(true);
-            }
-            if (previous_task == "octagon") {
-                octagon.bottomTaskHandling(false);
-            }
+            // if (current_task == "octagon") {
+            //     octagon.bottomTaskHandling(true);
+            // }
+            // if (previous_task == "octagon") {
+            //     octagon.bottomTaskHandling(false);
+            // }
             previous_task = current_task;
         }
         loop_rate.sleep();
