@@ -8,7 +8,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "red_buoy";
+std::string current_task = "green_torpedo";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -55,33 +55,33 @@ int main(int argc, char *argv[])
             if (previous_task == "gate") {
                 gate.frontTaskHandling(false);
             }
-            if (current_task == "red_torpedo") {
-                torpedo.switchColor(1);
-                torpedo.TaskHandling(true);
-            }
             if (current_task == "green_torpedo") {
                 torpedo.switchColor(0);
+                torpedo.TaskHandling(true);
+            }
+            if (current_task == "red_torpedo") {
+                torpedo.switchColor(1);
             }
             if (previous_task == "green_torpedo") {
                 torpedo.TaskHandling(false);     
             }
             if (current_task == "marker_dropper_front") {
-                md.FrontTaskHandling(true);
+                md.frontTaskHandling(true);
             }
             if (previous_task == "marker_dropper_front") {
-                md.FrontTaskHandling(false);
+                md.frontTaskHandling(false);
             }
             if (current_task == "marker_dropper_bottom") {
-                md.BottomTaskHandling(true);
+                md.bottomTaskHandling(true);
             }
             if (previous_task == "marker_dropper_bottom") {
-                md.BottomTaskHandling(false);
+                md.bottomTaskHandling(false);
             }
             if (current_task == "octagon") {
-                octagon.BottomTaskHandling(true);
+                octagon.bottomTaskHandling(true);
             }
             if (previous_task == "octagon") {
-                octagon.BottomTaskHandling(false);
+                octagon.bottomTaskHandling(false);
             }
             previous_task = current_task;
         }

@@ -42,8 +42,8 @@ Gate::Gate(){
 
     image_transport::ImageTransport it(nh);
 
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageCallback, this);
-    // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageCallback, this);
+	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+    // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
 
 	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
 	this->thresholded_pub_front = it.advertise("/gate_task/front/thresholded", 1);
@@ -54,7 +54,7 @@ Gate::Gate(){
     this->blue_filtered_pub_bottom = it.advertise("/gate_task/bottom/blue_filtered", 1);
     this->thresholded_pub_bottom = it.advertise("/gate_task/bottom/thresholded", 1);
     this->marked_pub_bottom = it.advertise("/gate_task/bottom/marked", 1);
-    // this->coordinates_pub_bottom = nh.advertise<geometry_msgs::PointStamped>("/gate_task/bottom/pipe_coordinates", 1000);
+
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
@@ -185,10 +185,10 @@ void Gate::spinThreadBottom()
 			task_done = false;
 			break;
 		}
-        if (!image_.empty())
+        if (!image_bottom.empty())
         {
-			image_.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			image_bottom.copyTo(image_marked);
+			blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
 			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
 			{
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
@@ -199,8 +199,8 @@ void Gate::spinThreadBottom()
 				{
 				bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
 				pipe_point_message.header.stamp = ros::Time();
-				pipe_point_message.point.x = (image_.size().height) / 2 - bounding_rectangle.center.y;
-				pipe_point_message.point.y = bounding_rectangle.center.x - (image_.size().width) / 2;
+				pipe_point_message.point.x = (image_bottom.size().height) / 2 - bounding_rectangle.center.y;
+				pipe_point_message.point.y = bounding_rectangle.center.x - (image_bottom.size().width) / 2;
 				pipe_point_message.point.z = 0.0;
 				task_done_message.data = pipe_point_message.point.x < 0;
 				bounding_rectangle.points(vertices2f);
@@ -209,15 +209,15 @@ void Gate::spinThreadBottom()
 					vertices[i] = vertices2f[i];
 				}
 				cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
-				cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
 				}
 			}
-			// blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-			// coordinates_pub_bottom.publish(pipe_point_message);
-			ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
-			// task_done_pub.publish(task_done_message);
+			coordinates_pub_bottom.publish(pipe_point_message);
+			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
+			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
 			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
         }
@@ -262,16 +262,6 @@ void Gate::spinThreadFront()
 	cv::Mat image_marked;
 
 	bool found = false;
-	cv::Point2i pi1;
-	cv::Point2i pi2;
-	cv::Point2i pj1;
-	cv::Point2i pj2;
-	cv::Point2i horizontal1(0, 0);
-	cv::Point2i horizontal2(0, 0);
-	cv::Point2i vertical1(0, 0);
-	cv::Point2i vertical2(0, 0);
-	cv::Point2i longest1(0, 0);
-	cv::Point2i longest2(0, 0);
 	std_msgs::Bool detection_bool;
 	geometry_msgs::PointStamped gate_point_message;
 	gate_point_message.header.frame_id = camera_frame_.c_str();
@@ -282,17 +272,27 @@ void Gate::spinThreadFront()
 			task_done = false;
 			break;
 		}
-		if (!image_.empty())
+		if (!image_front.empty())
 		{
 			std::vector<cv::Vec4i> lines;
 			std::vector<cv::Vec4i> lines_filtered;
 			std::vector<double> angles;
+			cv::Point2i pi1;
+			cv::Point2i pi2;
+			cv::Point2i pj1;
+			cv::Point2i pj2;
+			cv::Point2i horizontal1(0, 0);
+			cv::Point2i horizontal2(0, 0);
+			cv::Point2i vertical1(0, 0);
+			cv::Point2i vertical2(0, 0);
+			cv::Point2i longest1(0, 0);
+			cv::Point2i longest2(0, 0);
 
-			image_.copyTo(image_marked);
-			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			image_front.copyTo(image_marked);
+			blue_filtered = vision_commons::Filter::blue_filter(image_front, front_clahe_clip_, front_clahe_grid_size_, front_clahe_bilateral_iter_, front_balanced_bilateral_iter_, front_denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
 			{
-				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_, front_high_h_, front_low_s_, front_high_s_, front_low_v_, front_high_v_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * front_closing_mat_point_ + 1, front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
 				cv::cvtColor(image_thresholded, image_gray, CV_GRAY2BGR);
@@ -371,8 +371,8 @@ void Gate::spinThreadFront()
 				if (found)
 				{
 					gate_point_message.point.x = pow(sqrt(pow(vision_commons::Geometry::distance(horizontal1, horizontal2), 2) + pow(vision_commons::Geometry::distance(vertical1, vertical2), 2)) / 7526.5, -.92678);
-					gate_point_message.point.y = (horizontal1.x + horizontal2.x) / 2 - image_.size().width / 2;
-					gate_point_message.point.z = image_.size().height / 2 - (vertical1.y + vertical2.y) / 2;
+					gate_point_message.point.y = (horizontal1.x + horizontal2.x) / 2 - image_front.size().width / 2;
+					gate_point_message.point.z = image_front.size().height / 2 - (vertical1.y + vertical2.y) / 2;
 					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
 					cv::line(image_marked, horizontal1, horizontal2, horizontal_line_color, 3, CV_AA);
 					cv::line(image_marked, vertical1, vertical2, vertical_line_color, 3, CV_AA);
@@ -382,20 +382,20 @@ void Gate::spinThreadFront()
 					if (abs(vision_commons::Geometry::angleWrtY(longest1, longest2) - 90.0) < front_hough_angle_tolerance_)
 					{
 						gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2) * 1.068) / 7526.5, -.92678);
-						gate_point_message.point.y = (longest1.x + longest2.x) / 2 - image_.size().width / 2;
-						gate_point_message.point.z = image_.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
+						gate_point_message.point.y = (longest1.x + longest2.x) / 2 - image_front.size().width / 2;
+						gate_point_message.point.z = image_front.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
 					}
 					else
 					{
 						gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2) * 2.848) / 7526.5, -.92678);
-						gate_point_message.point.y = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_.size().width / 2;
-						gate_point_message.point.z = image_.size().height / 2 - (longest1.y + longest2.y) / 2;
+						gate_point_message.point.y = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
+						gate_point_message.point.z = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
 					}
 					cv::line(image_marked, longest1, longest2, hough_line_color, 3, CV_AA);
 					ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
 				}
-				cv::circle(image_marked, cv::Point(gate_point_message.point.y + image_.size().width / 2, image_.size().height / 2 - gate_point_message.point.z), 1, gate_center_color, 8, 0);
-				cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(gate_point_message.point.y + image_front.size().width / 2, image_front.size().height / 2 - gate_point_message.point.z), 1, gate_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
 			}
 			
 			detection_bool.data = found;
@@ -411,8 +411,8 @@ void Gate::spinThreadFront()
 		
 			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
-			// canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
-			// lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
+			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
+			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
 			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
@@ -421,12 +421,29 @@ void Gate::spinThreadFront()
 	}
 }
 
-void Gate::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Gate::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
-		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+};
+
+void Gate::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_bottom = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
 	{

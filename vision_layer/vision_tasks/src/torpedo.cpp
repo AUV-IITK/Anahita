@@ -136,8 +136,7 @@ void Torpedo::spinThread(){
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
-			// blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
-			blue_filtered = image_;
+			blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
@@ -190,10 +189,9 @@ void Torpedo::spinThread(){
 					else
 						detection_bool.data=false;
 
-					torpedo_point_message.header.stamp = ros::Time();
-					torpedo_point_message.point.x = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x) / 7526.5, -.92678);
-					torpedo_point_message.point.y = (bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2 - (image_.size().width) / 2;
-					torpedo_point_message.point.z = ((float)image_.size().height) / 2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2;
+					x_coordinate.data = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x) / 7526.5, -.92678);
+					y_coordinate.data = (bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2 - (image_.size().width) / 2;
+					z_coordinate.data = ((float)image_.size().height) / 2 - (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2;
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, torpedo_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), enclosing_rectangle_color);
@@ -202,16 +200,13 @@ void Torpedo::spinThread(){
 				}
 			}
 			detection_pub.publish(detection_bool);
-			x_coordinate.data = torpedo_point_message.point.x;
-			y_coordinate.data = torpedo_point_message.point.y;
-			z_coordinate.data = torpedo_point_message.point.z;
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
 			
-			// blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
+			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
-			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", torpedo_point_message.point.x, torpedo_point_message.point.y, torpedo_point_message.point.z);
+			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}
 		else

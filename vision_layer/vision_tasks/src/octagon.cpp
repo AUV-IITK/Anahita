@@ -79,12 +79,12 @@ void Octagon::bottomCallback(vision_tasks::octagonBottomRangeConfig &config, dou
 	Octagon::bottom_closing_iter_ = config.bottom_closing_iter;
 }
 
-void Octagon::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Octagon::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
-    cv_bridge::CvImagePtr cv_img_ptr;
-    try
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
 	{
-		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -94,7 +94,24 @@ void Octagon::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-}
+};
+
+void Octagon::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_bottom = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+};
 
 void Octagon::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig> server;
@@ -108,7 +125,7 @@ void Octagon::spinThreadBottom() {
 	image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
 	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageCallback, this);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
 
 	cv::Scalar bin_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -293,7 +310,7 @@ void Octagon::spinThreadFront() {
 	}	
 }
 
-void Octagon::BottomTaskHandling(bool status)
+void Octagon::bottomTaskHandling(bool status)
 {
 	if(status)
 	{
@@ -307,7 +324,7 @@ void Octagon::BottomTaskHandling(bool status)
 	}
 }
 
-void Octagon::FrontTaskHandling(bool status){
+void Octagon::frontTaskHandling(bool status){
 	if(status)
 	{
 		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
