@@ -92,19 +92,21 @@ protected:
 
 	void frontCallback(vision_tasks::markerDropperFrontRangeConfig &config, double level);
 	void bottomCallback(vision_tasks::markerDropperBottomRangeConfig &config, double level);
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
+	void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
+    void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
     MarkerDropper();
 	image_transport::ImageTransport it();
-	cv::Mat image_;
+	cv::Mat image_front;
+    cv::Mat image_bottom;
     boost::thread* spin_thread_bottom; 
     boost::thread* spin_thread_front; 
 
 	cv::Mat image_marked;
 	// void TaskHandling(bool status);
-	void BottomTaskHandling(bool status);
-	void FrontTaskHandling(bool status);
+	void bottomTaskHandling(bool status);
+	void frontTaskHandling(bool status);
     void spinThreadBottom();
     void spinThreadFront();
 };

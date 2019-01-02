@@ -91,14 +91,16 @@ protected:
     std::string camera_frame_;
 	void frontCallback(vision_tasks::gateFrontRangeConfig &config, double level);
 	void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);    
-	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
+	void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
+    void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
     cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle);
 
 public:
     Gate();
     ros::NodeHandle nh;
 	image_transport::ImageTransport it();
-	cv::Mat image_;
+	cv::Mat image_front;
+    cv::Mat image_bottom;
 	cv::Mat image_marked;
     boost::thread* spin_thread_bottom; 
     boost::thread* spin_thread_front; 

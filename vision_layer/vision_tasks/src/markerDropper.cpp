@@ -52,8 +52,8 @@ MarkerDropper::MarkerDropper(){
 	this->front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
 	this->front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
 
-	this->bottom_image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
-	this->front_image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &MarkerDropper::imageCallback, this);
+	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
+	this->front_image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &MarkerDropper::imageFrontCallback, this);
 }
 
 
@@ -95,12 +95,12 @@ void MarkerDropper::bottomCallback(vision_tasks::markerDropperBottomRangeConfig 
 	MarkerDropper::bottom_closing_iter_ = config.bottom_closing_iter;
 };
 
-void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void MarkerDropper::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
-		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -111,6 +111,50 @@ void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		ROS_ERROR("cv exception: %s", e.what());
 	}
 };
+
+void MarkerDropper::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_bottom = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+};
+
+void MarkerDropper::frontTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&MarkerDropper::spinThreadFront, this); 
+	}
+	else 
+	{
+		close_task = true;
+        spin_thread_front->join();
+		std::cout << "Front Task Handling function over" << std::endl;	
+	}
+}
+
+
+void MarkerDropper::bottomTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_bottom = new boost::thread(&MarkerDropper::spinThreadBottom, this); 
+	}
+	else 
+	{
+		close_task = true;
+        spin_thread_bottom->join();
+		std::cout << "Bottom Task Handling function over" << std::endl;	
+	}
+}
 
 // void MarkerDropper::TaskHandling(bool status){
 // 	if(status)
@@ -126,20 +170,7 @@ void MarkerDropper::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 // 	std::cout << "Task Handling function over" << std::endl;	
 // }
 
-void MarkerDropper::BottomTaskHandling(bool status)
-{
-	if(status)
-	{
-		spin_thread_bottom = new boost::thread(&MarkerDropper::spinThreadBottom, this); 
-	}
-	else 
-	{
-		close_task = true;
-        spin_thread_bottom->join();
-		std::cout << "Bottom Task Handling function over" << std::endl;
-	}	
 
-}
 
 void MarkerDropper::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
@@ -173,13 +204,13 @@ void MarkerDropper::spinThreadBottom() {
 			close_task = false;
 			break;
 		}
-		if (!image_.empty())
+		if (!image_bottom.empty())
 		{
-			image_.copyTo(image_marked);
-			// blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			image_bottom.copyTo(image_marked);
+			// blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
 			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
 			{
-				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(image_bottom, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * bottom_opening_mat_point_ + 1, bottom_opening_mat_point_, bottom_opening_mat_point_, bottom_opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
@@ -205,11 +236,11 @@ void MarkerDropper::spinThreadBottom() {
 					}
 					bin_center_message.header.stamp = ros::Time();
 					bin_center_message.point.x = pow(radius[0] / 7526.5, -.92678);
-					bin_center_message.point.y = mc[0].x - ((float)image_.size().width) / 2;
-					bin_center_message.point.z = ((float)image_.size().height) / 2 - mc[0].y;
+					bin_center_message.point.y = mc[0].x - ((float)image_bottom.size().width) / 2;
+					bin_center_message.point.z = ((float)image_bottom.size().height) / 2 - mc[0].y;
 					ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, bin_center_color, 8, 0);
-					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
 					cv::circle(image_marked, center[0], (int)radius[0], enclosing_circle_color, 2, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
 					{
@@ -226,19 +257,6 @@ void MarkerDropper::spinThreadBottom() {
 		else
 			ROS_INFO("Image empty");
 		ros::spinOnce();
-	}
-}
-
-void MarkerDropper::FrontTaskHandling (bool status) {
-	if(status)
-	{
-		spin_thread_front = new boost::thread(&MarkerDropper::spinThreadFront, this); 
-	}
-	else 
-	{
-		close_task = true;
-        spin_thread_front->join();
-		std::cout << "Front Task Handling function over" << std::endl;
 	}
 }
 
@@ -274,13 +292,13 @@ void MarkerDropper::spinThreadFront () {
 			close_task = false;
 			break;
 		}
-		if (!image_.empty())
+		if (!image_front.empty())
 		{
-			image_.copyTo(image_marked);
-			//blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
+			image_front.copyTo(image_marked);
+			//blue_filtered = vision_commons::Filter::blue_filter(image_front, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
 			{
-				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(image_front, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_, front_high_h_, front_low_s_,front_high_s_, front_low_v_, front_high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * front_opening_mat_point_ + 1, front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * front_closing_mat_point_ + 1, front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
@@ -306,11 +324,11 @@ void MarkerDropper::spinThreadFront () {
 					}
 					bin_center_message.header.stamp = ros::Time();
 					bin_center_message.point.x = pow(radius[0] / 7526.5, -.92678);
-					bin_center_message.point.y = mc[0].x - ((float)image_.size().width) / 2;
-					bin_center_message.point.z = ((float)image_.size().height) / 2 - mc[0].y;
+					bin_center_message.point.y = mc[0].x - ((float)image_front.size().width) / 2;
+					bin_center_message.point.z = ((float)image_front.size().height) / 2 - mc[0].y;
 					ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, bin_center_color, 8, 0);
-					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
 					cv::circle(image_marked, center[0], (int)radius[0], enclosing_circle_color, 2, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
 					{
