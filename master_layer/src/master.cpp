@@ -74,8 +74,9 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "yellow_buoy");
     ROS_INFO("Current task: Yellow Buoy");
 
-    moveSideward move_sideward(-100);
+    moveSideward move_sideward(-50);
     move_sideward.setActive(true);
+    ros::Duration(2).sleep();
     ROS_INFO("Finding Yellow Buoy....");
     th.isDetected("yellow_buoy", 15); // time out of 15 seconds
     ROS_INFO("Yellow Buoy Detected");
@@ -85,7 +86,7 @@ int main(int argc, char** argv) {
     single_buoy.setActive(false);
 
     ROS_INFO("Yellow Buoy done");
-  
+    
     //////////////////////////////////////////////
 
     current_task.data = "green_buoy";
@@ -98,20 +99,19 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "green_buoy");
     ROS_INFO("Current task: Green Buoy");
 
-    moveDownward move_downward(-50); // for real world
-    move_downward.setActive(true);
-    ROS_INFO("Green Buoy Task, Going Down");
-    ros::Duration(4).sleep();
-    move_downward.setActive(false);
-    ROS_INFO("Green Buoy Task, At bottom");
-    
-    move_sideward.setThrust(100);
+    moveStraight move_straight(-50);
+    move_straight.setActive(true);
+    ros::Duration(5).sleep();
+    move_straight.setActive(false);
+
+    ROS_INFO("Finding Green Buoy...");
+    move_sideward.setThrust(50);
     move_sideward.setActive(true); // until the green buoy is detected (for vision node)
-    
-    ros::Duration(10).sleep(); // should move approx. 10m straight sideways
-    
-    th.isDetected("green_buoy", 25); // time out of 15 seconds
+    ros::Duration(5).sleep(); // should move approx. 10m straight sideways
+
+    th.isDetected("green_buoy", 15); // time out of 15 seconds
     ROS_INFO("Green Buoy Detected");
+            
     move_sideward.setActive(false);
 
     single_buoy.setActive(true); // blocking function, will terminalte after completion
@@ -318,7 +318,7 @@ int main(int argc, char** argv) {
     // octagon.setActive(false);
     
     /////////////////////////////////////////////////////
-    
+   
     nh.setParam("/kill_signal", true);
 
     spin_thread.join();

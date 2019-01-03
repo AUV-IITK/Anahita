@@ -22,7 +22,7 @@ void moveStraight::setActive(bool status) {
         spin_thread_->join();
         ROS_INFO("Straight Server goal cancelled");
         spin_thread->join();
-        nh.setParam("/kill_signal", 1);
+        nh.setParam("/kill_signal", true);
     }
 }   
 
