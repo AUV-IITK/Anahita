@@ -56,12 +56,12 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[3] = {0, 15, 45};
-	int data_high_h[3] = {13, 23, 72};
-	int data_low_s[3] = {239, 236, 249};
+	int data_low_h[3] = {0, 12, 0};
+	int data_high_h[3] = {17, 40, 56};
+	int data_low_s[3] = {206, 183, 0};
 	int data_high_s[3] = {255, 255, 255};
-	int data_low_v[3] = {52, 72, 24};
-	int data_high_v[3] = {111, 217, 201};
+	int data_low_v[3] = {30, 3, 2};
+	int data_high_v[3] = {255, 255, 82};
 
 	bool close_task = false;
 

@@ -36,7 +36,6 @@ void Octagon::setActive(bool status) {
         
         ROS_INFO("Killing the thrusters");
 	    nh_.setParam("/kill_signal", true);
-        nh_.setParam("/kill_signal", false);
 
     }
     else {

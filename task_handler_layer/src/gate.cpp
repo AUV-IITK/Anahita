@@ -35,7 +35,6 @@ void gateTask::setActive(bool status) {
         anglePIDClient.cancelGoal();
 
         nh_.setParam("/kill_signal", true);
-        nh_.setParam("/kill_signal", false);
     }
     else { }
 }

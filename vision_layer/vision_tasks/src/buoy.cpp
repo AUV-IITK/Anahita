@@ -26,7 +26,7 @@ Buoy::Buoy(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)
@@ -175,7 +175,8 @@ void Buoy::spinThread(){
  					y_coordinate.data = center[0].x - ((float)image_.size().width) / 2;
 					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
-					if(contourArea(contours[index]) > 10 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					ROS_INFO("Maximum Contour area: %.2f", contourArea(contours[index]));
+					if(contourArea(contours[index]) > 1000 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
 						detection_bool.data = false;						

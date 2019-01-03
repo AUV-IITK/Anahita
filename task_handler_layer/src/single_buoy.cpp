@@ -26,7 +26,7 @@ void singleBuoy::setActive(bool status) {
 
         ROS_INFO("upwardPID server started, sending goal.");
         upwardPIDgoal.target_depth = 0; // for gazebo
-        upwardPIDClient.sendGoal(upwardPIDgoal);
+        // upwardPIDClient.sendGoal(upwardPIDgoal);
 
         ///////////////////////////////////////////////////
 
@@ -46,13 +46,13 @@ void singleBuoy::setActive(bool status) {
 
         ROS_INFO("forward distance received");
 
-        while(forward_distance_ >= 100 && ros::ok()) {
+        while(forward_distance_ >= 60 && ros::ok()) {
         }
 
-        ROS_INFO("forward distance less than 100");
+        ROS_INFO("forward distance less than 60");
 
         sidewardPIDClient.cancelGoal();
-        upwardPIDClient.cancelGoal();
+        // upwardPIDClient.cancelGoal();
         nh_.setParam("/pwm_sway", 0);
 
         nh_.setParam("/pwm_surge", 50);
@@ -75,30 +75,29 @@ void singleBuoy::setActive(bool status) {
         
         ROS_INFO("UpwardPID Client sending goal again, task buoy.");
         upwardPIDgoal.target_depth = 0;
-        upwardPIDClient.sendGoal(upwardPIDgoal);
+        // upwardPIDClient.sendGoal(upwardPIDgoal);
 
         //////////////////////////////////////////////////////
 
-        ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
-        forwardPIDgoal.target_distance = 50;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        // ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
+        // forwardPIDgoal.target_distance = 50;
+        // forwardPIDClient.sendGoal(forwardPIDgoal);
 
         // while(forward_distance_ <= 50 && ros::ok()) {
         //     continue;
         // }
 
-        th.isAchieved(50, 15, "forward");
+        // th.isAchieved(50, 15, "forward");
 
-        forwardPIDClient.cancelGoal();
+        // forwardPIDClient.cancelGoal();
         
         ROS_INFO("Killing the thrusters");
 	    nh_.setParam("/kill_signal", true);
-        nh_.setParam("/kill_signal", false);
 
         anglePIDClient.cancelGoal();
     }
     else {
-        upwardPIDClient.cancelGoal();
+        // upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         ROS_INFO("Closing Single Buoy");
     }
