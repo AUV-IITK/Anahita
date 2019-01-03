@@ -15,6 +15,7 @@ Line::Line(){
 	image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
 	this->marked_pub = it.advertise("/line_task/marked", 1);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1);
@@ -81,6 +82,8 @@ void Line::TaskHandling()
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
 
+	std_msgs::Bool detection_bool;
+
 	while (ros::ok())
 	{
 		if (task_done) {
@@ -123,6 +126,14 @@ void Line::TaskHandling()
 					}
 					else
 						z_coordinate.data = 0.0;
+
+					int non_zero = countNonZero(image_thresholded)/3072;
+  					
+					if (non_zero > (3072 * 20))
+						detection_bool.data=true;
+					else
+						detection_bool.data=false;						
+					
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
@@ -135,7 +146,7 @@ void Line::TaskHandling()
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
-			
+			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(line_point_message);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());

@@ -13,6 +13,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Pose2D.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
 #include <stdlib.h>
