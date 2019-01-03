@@ -8,7 +8,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "green_torpedo";
+std::string current_task = "gate";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)

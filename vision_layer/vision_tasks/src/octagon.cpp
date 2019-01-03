@@ -39,6 +39,16 @@ Octagon::Octagon(){
     this->bottom_closing_iter_ = 1;
 
     this->camera_frame_ = "auv-iitk";
+
+	image_transport::ImageTransport it(nh);
+	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
+	image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
+	image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
+	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
+
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
+
+
 }
 
 void Octagon::frontCallback(vision_tasks::octagonFrontRangeConfig &config, double level)
@@ -118,14 +128,6 @@ void Octagon::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&Octagon::bottomCallback, this, _1, _2);
 	server.setCallback(f);
-
-	image_transport::ImageTransport it(nh);
-	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
-	image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
-	image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
-	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
-
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
 
 	cv::Scalar bin_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);

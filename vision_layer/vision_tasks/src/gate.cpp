@@ -381,15 +381,15 @@ void Gate::spinThreadFront()
 				{
 					if (abs(vision_commons::Geometry::angleWrtY(longest1, longest2) - 90.0) < front_hough_angle_tolerance_)
 					{
-						gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2) * 1.068) / 7526.5, -.92678);
-						gate_point_message.point.y = (longest1.x + longest2.x) / 2 - image_front.size().width / 2;
-						gate_point_message.point.z = image_front.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
+						x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 1.068) / 7526.5, -.92678);
+						y_coordinate.data = (longest1.x + longest2.x) / 2 - image_front.size().width / 2;
+						z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
 					}
 					else
 					{
-						gate_point_message.point.x = pow((vision_commons::Geometry::distance(longest1, longest2) * 2.848) / 7526.5, -.92678);
-						gate_point_message.point.y = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
-						gate_point_message.point.z = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
+						x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 2.848) / 7526.5, -.92678);
+						y_coordinate.data = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
+						z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
 					}
 					cv::line(image_marked, longest1, longest2, hough_line_color, 3, CV_AA);
 					ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
@@ -401,10 +401,6 @@ void Gate::spinThreadFront()
 			detection_bool.data = found;
 			detection_pub.publish(detection_bool);
 
-			x_coordinate.data = gate_point_message.point.x;
-			y_coordinate.data = gate_point_message.point.y;
-			z_coordinate.data = gate_point_message.point.z;
-			
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
@@ -427,6 +423,7 @@ void Gate::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	try
 	{
 		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		ROS_INFO("Found a new image and stored it in image_front");
 	}
 	catch (cv_bridge::Exception &e)
 	{

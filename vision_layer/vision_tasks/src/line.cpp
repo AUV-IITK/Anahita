@@ -104,7 +104,6 @@ void Line::TaskHandling()
 				{
 					bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
 					cv::HoughLinesP(edges, lines, 1, CV_PI / 180, 60, 70, 10);
-					ROS_INFO("HOugh lines number = %d", lines.size());
 					for (int i = 0; i < lines.size(); i++)
 					{
 						if ((lines[i][2] == lines[i][0]) || (lines[i][1] == lines[i][3]))
@@ -112,20 +111,19 @@ void Line::TaskHandling()
 						angles.push_back(atan(static_cast<double>(lines[i][2] - lines[i][0]) / (lines[i][1] - lines[i][3])) * 180.0 / 3.14159);
 						cv::line(image_marked, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), hough_line_color, 1, CV_AA);
 					}
-					ROS_INFO("Loop OVer");
-					x_coordinate.data = (image_.size().height) / 2 - bounding_rectangle.center.y;
-					y_coordinate.data = bounding_rectangle.center.x - (image_.size().width) / 2;
+					y_coordinate.data = (image_.size().height) / 2 - bounding_rectangle.center.y;
+					x_coordinate.data = bounding_rectangle.center.x - (image_.size().width) / 2;
 					if (angles.size() > 0)
 					{
 						double angle = computeMean(angles);
 						if (angle > 90.0)
-							line_point_message.theta = angle - 90.0;
+							z_coordinate.data = angle - 90.0;
 						else
-							line_point_message.theta = angle;
+							z_coordinate.data = angle;
 					}
 					else
-						line_point_message.theta = 0.0;
-					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", line_point_message.x, line_point_message.y, line_point_message.theta);
+						z_coordinate.data = 0.0;
+					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
@@ -137,6 +135,7 @@ void Line::TaskHandling()
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
+			
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(line_point_message);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
