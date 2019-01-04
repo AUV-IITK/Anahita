@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string>
 
+#include <boost/thread.hpp> 
+
 #include <vision_tasks/lineRangeConfig.h>
 #include <vision_commons/filter.h>
 #include <vision_commons/contour.h>
@@ -54,6 +56,8 @@ protected:
 	ros::Publisher x_coordinates_pub;
 	ros::Publisher y_coordinates_pub;
 	ros::Publisher z_coordinates_pub;
+
+	ros::Publisher ang_pub;
 	
 	void callback(vision_tasks::lineRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
@@ -68,7 +72,9 @@ public:
 	image_transport::ImageTransport it();
 	cv::Mat image_;
 	cv::Mat image_marked;
-	void TaskHandling();
+	boost::thread* spin_thread; 
+	void TaskHandling(bool status);
+	void spinThread();
 };
 #endif // LINE_TASK_H
 

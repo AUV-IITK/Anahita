@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     
     ROS_INFO("Completed the first buoy task, Now let's move on to the second");
 
-    ////////////////////////////////////////
+    ///////////////////////////////////////////////
 
     current_task.data = "yellow_buoy";
     while (ros::ok() && pub_count <= 5) {
@@ -101,13 +101,13 @@ int main(int argc, char** argv) {
 
     moveStraight move_straight(-50);
     move_straight.setActive(true);
-    ros::Duration(5).sleep();
+    ros::Duration(3).sleep(); // configurable 
     move_straight.setActive(false);
 
     ROS_INFO("Finding Green Buoy...");
     move_sideward.setThrust(50);
     move_sideward.setActive(true); // until the green buoy is detected (for vision node)
-    ros::Duration(5).sleep(); // should move approx. 10m straight sideways
+    ros::Duration(5).sleep(); // configurable
 
     th.isDetected("green_buoy", 15); // time out of 15 seconds
     ROS_INFO("Green Buoy Detected");

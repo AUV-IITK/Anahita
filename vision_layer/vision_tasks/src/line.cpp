@@ -18,7 +18,7 @@ Line::Line(){
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
-	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
 	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
@@ -61,8 +61,21 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-void Line::TaskHandling()
+void Line::TaskHandling(bool status)
 {  
+	if(status)
+	{
+		spin_thread = new boost::thread(boost::bind(&Line::spinThread, this)); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread->join();
+		std::cout << "Buoy Task Handling function over" << std::endl;	
+	}
+}
+
+void Line::spinThread() {
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
 	f = boost::bind(&Line::callback, this, _1, _2);

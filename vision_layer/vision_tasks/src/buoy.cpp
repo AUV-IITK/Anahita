@@ -91,7 +91,7 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-void Buoy::TaskHandling(bool status){
+void Buoy::TaskHandling (bool status) {
 	if(status)
 	{
 		spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 

@@ -3,12 +3,13 @@
 #include "markerDropper.h"
 //#include "octagon.h"
 #include "torpedo.h"
+#include "line.h"
 
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "red_buoy";
+std::string current_task = "line";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     Torpedo torpedo;
     MarkerDropper md;
     // Octagon octagon;
+    Line line;
 
     ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);
 
@@ -76,6 +78,12 @@ int main(int argc, char *argv[])
             }
             if (previous_task == "marker_dropper_bottom") {
                 md.bottomTaskHandling(false);
+            }
+            if (current_task == "line") {
+                line.TaskHandling(true);
+            }
+            if (previous_task == "line") {
+                line.TaskHandling(false);
             }
             // if (current_task == "octagon") {
             //     octagon.bottomTaskHandling(true);

@@ -18,6 +18,7 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["marker_dropper_bottom"] = false;
     task_map_["marker_dropper_front"] = false;
     task_map_["octagon"] = false;
+    task_map_["line"] = false;
 
     time_out_ =  _timeout;
 
@@ -79,6 +80,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
             }
         }
     }
+    return true;
 }
 
 bool taskHandler::isDetected (std::string _task, double _timeout) {
@@ -94,6 +96,8 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
         }
     }
     task_map_[_task] = false;
+
+    return true;
 }
 
 void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
@@ -130,6 +134,9 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         }
         else if (current_task == "marker_dropper_bottom") {
             task_map_["marker_dropper_bottom"] = true;
+        }
+        else if (current_task == "line") {
+            task_map_["line"] = true;
         }
     } 
 }

@@ -153,6 +153,14 @@ target_link_libraries(master
   ${catkin_LIBRARIES}
 )
 
+add_executable(temp src/temp.cpp)
+add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(temp
+  line
+  task_handler
+  ${catkin_LIBRARIES}
+)
+
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
   sidewardPIDServer 
