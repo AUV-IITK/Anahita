@@ -5,6 +5,7 @@
 #include <torpedo.h>
 #include <marker_dropper.h>
 #include <octagon.h>
+#include <line.h>
 
 #include <straight_server.h>
 #include <move_sideward_server.h>
@@ -44,6 +45,42 @@ int main(int argc, char** argv) {
     singleBuoy single_buoy;
 
     boost::thread spin_thread(&spinThread);
+
+    ////////////////////////////////////////////
+
+    nh.setParam("/enable_pressure", 1);
+    nh.setParam("/disable_imu", true);
+
+    current_task.data = "line";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "line");
+    ROS_INFO("Current task: Line");
+
+    bool temp = th.isDetected("line", 10);
+
+    if (!temp) {
+        ROS_INFO("Line not detected before the timeout");
+        return 1;
+    }
+
+    ROS_INFO("Line Detected");
+
+    lineTask task;
+
+    temp = task.setActive(true);
+
+    if (!temp) {
+        ROS_INFO("Line Task Failed");
+        return 1;
+    }
+    task.setActive(false);
+
+    ROS_INFO("Completed the Line task");
    
     /////////////////////////////////////////////
 

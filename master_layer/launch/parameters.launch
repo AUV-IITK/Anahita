@@ -10,8 +10,12 @@
 
   <param name="/current_task" value="red_buoy" type="string" />
 
-  <param name="/kill_signal" value="false" type="int" />
+  <param name="/kill_signal" value="false" type="bool" />
 
   <param name="/reference_yaw" value="0" type="double" />
+
+  <param name="/disable_imu" value="false" type="bool" />
+
+  <param name="/enable_pressure" value="0" type="int" />
 
 </launch>

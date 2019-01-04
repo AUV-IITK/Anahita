@@ -105,7 +105,6 @@ void Line::spinThread() {
 		}
 		if (!image_.empty())
 		{
-			// ROS_INFO("Image Found");
 			image_.copyTo(image_marked);
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
@@ -144,8 +143,6 @@ void Line::spinThread() {
 
 					int non_zero = countNonZero(image_thresholded);
 
-					// std::cout << "NON ZERO: " << non_zero << std::endl;
-
 					if (non_zero > (3072 * 0.20))
 						detection_bool.data=true;
 					else
@@ -154,6 +151,7 @@ void Line::spinThread() {
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
+
 					for (int i = 0; i < contours.size(); i++)
 					{
 						cv::drawContours(image_marked, contours, i, contour_color, 1, 8);
@@ -169,7 +167,7 @@ void Line::spinThread() {
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}
 		else
-			// ROS_INFO("Image empty!");
+			ROS_INFO("Image empty!");
 		ros::spinOnce();
 	}
 }

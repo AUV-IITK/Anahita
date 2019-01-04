@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 
 #define TO_DEG(x) (x * 57.2957795131)
 
@@ -11,6 +12,19 @@ std_msgs::Float32 imu_pitch;
 ros::Publisher imu_yaw_pub;
 ros::Publisher imu_roll_pub;
 ros::Publisher imu_pitch_pub;
+
+ros::Subscriber task_sub;
+
+bool disable_imu = false;
+std::string current_task = "";
+
+int count = 0;
+
+void taskCallback(const std_msgs::String::ConstPtr& msg)
+{
+    ROS_INFO("Task being chaned to: [%s]", msg->data.c_str());
+    current_task = msg->data;
+}
 
 void imu_data_callback(sensor_msgs::Imu msg)
 {
@@ -25,9 +39,11 @@ void imu_data_callback(sensor_msgs::Imu msg)
   // convert form quaternion to euler angle (pitch)
   imu_pitch.data = TO_DEG(-asin(2 * q1 * q3 + 2 * q0 * q2));
    
- // ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_pitch.data, imu_roll.data, imu_yaw.data);
+  // ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_pitch.data, imu_roll.data, imu_yaw.data);
    
-  imu_yaw_pub.publish(imu_yaw);  
+  if (!disable_imu || current_task != "line") {
+    imu_yaw_pub.publish(imu_yaw);
+  }  
   imu_roll_pub.publish(imu_roll);
   imu_pitch_pub.publish(imu_pitch);
 }
@@ -51,7 +67,12 @@ int main(int argc, char **argv)
   //initializing subscribers
   ros::Subscriber imu_data_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data", 1000, &imu_data_callback);
   
-  ros::spin();
+  ros::Rate loop_rate(200);
+
+  while(ros::ok()) {
+    nh.getParam("/disable_imu", disable_imu);
+    ros::spinOnce();
+  }
 
   return 0;
 }
