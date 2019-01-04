@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
                 buoy.TaskHandling(false);
             }
             if (current_task == "gate") {
+                ROS_INFO("gate task");
                 gate.frontTaskHandling(true);
             }
             if (previous_task == "gate") {
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
                 md.bottomTaskHandling(false);
             }
             if (current_task == "line") {
+                ROS_INFO("Line Task Running");
                 line.TaskHandling(true);
             }
             if (previous_task == "line") {

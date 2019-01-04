@@ -2,7 +2,7 @@
 
 lineTask::lineTask(): sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), 
                     forwardPIDClient("forwardPID"), th(15) {
-    sub_ = nh_.subscribe("/mavros/imu/data", 1, &lineTask::angleCB, this);
+    sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &lineTask::angleCB, this);
 }
 
 lineTask::~lineTask() {}
@@ -34,7 +34,7 @@ bool lineTask::setActive(bool value) {
         while (ros::ok() && !angleReceived) { continue; }
 
         ROS_INFO("anglePID server started, sending goal.");
-        angle_PID_goal.target_angle = -angle_;
+        angle_PID_goal.target_angle = angle_;
         anglePIDClient.sendGoal(angle_PID_goal);
 
         th.isAchieved(0, 5, "angle");

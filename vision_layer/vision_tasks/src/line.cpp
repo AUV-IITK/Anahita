@@ -65,13 +65,14 @@ void Line::TaskHandling(bool status)
 {  
 	if(status)
 	{
+		ROS_INFO("Task Handling");
 		spin_thread = new boost::thread(boost::bind(&Line::spinThread, this)); 
 	}
 	else 
 	{
 		task_done = true;
         spin_thread->join();
-		std::cout << "Buoy Task Handling function over" << std::endl;	
+		std::cout << "Line Task Handling function over" << std::endl;	
 	}
 }
 
@@ -104,6 +105,7 @@ void Line::spinThread() {
 		}
 		if (!image_.empty())
 		{
+			// ROS_INFO("Image Found");
 			image_.copyTo(image_marked);
 			if (high_h_ > low_h_ && high_s_ > low_s_ && high_v_ > low_v_)
 			{
@@ -140,14 +142,16 @@ void Line::spinThread() {
 					else
 						z_coordinate.data = 0.0;
 
-					int non_zero = countNonZero(image_thresholded)/3072;
-  					
-					if (non_zero > (3072 * 20))
+					int non_zero = countNonZero(image_thresholded);
+
+					// std::cout << "NON ZERO: " << non_zero << std::endl;
+
+					if (non_zero > (3072 * 0.20))
 						detection_bool.data=true;
 					else
 						detection_bool.data=false;						
 					
-					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
+					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
@@ -156,8 +160,8 @@ void Line::spinThread() {
 					}
 				}
 			}
-			x_coordinates_pub.publish(x_coordinate);
-			y_coordinates_pub.publish(y_coordinate);
+			x_coordinates_pub.publish(y_coordinate);
+			y_coordinates_pub.publish(x_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
 			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
@@ -165,7 +169,7 @@ void Line::spinThread() {
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}
 		else
-			ROS_INFO("Image empty");
+			// ROS_INFO("Image empty!");
 		ros::spinOnce();
 	}
 }
