@@ -5,12 +5,12 @@ Line::Line() : it(nh) {
 	this->high_h_ = 47;
 	this->low_s_ = 0;
 	this->high_s_ = 255;
-	this->low_v_ = 0;
+	this->low_v_ = 140;
 	this->high_v_ = 255;
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 0;
 	this->closing_mat_point_ = 2;
-	this->closing_iter_ = 1;
+	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
 	// image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
@@ -103,6 +103,10 @@ void Line::spinThread() {
 	std::vector<cv::Vec4i> lines;
 	geometry_msgs::Pose2D line_point_message;
 	cv::Mat image_marked;
+	std::vector<double> readings(5);
+	int good_values_num = 0;
+	cv::VideoCapture cap(0);
+	double theta, readings_avg;
 
 	std_msgs::Bool detection_bool;
 
@@ -111,6 +115,7 @@ void Line::spinThread() {
 		if (task_done) {
 			break;
 		}
+		cap >> image_;
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -123,8 +128,8 @@ void Line::spinThread() {
 				contours = vision_commons::Contour::getBestX(image_thresholded, 1);
 				cv::Mat edges(image_thresholded.rows, image_thresholded.cols, CV_8UC1, cv::Scalar::all(0));
 				std::vector<double> angles;
-
 				cv::drawContours(edges, contours, 0, edge_color, 1, 8);
+
 				if (contours.size() != 0)
 				{
 					bounding_rectangle = cv::minAreaRect(cv::Mat(contours[0]));
@@ -136,6 +141,7 @@ void Line::spinThread() {
 						angles.push_back(atan(static_cast<double>(lines[i][2] - lines[i][0]) / (lines[i][1] - lines[i][3])) * 180.0 / 3.14159);
 						cv::line(image_marked, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), hough_line_color, 1, CV_AA);
 					}
+
 					y_coordinate.data = (image_.size().height) / 2 - bounding_rectangle.center.y;
 					x_coordinate.data = bounding_rectangle.center.x - (image_.size().width) / 2;
 					y_coordinate.data = y_coordinate.data/4;					
@@ -143,22 +149,53 @@ void Line::spinThread() {
 					{
 						double angle = computeMean(angles);
 						if (angle > 90.0)
-							z_coordinate.data = angle - 90.0;
+							theta = angle - 90.0;
 						else
-							z_coordinate.data = angle;
+							theta = angle;
 					}
 					else
-						z_coordinate.data = 0.0;
+						theta = 0.0;
+					ROS_INFO("Value of good_num_value = %d, theta = %f", good_values_num, theta);
+
+					if(good_values_num == 0 && theta!=0)
+					{
+						good_values_num++;
+						readings[0] = readings[1] = readings[2] = readings[3] = readings[4] = theta;
+						ROS_INFO("Initialising array: %f %f %f %f %f", readings[0], readings[1], readings[2], readings[3], readings[4]);
+					}
+					if(good_values_num > 4 && theta!=0)
+					{
+						readings_avg = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
+						readings[0] = readings[1]; readings[1] = readings[2]; readings[2] = readings[3]; readings[3] = readings[4];
+						if(abs(readings_avg - theta) < 25)
+						{
+							readings[4] = theta;
+						}
+						else 
+						{
+							if(theta<0)
+								readings[4] = 180 + theta;
+							else
+								readings[4] = -180 + theta;
+						}			
+					}
+					
+					z_coordinate.data = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
 
 					int non_zero = countNonZero(image_thresholded);
 
-					if (non_zero > (3072 * 0.20))
+					if (non_zero > (3072 * 0.20) && good_values_num>0)
+					{
+						good_values_num++;
 						detection_bool.data=true;
+						ROS_INFO("Detection switch for line: 1");
+					}
 					else
-						detection_bool.data=false;
-
-					z_coordinate.data = -z_coordinate.data;					
-					
+					{
+						detection_bool.data=false;						
+						good_values_num = 0;
+						ROS_INFO("Detection switch for line: 0");
+					}
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
@@ -174,8 +211,9 @@ void Line::spinThread() {
 			z_coordinates_pub.publish(z_coordinate);
 			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
-			coordinates_pub.publish(line_point_message);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
+			ROS_INFO("------------------------------------------------------");
+
 		}
 		else
 			ROS_INFO("Image empty!");
