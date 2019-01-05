@@ -9,6 +9,7 @@
 #include <string>
 
 #include <motion_layer/forwardPIDAction.h>
+#include <motion_layer/upwardPIDAction.h>
 #include <motion_layer/sidewardPIDAction.h>
 #include <motion_layer/anglePIDAction.h>
 #include <actionlib/client/simple_action_client.h>
@@ -23,11 +24,13 @@ private:
     boost::thread* spin_thread;
 
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
+    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
 
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
+    motion_layer::upwardPIDGoal upwardPIDgoal;
     motion_layer::anglePIDGoal anglePIDGoal;
 
     taskHandler th;

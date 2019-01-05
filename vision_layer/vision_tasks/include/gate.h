@@ -97,8 +97,9 @@ protected:
 
 public:
     Gate();
+    ~Gate();
     ros::NodeHandle nh;
-	image_transport::ImageTransport it();
+	image_transport::ImageTransport it;
 	cv::Mat image_front;
     cv::Mat image_bottom;
 	cv::Mat image_marked;

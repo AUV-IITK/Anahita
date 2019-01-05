@@ -1,6 +1,6 @@
 #include <gate.h>
 
-Gate::Gate(){
+Gate::Gate() : it(nh) {
     this->front_clahe_clip_ = 4.0;
     this->front_clahe_grid_size_ = 8;
     this->front_clahe_bilateral_iter_ = 8;
@@ -40,10 +40,7 @@ Gate::Gate(){
 
     this->camera_frame_ = "auv-iitk";
 
-    image_transport::ImageTransport it(nh);
-
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
-    // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+    // image_transport::ImageTransport it(nh);
 
 	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
 	this->thresholded_pub_front = it.advertise("/gate_task/front/thresholded", 1);
@@ -61,6 +58,11 @@ Gate::Gate(){
     
 	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+}
+
+Gate::~Gate() {
+	spin_thread_front->join();
+	spin_thread_bottom->join();
 }
 
 cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle)
@@ -83,22 +85,7 @@ cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, floa
 		finalVertex = finalVertex + v1;
 		return finalVertex;
 	}
-};
-
-// void Gate::TaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&Gate::frontTaskHandling, this); 
-// 		spin_thread_bottom = new boost::thread(&Gate::bottomTaskHandling, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_front->join();
-//         spin_thread_bottom->join();
-// 		std::cout << "Task Handling function over" << std::endl;	
-// 	}
-// }
+}
 
 void Gate::frontCallback(vision_tasks::gateFrontRangeConfig &config, double level)
 {
@@ -152,12 +139,15 @@ void Gate::bottomTaskHandling(bool status) {
 	{
 		task_done = true;
         spin_thread_bottom->join();
+		bottom_image_sub.shutdown();
 		std::cout << "Bottom Task Handling function over" << std::endl;	
 	}
 }
 
 void Gate::spinThreadBottom()
 {
+    this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
 	f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
@@ -236,12 +226,15 @@ void Gate::frontTaskHandling(bool status) {
 	{
 		task_done = true;
         spin_thread_front->join();
+		front_image_sub.shutdown();
 		std::cout << "Front Task Handling function over" << std::endl;	
 	}
 }
 
 void Gate::spinThreadFront()
 {
+	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
 	f_front = boost::bind(&Gate::frontCallback, this, _1, _2);

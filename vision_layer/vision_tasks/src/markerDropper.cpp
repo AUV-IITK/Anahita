@@ -1,6 +1,6 @@
 #include <markerDropper.h>
 
-MarkerDropper::MarkerDropper(){
+MarkerDropper::MarkerDropper() : it(nh) {
 	this->front_clahe_clip_ = 4.0;
     this->front_clahe_grid_size_ = 8;
     this->front_clahe_bilateral_iter_ = 8;
@@ -40,7 +40,7 @@ MarkerDropper::MarkerDropper(){
 
     this->camera_frame_ = "auv-iitk";
 
-	image_transport::ImageTransport it(nh);
+	// image_transport::ImageTransport it(nh);
 	
 	this->bottom_blue_filtered_pub = it.advertise("/markerdropper_task/bottom/blue_filtered", 1);
 	this->bottom_thresholded_pub = it.advertise("/markerdropper_task/bottom/thresholded", 1);
@@ -52,10 +52,12 @@ MarkerDropper::MarkerDropper(){
 	this->front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
 	this->front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
 
-	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
-	this->front_image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &MarkerDropper::imageFrontCallback, this);
 }
 
+MarkerDropper::~MarkerDropper() {
+	spin_thread_bottom->join();
+	spin_thread_front->join();
+}
 
 void MarkerDropper::frontCallback(vision_tasks::markerDropperFrontRangeConfig &config, double level)
 {
@@ -138,6 +140,7 @@ void MarkerDropper::frontTaskHandling(bool status) {
 	{
 		close_task = true;
         spin_thread_front->join();
+		front_image_raw_sub.shutdown();
 		std::cout << "Front Task Handling function over" << std::endl;	
 	}
 }
@@ -152,27 +155,15 @@ void MarkerDropper::bottomTaskHandling(bool status) {
 	{
 		close_task = true;
         spin_thread_bottom->join();
+		bottom_image_raw_sub.shutdown();
 		std::cout << "Bottom Task Handling function over" << std::endl;	
 	}
 }
 
-// void MarkerDropper::TaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&MarkerDropper::FrontTaskHandling, this); 
-// 		spin_thread_bottom = new boost::thread(&MarkerDropper::BottomTaskHandling, this); 
-// 	}
-// 	else 
-// 	{
-//         spin_thread_front->join();
-//         spin_thread_bottom->join();
-// 	}
-// 	std::cout << "Task Handling function over" << std::endl;	
-// }
-
-
-
 void MarkerDropper::spinThreadBottom() {
+
+	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
+
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
@@ -261,6 +252,9 @@ void MarkerDropper::spinThreadBottom() {
 }
 
 void MarkerDropper::spinThreadFront () {
+
+	this->front_image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &MarkerDropper::imageFrontCallback, this);
+
 	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperFrontRangeConfig>::CallbackType f;
 	f = boost::bind(&MarkerDropper::frontCallback, this, _1, _2);

@@ -8,7 +8,7 @@ ErrorDescriptor::ErrorDescriptor(std::string _name): p_(0), i_(0), d_(0),
     pwm_(0), previous_time_stamp_(0), current_time_stamp_(0)
 {   
     this->name_ = _name;
-    ROS_INFO("%s type ErrorDecriptor is constructed.", this->name_);
+    ROS_INFO("[%s] type ErrorDecriptor is constructed.", this->name_);
 }
 
 ErrorDescriptor::~ErrorDescriptor() {}
@@ -34,7 +34,7 @@ void ErrorDescriptor::setReference(double _value) {
         }
     }
 
-    ROS_INFO("%s, Reference set to: %f", this->name_, reference_value_);
+    ROS_INFO("[%s], Reference set to: %f", this->name_, reference_value_);
 }
 
 void ErrorDescriptor::setType(std::string _name) {
