@@ -83,12 +83,14 @@ protected:
 
 public:
 	Buoy();
+	~Buoy();
 	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;
 	cv::Mat image_;
 	cv::Mat image_marked;
 	boost::thread* spin_thread; 
+	image_transport::ImageTransport it;
 	void TaskHandling(bool);
 	void switchColor(int);
 	void spinThread();

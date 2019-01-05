@@ -1,6 +1,6 @@
 #include <torpedo.h>
 
-Torpedo::Torpedo(){
+Torpedo::Torpedo() : it(nh) {
 	this->clahe_clip_ = 0.15;
 	this->clahe_grid_size_ = 3;
 	this->clahe_bilateral_iter_ = 2;
@@ -17,7 +17,7 @@ Torpedo::Torpedo(){
 	this->closing_mat_point_ = 2;
 	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
-	image_transport::ImageTransport it(nh);
+	// image_transport::ImageTransport it(nh);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
@@ -25,7 +25,10 @@ Torpedo::Torpedo(){
 	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
 	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
-	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
+}
+
+Torpedo::~Torpedo() {
+	spin_thread->join();
 }
 
 void Torpedo::switchColor(int color)
@@ -100,12 +103,15 @@ void Torpedo::TaskHandling(bool status){
 	{
 		close_task = true;
         spin_thread->join();
+		image_raw_sub.shutdown();
 		std::cout << "Task Handling function over" << std::endl;	
 	}
 }
 
 
 void Torpedo::spinThread(){
+
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;

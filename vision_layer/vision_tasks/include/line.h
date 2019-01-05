@@ -40,12 +40,12 @@ protected:
 	
 	std::string camera_frame_;
 
-    int low_h_;
-	int high_h_;
-	int low_s_;
-	int high_s_;
-	int low_v_;
-	int high_v_;
+    int low_h_ = 0;
+	int high_h_ = 25;
+	int low_s_ = 206;
+	int high_s_ = 255;
+	int low_v_ = 81;
+	int high_v_ = 255;
 	int opening_mat_point_;
 	int opening_iter_;
 	int closing_mat_point_;
@@ -65,11 +65,12 @@ protected:
 
 public:
     Line();
+	~Line();
     ros::NodeHandle nh;
 	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;	
-	image_transport::ImageTransport it();
+	image_transport::ImageTransport it;
 	cv::Mat image_;
 	cv::Mat image_marked;
 	boost::thread* spin_thread; 

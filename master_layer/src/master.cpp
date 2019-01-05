@@ -46,45 +46,6 @@ int main(int argc, char** argv) {
 
     boost::thread spin_thread(&spinThread);
 
-    ////////////////////////////////////////////
-
-    // nh.setParam("/enable_pressure", 1);
-    nh.setParam("/disable_imu", true);
-
-    current_task.data = "line";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "line");
-    ROS_INFO("Current task: Line");
-
-    bool temp = th.isDetected("line", 10);
-
-    if (!temp) {
-        ROS_INFO("Line not detected before the timeout");
-        return 1;
-    }
-
-    ROS_INFO("Line Detected");
-
-    lineTask task;
-
-    temp = task.setActive(true);
-
-    if (!temp) {
-        ROS_INFO("Line Task Failed");
-        return 1;
-    }
-    task.setActive(false);
-
-    ROS_INFO("Completed the Line task");
-
-    // nh.setParam("/enable_pressure", 1);
-    nh.setParam("/disable_imu", false);
-   
     /////////////////////////////////////////////
 
     // ros::Duration(60).sleep();
@@ -106,60 +67,60 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////
 
-    /*current_task.data = "yellow_buoy";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "yellow_buoy");
-    ROS_INFO("Current task: Yellow Buoy");*/
+    // current_task.data = "yellow_buoy";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "yellow_buoy");
+    // ROS_INFO("Current task: Yellow Buoy");
 
-    /*moveSideward move_sideward(-50);
-    move_sideward.setActive(true);
-    ros::Duration(10).sleep();
-    //ROS_INFO("Finding Yellow Buoy....");
-    //th.isDetected("yellow_buoy", 15); // time out of 15 seconds
-    //ROS_INFO("Yellow Buoy Detected");
-    move_sideward.setActive(false);
+    // moveSideward move_sideward(-50);
+    // move_sideward.setActive(true);
+    // ros::Duration(10).sleep();
+    // ROS_INFO("Finding Yellow Buoy....");
+    // th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    // ROS_INFO("Yellow Buoy Detected");
+    // move_sideward.setActive(false);
 
-    /*single_buoy.setActive(true);
-    single_buoy.setActive(false);
+    // single_buoy.setActive(true);
+    // single_buoy.setActive(false);
 
-    ROS_INFO("Yellow Buoy done");
+    // ROS_INFO("Yellow Buoy done");
     
     //////////////////////////////////////////////
 
-    current_task.data = "green_buoy";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "green_buoy");
-    ROS_INFO("Current task: Green Buoy");
+    // current_task.data = "green_buoy";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "green_buoy");
+    // ROS_INFO("Current task: Green Buoy");
 
-    moveStraight move_straight(-50);
-    move_straight.setActive(true);
-    ros::Duration(3).sleep(); // configurable 
-    move_straight.setActive(false);
+    // moveStraight move_straight(-50);
+    // move_straight.setActive(true);
+    // ros::Duration(3).sleep(); // configurable 
+    // move_straight.setActive(false);
 
-    ROS_INFO("Finding Green Buoy...");
-    move_sideward.setThrust(50);
-    mo	ve_sideward.setActive(true); // until the green buoy is detected (for vision node)
-    ros::Duration(5).sleep(); // configurable
+    // ROS_INFO("Finding Green Buoy...");
+    // move_sideward.setThrust(50);
+    // mo	ve_sideward.setActive(true); // until the green buoy is detected (for vision node)
+    // ros::Duration(5).sleep(); // configurable
 
-    th.isDetected("green_buoy", 15); // time out of 15 seconds
-    ROS_INFO("Green Buoy Detected");
+    // th.isDetected("green_buoy", 15); // time out of 15 seconds
+    // ROS_INFO("Green Buoy Detected");
             
-    move_sideward.setActive(false);
+    // move_sideward.setActive(false);
 
-    single_buoy.setActive(true); // blocking function, will terminalte after completion
-    single_buoy.setActive(false);
+    // single_buoy.setActive(true); // blocking function, will terminalte after completion
+    // single_buoy.setActive(false);
 
-    ROS_INFO("Green Buoy Done");*/
+    // ROS_INFO("Green Buoy Done");
   
     ////////////////////////////////////////////////
 
@@ -173,7 +134,7 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "gate");
     // ROS_INFO("Current task: Gate");
 
-    // ROS_INFO("Gate Task, going down");
+    // ROS_INFO("Gate Task, going down"); // for gazebo only
     // move_downward.setActive(true);
     // ros::Duration(4).sleep();
     // move_downward.setActive(false);
@@ -188,49 +149,55 @@ int main(int argc, char** argv) {
 
     // move_sideward.setActive(false);
 
-    // gateTask gate_task;
-    // gate_task.setActive(true); // blocking function, will terminalte after completion
-    // gate_task.setActive(false);
+    // nh.setParam("/enable_pressure", 1);
+    // nh.setParam("/disable_imu", true);
 
-    // ///////////////////////////////////////////////////
-
-    // // Gate-Torpedo Transition
-
-    // current_task.data = "red_torpedo";
+    // current_task.data = "line";
     // while (ros::ok() && pub_count <= 5) {
     //     task_pub.publish(current_task);
     //     pub_count++;
     //     loop_rate.sleep();
     // }
     // pub_count = 0;
-    // nh.setParam("/current_task", "red_torpedo");
-    // ROS_INFO("Current task: Red Torpedo");
+    // nh.setParam("/current_task", "line");
+    // ROS_INFO("Current task: Line");
 
-    // actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
-    // motion_layer::anglePIDGoal anglePIDGoal;
+    // moveStraight move_straight(50);
+    // moove_straight.setActive(true);
 
-    // ROS_INFO("Waiting for anglePID server to start.");
-    // anglePIDClient.waitForServer();
+    // bool temp = th.isDetected("line", 10);
 
-    // ROS_INFO("anglePID server started, sending goal.");
+    // move_straight.setActive(false);
 
-    // anglePIDGoal.target_angle = 30;
-    // anglePIDClient.sendGoal(anglePIDGoal);
+    // if (!temp) {
+    //     ROS_INFO("Line not detected before the timeout");
+    //     return 1;
+    // }
 
-    // th.isAchieved(60, 2, "angle");
+    // ROS_INFO("Line Detected");
 
-    // anglePIDClient.cancelGoal();
+    // lineTask task;
 
-    // th.isDetected("red_torpedo", 5);
+    // temp = task.setActive(true);
+
+    // if (!temp) {
+    //     ROS_INFO("Line Task Failed");
+    //     return 1;
+    // }
+    // task.setActive(false);
+
+    // ROS_INFO("Completed the Line task");
+
+    // nh.setParam("/enable_pressure", 1);
+    // nh.setParam("/disable_imu", false);
+
+    // gateTask gate_task;
+    // gate_task.setActive(true); // blocking function, will terminalte after completion
+    // gate_task.setActive(false);
 
     // ///////////////////////////////////////////////////
 
-    // Torpedo torpedo;
-
-    // torpedo.setActive(true);
-    // torpedo.setActive(false);
-
-    // ////////////////////////////////////////////////////
+    // Gate-Torpedo Transition
 
     // current_task.data = "green_torpedo";
     // while (ros::ok() && pub_count <= 5) {
@@ -242,21 +209,111 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "green_torpedo");
     // ROS_INFO("Current task: Green Torpedo");
 
-    // move_sideward.setThrust(100);
-    // move_sideward.setActive(true);
+    // actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+    // motion_layer::anglePIDGoal anglePIDGoal;
+
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
+
+    // ROS_INFO("anglePID server started, sending goal.");
+
+    // anglePIDGoal.target_angle = 60;
+    // anglePIDClient.sendGoal(anglePIDGoal);
+
+    // th.isAchieved(60, 2, "angle");
+
+    // anglePIDClient.cancelGoal();
+
+    // moveStraight move_straight(50);
+    // move_straight.setActive(true);
+
+    // ros::Duration(2).sleep();
+
+    // move_straight.setActive(false);
 
     // th.isDetected("green_torpedo", 5);
+
+    ///////////////////////////////////////////////////
+
+    // Torpedo torpedo;
+
+    // torpedo.setActive(true);
+    // torpedo.setActive(false);
+
+    ////////////////////////////////////////////////////
+
+    // current_task.data = "red_torpedo";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "red_torpedo");
+    // ROS_INFO("Current task: Red Torpedo");
+
+    // moveSideward move_sideward(100);
+    // // move_sideward.setThrust(100);
+    // move_sideward.setActive(true);
+
+    // th.isDetected("red_torpedo", 5);
 
     // move_sideward.setActive(false);
 
     // torpedo.setActive(true);
     // torpedo.setActive(false);
 
-    // /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
 
-    // // Torpedo-MarkerDropper Transition
+    // Torpedo-MarkerDropper Transition
+
+    // moveSideward move_sideward(-50);
+    // move_sideward.setActive(true);
+    // ros::Duration(1).sleep();
+    // move_sideward.setActive(false);
+    // moveStraight move_straight(-50);
+    // move_straight.setActive(true);
+    // ros::Duration(1).sleep();
+    // move_straight.setActive(false);
+
+    // nh.setParam("/enable_pressure", 1);
+    // nh.setParam("/disable_imu", true);
+
+    // current_task.data = "line";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "line");
+    // ROS_INFO("Current task: Line");
+
+    // bool temp = th.isDetected("line", 10);
+
+    // if (!temp) {
+    //     ROS_INFO("Line not detected before the timeout");
+    //     return 1;
+    // }
+
+    // ROS_INFO("Line Detected");
+
+    // lineTask task;
+
+    // temp = task.setActive(true);
+
+    // if (!temp) {
+    //     ROS_INFO("Line Task Failed");
+    //     return 1;
+    // }
+    // task.setActive(false);
+
+    // ROS_INFO("Completed the Line task");
+
+    // nh.setParam("/enable_pressure", 1);
+    // nh.setParam("/disable_imu", false);
     
-    // // After finishing torpedo task turn 120 degree anticlockwise and then move straight
+    // After finishing torpedo task turn 120 degree anticlockwise and then move straight
     // ROS_INFO("Master layer, anglePID server started, sending goal."); 
 
     // anglePIDGoal.target_angle = -120;

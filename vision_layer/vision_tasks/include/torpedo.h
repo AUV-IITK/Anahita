@@ -57,11 +57,11 @@ protected:
 	int closing_iter_;
 
 	int data_low_h[2] = {43, 0};
-	int data_high_h[2] = {74, 13};
-	int data_low_s[2] = {41, 220};
+	int data_high_h[2] = {66, 13};
+	int data_low_s[2] = {237, 220};
 	int data_high_s[2] = {255, 255};
-	int data_low_v[2] = {0, 87};
-	int data_high_v[2] = {255, 181};
+	int data_low_v[2] = {3, 87};
+	int data_high_v[2] = {98, 181};
 
 	bool close_task = false;
 
@@ -70,8 +70,9 @@ protected:
 
 public:
     Torpedo();
+	~Torpedo();
     ros::NodeHandle nh;
-	image_transport::ImageTransport it();
+	image_transport::ImageTransport it;
 	cv::Mat image_;
 	cv::Mat image_marked;
 	boost::thread* spin_thread; 

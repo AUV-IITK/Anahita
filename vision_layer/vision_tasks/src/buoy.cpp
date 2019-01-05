@@ -1,6 +1,6 @@
 #include <buoy.h>
 
-Buoy::Buoy(){
+Buoy::Buoy() : it(nh){
 	this->clahe_clip_ = 0.15;
 	this->clahe_grid_size_ = 3;
 	this->clahe_bilateral_iter_ = 2;
@@ -18,7 +18,7 @@ Buoy::Buoy(){
 	this->closing_iter_ = 0;
 	this->camera_frame_ = "auv-iitk";
 	this->current_color = 0;
-	image_transport::ImageTransport it(nh);
+	// image_transport::ImageTransport it(nh);
 	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
 	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
 	this->marked_pub = it.advertise("/buoy_task/marked", 1);
@@ -26,7 +26,10 @@ Buoy::Buoy(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+}
+
+Buoy::~Buoy() {
+	spin_thread->join();
 }
 
 void Buoy::switchColor(int color)
@@ -130,12 +133,14 @@ void Buoy::TaskHandling (bool status) {
 	{
 		close_task = true;
         spin_thread->join();
+		image_raw_sub.shutdown();
 		std::cout << "Buoy Task Handling function over" << std::endl;	
 	}
 }
 
-
 void Buoy::spinThread(){
+
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;

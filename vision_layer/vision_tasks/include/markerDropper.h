@@ -97,7 +97,8 @@ protected:
 
 public:
     MarkerDropper();
-	image_transport::ImageTransport it();
+    ~MarkerDropper();
+	image_transport::ImageTransport it;
 	cv::Mat image_front;
     cv::Mat image_bottom;
     boost::thread* spin_thread_bottom; 

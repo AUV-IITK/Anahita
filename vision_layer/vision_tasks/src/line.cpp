@@ -1,8 +1,8 @@
 #include <line.h>
 
-Line::Line(){
-	this->low_h_ = 0;
-	this->high_h_ = 255;
+Line::Line() : it(nh) {
+	this->low_h_ = 31;
+	this->high_h_ = 47;
 	this->low_s_ = 0;
 	this->high_s_ = 255;
 	this->low_v_ = 140;
@@ -12,14 +12,18 @@ Line::Line(){
 	this->closing_mat_point_ = 2;
 	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
-	image_transport::ImageTransport it(nh);
+	// image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
 	this->marked_pub = it.advertise("/line_task/marked", 1);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
-	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
+}
+
+Line::~Line() {
+	spin_thread->join();
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
@@ -72,11 +76,15 @@ void Line::TaskHandling(bool status)
 	{
 		task_done = true;
         spin_thread->join();
+		image_raw_sub.shutdown();
 		std::cout << "Line Task Handling function over" << std::endl;	
 	}
 }
 
 void Line::spinThread() {
+
+	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
 	f = boost::bind(&Line::callback, this, _1, _2);
