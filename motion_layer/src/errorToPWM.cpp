@@ -57,12 +57,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     if (this->name_ == "ANGLE") { dt = 0.02; }
     else { dt = 0.05; }
 
-    if (this->name_ == "ANGLE") {
-        this->error_ = this->reference_value_ - this->current_value_;
-    }
-    else {
-        this->error_ = this->current_value_ - this->reference_value_;
-    }
+    this->error_ = this->current_value_ - this->reference_value_;
 
     if (this->name_ == "ANGLE") {
         if (this->error_ < 0) 

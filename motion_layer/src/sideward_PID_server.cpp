@@ -10,7 +10,7 @@ sidewardPIDAction::sidewardPIDAction(std::string name) :
     goal_ = 0;
 
     
-    y_coord.setPID(1.5, 0, 0.15, 10);
+    y_coord.setPID(2.0, 0, 0.2, 15);
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &sidewardPIDAction::visionCB, this);
 

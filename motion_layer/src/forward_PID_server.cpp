@@ -9,7 +9,7 @@ forwardPIDAction::forwardPIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&forwardPIDAction::preemptCB, this));
     goal_ = 0;
 
-    x_coord.setPID(3.5, 0, 0.5, 10);
+    x_coord.setPID(3.75, 0.0, 0.0, 5);
     
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &forwardPIDAction::visionCB, this);

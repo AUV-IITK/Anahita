@@ -16,15 +16,8 @@ ros::Publisher imu_pitch_pub;
 ros::Subscriber task_sub;
 
 bool disable_imu = false;
-std::string current_task = "";
 
 int count = 0;
-
-void taskCallback(const std_msgs::String::ConstPtr& msg)
-{
-    ROS_INFO("Task being chaned to: [%s]", msg->data.c_str());
-    current_task = msg->data;
-}
 
 void imu_data_callback(sensor_msgs::Imu msg)
 {
@@ -41,7 +34,7 @@ void imu_data_callback(sensor_msgs::Imu msg)
    
   // ROS_INFO("PX4 IMU Data (Roll, Pitch, Yaw) = (%.4f, %.4f, %.4f)", imu_pitch.data, imu_roll.data, imu_yaw.data);
    
-  if (!disable_imu || current_task != "line") {
+  if (!disable_imu) {
     imu_yaw_pub.publish(imu_yaw);
   }  
   imu_roll_pub.publish(imu_roll);

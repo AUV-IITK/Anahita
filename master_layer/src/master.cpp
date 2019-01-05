@@ -48,41 +48,46 @@ int main(int argc, char** argv) {
 
     ////////////////////////////////////////////
 
-    nh.setParam("/enable_pressure", 1);
-    nh.setParam("/disable_imu", true);
+    //nh.setParam("/enable_pressure", 1);
+    /*nh.setParam("/disable_imu", true);
 
-    current_task.data = "line";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "line");
-    ROS_INFO("Current task: Line");
+     current_task.data = "line";
+     while (ros::ok() && pub_count <= 5) {
+         task_pub.publish(current_task);
+         pub_count++;
+         loop_rate.sleep();
+     }
+     pub_count = 0;
+     nh.setParam("/current_task", "line");
+     ROS_INFO("Current task: Line");
 
-    bool temp = th.isDetected("line", 10);
+     bool temp = th.isDetected("line", 10);
 
-    if (!temp) {
-        ROS_INFO("Line not detected before the timeout");
-        return 1;
-    }
+     if (!temp) {
+         ROS_INFO("Line not detected before the timeout");
+         return 1;
+     }
 
-    ROS_INFO("Line Detected");
+     ROS_INFO("Line Detected");
 
-    lineTask task;
+     lineTask task;
 
-    temp = task.setActive(true);
+     temp = task.setActive(true);
 
-    if (!temp) {
-        ROS_INFO("Line Task Failed");
-        return 1;
-    }
-    task.setActive(false);
+     if (!temp) {
+         ROS_INFO("Line Task Failed");
+         return 1;
+     }
+     task.setActive(false);
 
-    ROS_INFO("Completed the Line task");
+     ROS_INFO("Completed the Line task");
+
+     //nh.setParam("/enable_pressure", 1);
+     nh.setParam("/disable_imu", false);*/
    
     /////////////////////////////////////////////
+
+    ros::Duration(60).sleep();
 
     current_task.data = "red_buoy";
     while (ros::ok() && pub_count <= 5) {
@@ -101,7 +106,7 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////
 
-    current_task.data = "yellow_buoy";
+    /*current_task.data = "yellow_buoy";
     while (ros::ok() && pub_count <= 5) {
         task_pub.publish(current_task);
         pub_count++;
@@ -109,17 +114,17 @@ int main(int argc, char** argv) {
     }
     pub_count = 0;
     nh.setParam("/current_task", "yellow_buoy");
-    ROS_INFO("Current task: Yellow Buoy");
+    ROS_INFO("Current task: Yellow Buoy");*/
 
-    moveSideward move_sideward(-50);
+    /*moveSideward move_sideward(-50);
     move_sideward.setActive(true);
-    ros::Duration(2).sleep();
-    ROS_INFO("Finding Yellow Buoy....");
-    th.isDetected("yellow_buoy", 15); // time out of 15 seconds
-    ROS_INFO("Yellow Buoy Detected");
+    ros::Duration(10).sleep();
+    //ROS_INFO("Finding Yellow Buoy....");
+    //th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    //ROS_INFO("Yellow Buoy Detected");
     move_sideward.setActive(false);
 
-    single_buoy.setActive(true);
+    /*single_buoy.setActive(true);
     single_buoy.setActive(false);
 
     ROS_INFO("Yellow Buoy done");
@@ -143,7 +148,7 @@ int main(int argc, char** argv) {
 
     ROS_INFO("Finding Green Buoy...");
     move_sideward.setThrust(50);
-    move_sideward.setActive(true); // until the green buoy is detected (for vision node)
+    mo	ve_sideward.setActive(true); // until the green buoy is detected (for vision node)
     ros::Duration(5).sleep(); // configurable
 
     th.isDetected("green_buoy", 15); // time out of 15 seconds
@@ -154,7 +159,7 @@ int main(int argc, char** argv) {
     single_buoy.setActive(true); // blocking function, will terminalte after completion
     single_buoy.setActive(false);
 
-    ROS_INFO("Green Buoy Done");
+    ROS_INFO("Green Buoy Done");*/
   
     ////////////////////////////////////////////////
 

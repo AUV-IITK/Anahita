@@ -20,7 +20,7 @@ Line::Line(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
-	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
@@ -49,6 +49,7 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
+		ROS_INFO("Inside retreving callback");
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
@@ -130,6 +131,7 @@ void Line::spinThread() {
 					}
 					y_coordinate.data = (image_.size().height) / 2 - bounding_rectangle.center.y;
 					x_coordinate.data = bounding_rectangle.center.x - (image_.size().width) / 2;
+					y_coordinate.data = y_coordinate.data/4;					
 					if (angles.size() > 0)
 					{
 						double angle = computeMean(angles);
