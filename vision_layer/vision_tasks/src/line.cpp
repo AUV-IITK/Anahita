@@ -20,7 +20,7 @@ Line::Line(){
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
 	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
-	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
@@ -148,7 +148,9 @@ void Line::spinThread() {
 					if (non_zero > (3072 * 0.20))
 						detection_bool.data=true;
 					else
-						detection_bool.data=false;						
+						detection_bool.data=false;
+
+					z_coordinate.data = -z_coordinate.data;					
 					
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
