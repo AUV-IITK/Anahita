@@ -23,14 +23,12 @@ bool lineTask::setActive(bool value) {
         forward_PID_goal.target_distance = 0;
         forwardPIDClient.sendGoal(forward_PID_goal);
 
-        /*if (!th.isAchieved(0, 5, "forward")) {
+        if (!th.isAchieved(0, 10, "forward")) {
             ROS_INFO("NOT able to align to the center of the line");
             return false;
-        }*/
+        }
 
-	th.isAchieved(0, 10, "forward");
-
-	// ros::Duration(5).sleep();
+	    // th.isAchieved(0, 10, "forward");
 
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
@@ -40,10 +38,8 @@ bool lineTask::setActive(bool value) {
         ROS_INFO("anglePID server started, sending goal.");
         angle_PID_goal.target_angle = -angle_;
         anglePIDClient.sendGoal(angle_PID_goal);
-	std::cout << "ANGLE: " << -angle_ << std::endl;
 
-        th.isAchieved(0, 5, "angle");
-	// ros::Duration(5).sleep();
+        th.isAchieved(-angle_, 2, "angle");
     }
     else {
         anglePIDClient.cancelGoal();

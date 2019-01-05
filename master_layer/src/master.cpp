@@ -48,61 +48,61 @@ int main(int argc, char** argv) {
 
     ////////////////////////////////////////////
 
-    //nh.setParam("/enable_pressure", 1);
-    /*nh.setParam("/disable_imu", true);
+    // nh.setParam("/enable_pressure", 1);
+    nh.setParam("/disable_imu", true);
 
-     current_task.data = "line";
-     while (ros::ok() && pub_count <= 5) {
-         task_pub.publish(current_task);
-         pub_count++;
-         loop_rate.sleep();
-     }
-     pub_count = 0;
-     nh.setParam("/current_task", "line");
-     ROS_INFO("Current task: Line");
-
-     bool temp = th.isDetected("line", 10);
-
-     if (!temp) {
-         ROS_INFO("Line not detected before the timeout");
-         return 1;
-     }
-
-     ROS_INFO("Line Detected");
-
-     lineTask task;
-
-     temp = task.setActive(true);
-
-     if (!temp) {
-         ROS_INFO("Line Task Failed");
-         return 1;
-     }
-     task.setActive(false);
-
-     ROS_INFO("Completed the Line task");
-
-     //nh.setParam("/enable_pressure", 1);
-     nh.setParam("/disable_imu", false);*/
-   
-    /////////////////////////////////////////////
-
-    ros::Duration(60).sleep();
-
-    current_task.data = "red_buoy";
+    current_task.data = "line";
     while (ros::ok() && pub_count <= 5) {
         task_pub.publish(current_task);
         pub_count++;
         loop_rate.sleep();
     }
     pub_count = 0;
-    nh.setParam("/current_task", "red_buoy");
-    ROS_INFO("Current task: Red Buoy");
+    nh.setParam("/current_task", "line");
+    ROS_INFO("Current task: Line");
+
+    bool temp = th.isDetected("line", 10);
+
+    if (!temp) {
+        ROS_INFO("Line not detected before the timeout");
+        return 1;
+    }
+
+    ROS_INFO("Line Detected");
+
+    lineTask task;
+
+    temp = task.setActive(true);
+
+    if (!temp) {
+        ROS_INFO("Line Task Failed");
+        return 1;
+    }
+    task.setActive(false);
+
+    ROS_INFO("Completed the Line task");
+
+    // nh.setParam("/enable_pressure", 1);
+    nh.setParam("/disable_imu", false);
+   
+    /////////////////////////////////////////////
+
+    // ros::Duration(60).sleep();
+
+    // current_task.data = "red_buoy";
+    // while (ros::ok() && pub_count <= 5) {
+    //     task_pub.publish(current_task);
+    //     pub_count++;
+    //     loop_rate.sleep();
+    // }
+    // pub_count = 0;
+    // nh.setParam("/current_task", "red_buoy");
+    // ROS_INFO("Current task: Red Buoy");
     
-    single_buoy.setActive(true); // blocking function, will terminalte after completion 
-    single_buoy.setActive(false);
+    // single_buoy.setActive(true); // blocking function, will terminalte after completion 
+    // single_buoy.setActive(false);
     
-    ROS_INFO("Completed the first buoy task, Now let's move on to the second");
+    // ROS_INFO("Completed the first buoy task, Now let's move on to the second");
 
     ///////////////////////////////////////////////
 
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
 
     // ROS_INFO("anglePID server started, sending goal.");
 
-    // anglePIDGoal.target_angle = 60;
+    // anglePIDGoal.target_angle = 30;
     // anglePIDClient.sendGoal(anglePIDGoal);
 
     // th.isAchieved(60, 2, "angle");
