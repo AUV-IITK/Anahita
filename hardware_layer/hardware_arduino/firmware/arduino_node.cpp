@@ -5,6 +5,7 @@
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Bool.h>
 #include <hyperion_msgs/Depth.h>
 #include <hyperion_msgs/Pressure.h>
 #include <hyperion_msgs/Thrust.h>
@@ -51,6 +52,8 @@ void TNWUp(const int data);
 void TSWEUp(const int data);
 void TSWIUp(const int data);
 
+void pressureCb(const std_msgs::Bool& _msg);
+
 int ESC_Zero = 1500;
 int deadZone = 25;
 ros::NodeHandle nh;
@@ -73,7 +76,7 @@ std_msgs::Float32 pressure_msg;
 ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
 std_msgs::Float32 depth_msg;
 ros::Publisher ps_depth_pub("/anahita/z_coordinate", &depth_msg);
-int enable_pressure = 0;
+bool enable_pressure = false;
 
 void setup()
 {
@@ -146,7 +149,7 @@ void loop()
     nh.loginfo("Data being recieved");
     delay(10);
 
-    nh.getParam("/enable_pressure", &enable_pressure, 1);
+    // nh.getParam("/enable_pressure", &enable_pressure, 1);
     
     nh.spinOnce();
 }
@@ -254,3 +257,6 @@ void PWMCb(const hyperion_msgs::Thrust& msg_)
     TSWUp(msg_.upward_south_west); 
 }
 
+void pressureCb(const std_msgs::Bool& _msg) {
+  enable_pressure = _msg.data;
+}
