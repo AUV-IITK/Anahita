@@ -25,6 +25,17 @@
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
 
+#define SHELLSCRIPT_DUMP_RED_BUOY "\
+#/bin/bash \n\
+echo -e \"Parameters dumped!!\" \n\
+rosparam dump -v ~/Projects/anahita/src/Anahita/vision_layer/vision_tasks/thresholding/red_buoy.yaml /vision_node\
+"
+#define SHELLSCRIPT_LOAD_RED_BUOY "\
+#/bin/bash \n\
+echo -e \"Parameters loaded!!\" \n\
+rosparam load -v ~/Projects/anahita/src/Anahita/vision_layer/vision_tasks/thresholding/red_buoy.yaml /vision_node\
+"
+
 class Buoy
 {
 protected:
@@ -62,6 +73,8 @@ protected:
 	int data_high_s[3] = {255, 255, 255};
 	int data_low_v[3] = {30, 3, 2};
 	int data_high_v[3] = {255, 255, 82};
+
+	void setParams(ros::NodeHandle &nh);
 
 	bool close_task = false;
 

@@ -46,8 +46,23 @@ void Buoy::switchColor(int color)
 	std::cout << "Colour changed successfully" << std::endl;
 }
 
+void Buoy::setParams(ros::NodeHandle &nh)
+{
+    nh.getParam("vision_node/low_h", this->low_h_);
+	nh.getParam("vision_node/high_h", this->low_h_);
+	nh.getParam("vision_node/low_s", this->low_s_);
+	nh.getParam("vision_node/high_s", this->high_s_);
+	nh.getParam("vision_node/low_v", this->low_v_);
+	nh.getParam("vision_node/high_v", this->high_v_);
+	nh.getParam("vision_node/clahe_clip", this->clahe_clip_);
+	nh.getParam("vision_node/clahe_grid_size", this->clahe_grid_size_);
+	nh.getParam("vision_node/clahe_bilateral_iter", this->clahe_bilateral_iter_);
+	nh.getParam("vision_node/balanced_bilateral_iter", this->balanced_bilateral_iter_);
+	nh.getParam("vision_node/denoise_h", this->denoise_h_);
+}
 void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 {
+	ROS_INFO("Update recieved here");
 	if(Buoy::current_color != config.color)
 	{
 		config.color = current_color;
@@ -73,6 +88,21 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 	this->opening_iter_ = config.opening_iter;
 	this->closing_mat_point_ = config.closing_mat_point;
 	this->closing_iter_ = config.closing_iter;
+
+	if(config.save_param == true)
+	{
+		ROS_INFO("Dumping the values to the YAML file");
+		config.save_param == false;
+		system(SHELLSCRIPT_DUMP_RED_BUOY);
+	}
+	if(config.load_param == true)
+	{
+		ROS_INFO("Loading the values from the YAML file");
+		config.load_param == false;
+		system(SHELLSCRIPT_LOAD_RED_BUOY);
+		setParams(nh);
+		ROS_INFO("Config low_h = %d, this->low_h = %d", config.low_h, this->low_h_);
+	}
 }
 
 void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
@@ -209,7 +239,7 @@ void Buoy::spinThread(){
 					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 					ROS_INFO("Maximum Contour area: %.2f", contourArea(contours[index]));
-					if(contourArea(contours[index]) > 1000 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					if(contourArea(contours[index]) > 600 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 					{
 						detection_bool.data = true;
 						good_values_num++;

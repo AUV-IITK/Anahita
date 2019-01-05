@@ -1,0 +1,4 @@
+{balanced_bilateral_iter: 2, clahe_bilateral_iter: 2, clahe_clip: 0.15, clahe_grid_size: 3,
+  closing_iter: 10, closing_mat_point: 1, color: 0, denoise_h: 10.0, high_h: 255,
+  high_s: 219, high_v: 255, load_param: false, low_h: 230, low_s: 206, low_v: 30,
+  opening_iter: 8, opening_mat_point: 1, save_param: true}
