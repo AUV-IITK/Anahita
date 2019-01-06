@@ -49,6 +49,11 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 
     if (goalReceived) {
         goal_ = goal_ + current_angle_;
+        
+        // double reference_angle = 0;
+        // nh.getParam("/reference_yaw", reference_angle);
+        // goal_ = goal_ + reference_angle;
+        
         angle.setReference(goal_);
 
         // publish info to the console for the user

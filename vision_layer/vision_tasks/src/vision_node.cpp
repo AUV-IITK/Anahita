@@ -51,11 +51,10 @@ int main(int argc, char *argv[])
             if (previous_task == "yellow_buoy") {
                 buoy.TaskHandling(false);
             }
-            if (current_task == "gate") {
-                ROS_INFO("gate task");
+            if (current_task == "gate_front") {
                 gate.frontTaskHandling(true);
             }
-            if (previous_task == "gate") {
+            if (previous_task == "gate_front") {
                 gate.frontTaskHandling(false);
             }
             if (current_task == "green_torpedo") {
@@ -81,7 +80,6 @@ int main(int argc, char *argv[])
                 md.bottomTaskHandling(false);
             }
             if (current_task == "line") {
-                ROS_INFO("Line Task Running");
                 line.TaskHandling(true);
             }
             if (previous_task == "line") {
@@ -95,6 +93,7 @@ int main(int argc, char *argv[])
             // }
             previous_task = current_task;
         }
+        nh.getParam("/current_task", current_task);
         loop_rate.sleep();
         ros::spinOnce();
     }

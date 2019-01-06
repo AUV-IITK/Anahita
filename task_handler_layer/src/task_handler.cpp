@@ -12,7 +12,8 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["green_buoy"] = false;
     task_map_["yellow_buoy"] = false;
     task_map_["buoy-gate"] = false;
-    task_map_["gate"] = false;
+    task_map_["gate_front"] = false;
+    task_map_["gate_bottom"] = false;
     task_map_["red_torpedo"] = false;
     task_map_["green_torpedo"] = false;
     task_map_["marker_dropper_bottom"] = false;
@@ -47,7 +48,12 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     double then = ros::Time::now().toSec();
 
     if (_topic == "angle") {
-        int temp = data_ + _target;
+        double temp = data_ + _target;
+
+        // double reference_angle = 0;
+        // nh.getParam("/reference_yaw", reference_angle);
+        // temp = reference_angle + _target;
+
         if (temp > 180) {
             temp = temp - 360;
         }
@@ -114,8 +120,11 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         else if (current_task == "red_buoy") {
             task_map_["red_buoy"] = true;
         }
-        else if (current_task == "gate") {
-            task_map_["gate"] = true;
+        else if (current_task == "gate_front") {
+            task_map_["gate_front"] = true;
+        }
+        else if (current_task == "gate_bottom") {
+            task_map_["gate_bottom"] = true;
         }
         else if (current_task == "buoy-gate") {
             task_map_["buoy-gate"] = true;

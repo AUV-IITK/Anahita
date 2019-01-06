@@ -68,10 +68,10 @@ int main(int argc, char **argv)
   while(ros::ok()) {
     nh.getParam("/disable_imu", disable_imu);
     if (dataReceived) {
-    if (first_time) {
-    	nh.setParam("/reference_yaw", imu_yaw.data);
-	first_time = false;
-    }
+      if (first_time) {
+        nh.setParam("/reference_yaw", imu_yaw.data);
+        first_time = false;
+      }
     }
     ros::spinOnce();
   }

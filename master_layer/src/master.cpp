@@ -46,6 +46,12 @@ int main(int argc, char** argv) {
 
     boost::thread spin_thread(&spinThread);
 
+    moveSideward move_sideward(0);
+    moveStraight move_straight(0);
+    moveDownward move_downward(0);
+
+    // Need to program for task failure and what to do when failed to detect something
+
     /////////////////////////////////////////////
 
     // ros::Duration(60).sleep();
@@ -77,11 +83,17 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "yellow_buoy");
     ROS_INFO("Current task: Yellow Buoy");
 
-    moveSideward move_sideward(-50);
+    move_sideward.setThrust(-50);
     move_sideward.setActive(true);
-    ros::Duration(10).sleep();
+    // ros::Duration(10).sleep();
+    
     ROS_INFO("Finding Yellow Buoy....");
-    //th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    if (!th.isDetected("yellow_buoy", 15)){
+        ROS_INFO("Failed to detect yellow buoy");
+        move_sideward.setActive(false);
+        return 1;
+    }
+    
     ROS_INFO("Yellow Buoy Detected");
     move_sideward.setActive(false);
 
@@ -92,19 +104,23 @@ int main(int argc, char** argv) {
     
     //////////////////////////////////////////////
 
-    /*moveStraight move_straight(-50);
+    move_straight.setThrust(-50);
     move_straight.setActive(true);
-    ros::Duration(3).sleep(); // configurable 
+    ros::Duration(7).sleep(); // configurable 
     move_straight.setActive(false);
 
     ROS_INFO("Finding Green Buoy...");
     move_sideward.setThrust(50);
     move_sideward.setActive(true); // until the green buoy is detected (for vision node)
-    ros::Duration(8).sleep(); // configurable
+    // ros::Duration(8).sleep(); // configurable
 
-    // th.isDetected("green_buoy", 15); // time out of 15 seconds
-    ROS_INFO("Green Buoy Detected");
-            
+    if (!th.isDetected("green_buoy", 15)) {
+        ROS_INFO("Unable to detect green buoy");
+        move_sideward.setActive(false);
+        return 1;
+    }
+
+    ROS_INFO("Green Buoy Detected");        
     move_sideward.setActive(false);
 
     current_task.data = "green_buoy";
@@ -120,7 +136,7 @@ int main(int argc, char** argv) {
     single_buoy.setActive(true); // blocking function, will terminalte after completion
     single_buoy.setActive(false);
 
-    ROS_INFO("Green Buoy Done");*/
+    ROS_INFO("Green Buoy Done");
   
     ////////////////////////////////////////////////
 
@@ -130,27 +146,41 @@ int main(int argc, char** argv) {
     // move_downward.setActive(false);
     // ROS_INFO("Gate Task, at the bottom");
 
-    ROS_INFO("Moving Sideward");
-    //moveSideward move_sideward(50);
-    move_sideward.setThrust(75);
+    ROS_INFO("Finding Gate ...");
+    // moveSideward move_sideward(50);
+    move_sideward.setThrust(50);
     move_sideward.setActive(true); // until gate is detected
     
     ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
     move_sideward.setActive(false);
-    nh.setParam("/kill_signal", true);
-    ROS_INFO("Moving Sideward ended");
+    ROS_INFO("Gate Detected");
 
     ROS_INFO("Moving Straight");
-    moveStraight move_straight(75);
+    move_straight.setThrust(75);
     move_straight.setActive(true);
-    ros::Duration(5).sleep();
     
+    // ros::Duration(5).sleep();
+
+    current_task.data = "gate";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "gate");
+    ROS_INFO("Current task: Gate");
+
+    if (!th.isDetected("gate_front", 10)) {
+        ROS_INFO("Not able to detect gate");
+        move_straight.setActive(false);
+        return 1;
+    }
+
     move_straight.setActive(false);
-    nh.setParam("/kill_signal", true);
     ROS_INFO("Moving straight ended");
 
-    // nh.setParam("/enable_pressure", 1);
     // nh.setParam("/disable_imu", true);
 
     // current_task.data = "line";
@@ -163,49 +193,38 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "line");
     // ROS_INFO("Current task: Line");
 
-    // moveStraight move_straight(50);
+    // move_straight.setThrust(50);
     // moove_straight.setActive(true);
 
-    // bool temp = th.isDetected("line", 10);
+    // if (!th.isDetected("line", 10)) {
+    //     ROS_INFO("Line not detected before the timeout");
+    //     move_straight.setActive(false)
+    //     return 1;
+    // }
 
     // move_straight.setActive(false);
 
-    // if (!temp) {
-    //     ROS_INFO("Line not detected before the timeout");
-    //     return 1;
-    // }
-
     // ROS_INFO("Line Detected");
 
-    // lineTask task;
+    // lineTask line;
 
-    // temp = task.setActive(true);
-
-    // if (!temp) {
+    // if (!line.setActive(true)) {
     //     ROS_INFO("Line Task Failed");
+    //     line.setActive(false);
     //     return 1;
     // }
-    // task.setActive(false);
+    // line.setActive(false);
 
     // ROS_INFO("Completed the Line task");
 
-    // nh.setParam("/enable_pressure", 1);
     // nh.setParam("/disable_imu", false);
 
-    current_task.data = "gate";
-    while (ros::ok() && pub_count <= 5) {
-        task_pub.publish(current_task);
-        pub_count++;
-        loop_rate.sleep();
-    }
-    pub_count = 0;
-    nh.setParam("/current_task", "gate");
-    ROS_INFO("Current task: Gate");
-
-    // th.isDetected("gate", 5);
-
     gateTask gate_task;
-    gate_task.setActive(true); // blocking function, will terminalte after completion
+    if (!gate_task.setActive(true)) {
+        ROS_INFO("Gate Task Unsuccessful");
+        gate_task.setActive(false);
+        return 1;
+    }
     gate_task.setActive(false);
 
     ROS_INFO("Gate Task Completed");

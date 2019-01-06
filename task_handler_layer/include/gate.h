@@ -42,7 +42,7 @@ public:
     gateTask();
     ~gateTask();
 
-    void setActive(bool);
+    bool setActive(bool);
     void forwardCB (const std_msgs::Float32ConstPtr &_msg);
 };
 

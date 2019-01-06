@@ -16,6 +16,4 @@
 
   <param name="/disable_imu" value="false" type="bool" />
 
-  <param name="/enable_pressure" value="0" type="int" />
-
 </launch>
