@@ -57,7 +57,7 @@ void singleBuoy::setActive(bool status) {
 
         nh_.setParam("/pwm_surge", 50);
 
-        ros::Duration(6).sleep(); // 8 for gazebo and 6 for real world
+        ros::Duration(4).sleep(); // 8 for gazebo and 6 for real world
         //////////////////////////////////////////////////////
         nh_.setParam("/pwm_surge", -50);
 
@@ -90,16 +90,14 @@ void singleBuoy::setActive(bool status) {
         // th.isAchieved(50, 15, "forward");
 
         // forwardPIDClient.cancelGoal();
-        
-        ROS_INFO("Killing the thrusters");
-	    nh_.setParam("/kill_signal", true);
-
-        anglePIDClient.cancelGoal();
-    }
+            }
     else {
         // upwardPIDClient.cancelGoal();
+        anglePIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         ROS_INFO("Closing Single Buoy");
+        ROS_INFO("Killing the thrusters");
+	    nh_.setParam("/kill_signal", true);
     }
 }
 

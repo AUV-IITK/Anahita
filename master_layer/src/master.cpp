@@ -50,89 +50,79 @@ int main(int argc, char** argv) {
 
     // ros::Duration(60).sleep();
 
-    // current_task.data = "red_buoy";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "red_buoy");
-    // ROS_INFO("Current task: Red Buoy");
+    current_task.data = "red_buoy";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "red_buoy");
+    ROS_INFO("Current task: Red Buoy");
     
-    // single_buoy.setActive(true); // blocking function, will terminalte after completion 
-    // single_buoy.setActive(false);
+    single_buoy.setActive(true); // blocking function, will terminalte after completion 
+    single_buoy.setActive(false);
     
-    // ROS_INFO("Completed the first buoy task, Now let's move on to the second");
+    ROS_INFO("Completed the first buoy task, Now let's move on to the second");
 
     ///////////////////////////////////////////////
 
-    // current_task.data = "yellow_buoy";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "yellow_buoy");
-    // ROS_INFO("Current task: Yellow Buoy");
+    current_task.data = "yellow_buoy";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "yellow_buoy");
+    ROS_INFO("Current task: Yellow Buoy");
 
-    // moveSideward move_sideward(-50);
-    // move_sideward.setActive(true);
-    // ros::Duration(10).sleep();
-    // ROS_INFO("Finding Yellow Buoy....");
-    // th.isDetected("yellow_buoy", 15); // time out of 15 seconds
-    // ROS_INFO("Yellow Buoy Detected");
-    // move_sideward.setActive(false);
+    moveSideward move_sideward(-50);
+    move_sideward.setActive(true);
+    ros::Duration(10).sleep();
+    ROS_INFO("Finding Yellow Buoy....");
+    //th.isDetected("yellow_buoy", 15); // time out of 15 seconds
+    ROS_INFO("Yellow Buoy Detected");
+    move_sideward.setActive(false);
 
-    // single_buoy.setActive(true);
-    // single_buoy.setActive(false);
+    single_buoy.setActive(true);
+    single_buoy.setActive(false);
 
-    // ROS_INFO("Yellow Buoy done");
+    ROS_INFO("Yellow Buoy done");
     
     //////////////////////////////////////////////
 
-    // current_task.data = "green_buoy";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "green_buoy");
-    // ROS_INFO("Current task: Green Buoy");
+    /*moveStraight move_straight(-50);
+    move_straight.setActive(true);
+    ros::Duration(3).sleep(); // configurable 
+    move_straight.setActive(false);
 
-    // moveStraight move_straight(-50);
-    // move_straight.setActive(true);
-    // ros::Duration(3).sleep(); // configurable 
-    // move_straight.setActive(false);
-
-    // ROS_INFO("Finding Green Buoy...");
-    // move_sideward.setThrust(50);
-    // mo	ve_sideward.setActive(true); // until the green buoy is detected (for vision node)
-    // ros::Duration(5).sleep(); // configurable
+    ROS_INFO("Finding Green Buoy...");
+    move_sideward.setThrust(50);
+    move_sideward.setActive(true); // until the green buoy is detected (for vision node)
+    ros::Duration(8).sleep(); // configurable
 
     // th.isDetected("green_buoy", 15); // time out of 15 seconds
-    // ROS_INFO("Green Buoy Detected");
+    ROS_INFO("Green Buoy Detected");
             
-    // move_sideward.setActive(false);
+    move_sideward.setActive(false);
 
-    // single_buoy.setActive(true); // blocking function, will terminalte after completion
-    // single_buoy.setActive(false);
+    current_task.data = "green_buoy";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "green_buoy");
+    ROS_INFO("Current task: Green Buoy");
 
-    // ROS_INFO("Green Buoy Done");
+    single_buoy.setActive(true); // blocking function, will terminalte after completion
+    single_buoy.setActive(false);
+
+    ROS_INFO("Green Buoy Done");*/
   
     ////////////////////////////////////////////////
-
-    // current_task.data = "gate";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "gate");
-    // ROS_INFO("Current task: Gate");
 
     // ROS_INFO("Gate Task, going down"); // for gazebo only
     // move_downward.setActive(true);
@@ -140,14 +130,25 @@ int main(int argc, char** argv) {
     // move_downward.setActive(false);
     // ROS_INFO("Gate Task, at the bottom");
 
-    // move_sideward.setThrust(-100);
-    // move_sideward.setActive(true); // until gate is detected
+    ROS_INFO("Moving Sideward");
+    //moveSideward move_sideward(50);
+    move_sideward.setThrust(75);
+    move_sideward.setActive(true); // until gate is detected
     
-    // // ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
 
-    // th.isDetected("gate", 10);
+    move_sideward.setActive(false);
+    nh.setParam("/kill_signal", true);
+    ROS_INFO("Moving Sideward ended");
 
-    // move_sideward.setActive(false);
+    ROS_INFO("Moving Straight");
+    moveStraight move_straight(75);
+    move_straight.setActive(true);
+    ros::Duration(5).sleep();
+    
+    move_straight.setActive(false);
+    nh.setParam("/kill_signal", true);
+    ROS_INFO("Moving straight ended");
 
     // nh.setParam("/enable_pressure", 1);
     // nh.setParam("/disable_imu", true);
@@ -191,9 +192,23 @@ int main(int argc, char** argv) {
     // nh.setParam("/enable_pressure", 1);
     // nh.setParam("/disable_imu", false);
 
-    // gateTask gate_task;
-    // gate_task.setActive(true); // blocking function, will terminalte after completion
-    // gate_task.setActive(false);
+    current_task.data = "gate";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "gate");
+    ROS_INFO("Current task: Gate");
+
+    // th.isDetected("gate", 5);
+
+    gateTask gate_task;
+    gate_task.setActive(true); // blocking function, will terminalte after completion
+    gate_task.setActive(false);
+
+    ROS_INFO("Gate Task Completed");
 
     // ///////////////////////////////////////////////////
 

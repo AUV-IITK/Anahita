@@ -45,6 +45,7 @@ void Buoy::switchColor(int color)
 		this->high_s_ = this->data_high_s[current_color];
 		this->low_v_ = this->data_low_v[current_color];
 		this->high_v_ = this->data_high_v[current_color];
+		ROS_INFO("Current situation colors: %d %d %d", this->low_h_, this->high_h_, this->low_s_);
 	}
 	std::cout << "Colour changed successfully" << std::endl;
 }
@@ -92,6 +93,7 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 	this->closing_mat_point_ = config.closing_mat_point;
 	this->closing_iter_ = config.closing_iter;
 
+	/*
 	if(config.save_param == true)
 	{
 		ROS_INFO("Dumping the values to the YAML file");
@@ -105,7 +107,7 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 		system(SHELLSCRIPT_LOAD_RED_BUOY);
 		setParams(nh);
 		ROS_INFO("Config low_h = %d, this->low_h = %d", config.low_h, this->low_h_);
-	}
+	}*/
 }
 
 void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)

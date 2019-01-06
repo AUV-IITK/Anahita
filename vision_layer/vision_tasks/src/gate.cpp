@@ -7,22 +7,22 @@ Gate::Gate() : it(nh) {
     this->front_balanced_bilateral_iter_ = 4;
     this->front_denoise_h_ = 10.0;
     this->front_low_h_ = 0;
-    this->front_high_h_ = 20;
-    this->front_low_s_ = 0;
-    this->front_high_s_ = 92;
-    this->front_low_v_ = 46;
+    this->front_high_h_ = 17;
+    this->front_low_s_ = 206;
+    this->front_high_s_ = 255;
+    this->front_low_v_ = 30;
     this->front_high_v_ = 255;
     this->front_closing_mat_point_ = 1;
     this->front_closing_iter_ = 1;
     this->front_canny_threshold_low_ = 0;
     this->front_canny_threshold_high_ = 1000;
     this->front_canny_kernel_size_ = 3;
-    this->front_hough_threshold_ = 0;
-    this->front_hough_minline_ = 0;
-    this->front_hough_maxgap_ = 0;
-    this->front_hough_angle_tolerance_ = 0.0;
+    this->front_hough_threshold_ = 216;
+    this->front_hough_minline_ = 3;
+    this->front_hough_maxgap_ = 61;
+    this->front_hough_angle_tolerance_ = 15.0;
     this->front_gate_distance_tolerance_ = 50.0;
-    this->front_gate_angle_tolerance_ = 0.0;
+    this->front_gate_angle_tolerance_ = 20.0;
 
     this->bottom_clahe_clip_ = 4.0;
     this->bottom_clahe_grid_size_ = 8;
@@ -56,7 +56,7 @@ Gate::Gate() : it(nh) {
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
     
-	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 
@@ -233,7 +233,7 @@ void Gate::frontTaskHandling(bool status) {
 
 void Gate::spinThreadFront()
 {
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+	this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
@@ -288,6 +288,50 @@ void Gate::spinThreadFront()
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_, front_high_h_, front_low_s_, front_high_s_, front_low_v_, front_high_v_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * front_closing_mat_point_ + 1, front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
+
+				std::vector<std::vector<cv::Point> > contours;
+				cv::Rect bounding_rectangle;
+				contours = vision_commons::Contour::getBestX(image_thresholded, 2);
+				int index = 0;
+				if(contours.size()>0)
+				{
+					if(contours.size()>=2)
+					{
+						int area_largest = contourArea(contours[0]);
+						int area_second_largest = contourArea(contours[1]);
+						cv::Rect br_largest = cv::boundingRect(contours[0]);
+						cv::Rect br_second_largest = cv::boundingRect(contours[1]);
+						if(((area_largest-area_second_largest) < (0.8*area_largest)) && (br_largest.br().y < br_second_largest.br().y))
+						{
+							ROS_INFO("Changing to below, area_diff = %d", area_largest-area_second_largest);
+							index = 1;
+						}
+					}
+					bounding_rectangle = cv::boundingRect(cv::Mat(contours[index]));
+					double x_length = bounding_rectangle.br().x - bounding_rectangle.tl().x;
+					double y_length = bounding_rectangle.br().y - bounding_rectangle.tl().y;
+
+					double x_centre = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2;
+					double y_centre = (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
+
+					x_coordinate.data = pow(y_length/ 7526.5, -.92678)/2;
+	 				y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
+					z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
+
+					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
+				
+					cv::circle(image_marked, cv::Point(y_coordinate.data + image_front.size().width / 2, image_front.size().height / 2 - z_coordinate.data), 1, gate_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
+			
+
+					if(contourArea(contours[index]) > 600 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+						detection_bool.data = true;
+					else
+						detection_bool.data = false;
+				}
+				else
+					detection_bool.data=false;
+				/*
 				cv::cvtColor(image_thresholded, image_gray, CV_GRAY2BGR);
 				cv::Canny(image_gray, image_canny, front_canny_threshold_low_, front_canny_threshold_high_, front_canny_kernel_size_);
 				image_lines = blue_filtered;
@@ -363,10 +407,10 @@ void Gate::spinThreadFront()
 				gate_point_message.header.stamp = ros::Time();
 				if (found)
 				{
-					gate_point_message.point.x = pow(sqrt(pow(vision_commons::Geometry::distance(horizontal1, horizontal2), 2) + pow(vision_commons::Geometry::distance(vertical1, vertical2), 2)) / 7526.5, -.92678);
-					gate_point_message.point.y = (horizontal1.x + horizontal2.x) / 2 - image_front.size().width / 2;
-					gate_point_message.point.z = image_front.size().height / 2 - (vertical1.y + vertical2.y) / 2;
-					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
+					x_coordinate.data = pow(sqrt(pow(vision_commons::Geometry::distance(horizontal1, horizontal2), 2) + pow(vision_commons::Geometry::distance(vertical1, vertical2), 2)) / 7526.5, -.92678);
+					y_coordinate.data = (horizontal1.x + horizontal2.x) / 2 - image_front.size().width / 2;
+					z_coordinate.data = image_front.size().height / 2 - (vertical1.y + vertical2.y) / 2;
+					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 					cv::line(image_marked, horizontal1, horizontal2, horizontal_line_color, 3, CV_AA);
 					cv::line(image_marked, vertical1, vertical2, vertical_line_color, 3, CV_AA);
 				}
@@ -384,16 +428,16 @@ void Gate::spinThreadFront()
 						y_coordinate.data = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
 						z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
 					}
+					found=true;
 					cv::line(image_marked, longest1, longest2, hough_line_color, 3, CV_AA);
-					ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
+					ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 				}
-				cv::circle(image_marked, cv::Point(gate_point_message.point.y + image_front.size().width / 2, image_front.size().height / 2 - gate_point_message.point.z), 1, gate_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(y_coordinate.data + image_front.size().width / 2, image_front.size().height / 2 - z_coordinate.data), 1, gate_center_color, 8, 0);
 				cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
-			}
-			
-			detection_bool.data = found;
+			}*/
+		}
 			detection_pub.publish(detection_bool);
-
+			ROS_INFO("Detection switch is %d", detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
@@ -403,6 +447,7 @@ void Gate::spinThreadFront()
 			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
 			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
 			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
+
 		}
 		else
 			ROS_INFO("Image empty");
@@ -426,7 +471,7 @@ void Gate::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-};
+}
 
 void Gate::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -443,4 +488,4 @@ void Gate::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
 	{
 		ROS_ERROR("cv exception: %s", e.what());
 	}
-};
+}

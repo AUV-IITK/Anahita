@@ -9,7 +9,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "red_buoy";
+std::string current_task = "green_torpedo";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
             if (current_task == "green_buoy") {
                 buoy.switchColor(2);
             }
-            if (previous_task == "green_buoy") {
+            if (previous_task == "yellow_buoy") {
                 buoy.TaskHandling(false);
             }
             if (current_task == "gate") {

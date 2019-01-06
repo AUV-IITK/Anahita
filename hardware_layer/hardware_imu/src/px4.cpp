@@ -16,6 +16,8 @@ ros::Publisher imu_pitch_pub;
 ros::Subscriber task_sub;
 
 bool disable_imu = false;
+bool first_time = true;
+bool dataReceived = false;
 
 int count = 0;
 
@@ -39,6 +41,7 @@ void imu_data_callback(sensor_msgs::Imu msg)
   }  
   imu_roll_pub.publish(imu_roll);
   imu_pitch_pub.publish(imu_pitch);
+  dataReceived = true;
 }
 
 int main(int argc, char **argv)
@@ -64,6 +67,12 @@ int main(int argc, char **argv)
 
   while(ros::ok()) {
     nh.getParam("/disable_imu", disable_imu);
+    if (dataReceived) {
+    if (first_time) {
+    	nh.setParam("/reference_yaw", imu_yaw.data);
+	first_time = false;
+    }
+    }
     ros::spinOnce();
   }
 

@@ -152,10 +152,6 @@ add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.
 add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveStraight ${catkin_LIBRARIES})
 
-add_library(depthStabilise SHARED src/depth_stabilise.cpp include/depth_stabilise.h)
-add_dependencies(depthStabilise ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(depthStabilise ${catkin_LIBRARIES})
-
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(singleBuoy task_handler ${catkin_LIBRARIES})

@@ -111,7 +111,7 @@ void Torpedo::TaskHandling(bool status){
 
 void Torpedo::spinThread(){
 
-	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;

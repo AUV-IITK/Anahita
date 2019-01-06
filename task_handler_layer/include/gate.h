@@ -21,6 +21,7 @@ class gateTask
 {
 private:
     ros::NodeHandle nh_;
+    ros::Subscriber forward_sub_;
     boost::thread* spin_thread;
 
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
@@ -34,12 +35,15 @@ private:
     motion_layer::anglePIDGoal anglePIDGoal;
 
     taskHandler th;
+    double forward_distance_ = 0;
+    bool forwardGoalReceived = true;
 
 public:
     gateTask();
     ~gateTask();
 
     void setActive(bool);
+    void forwardCB (const std_msgs::Float32ConstPtr &_msg);
 };
 
 #endif // GATE_H

@@ -68,11 +68,11 @@ protected:
 	int closing_iter_;
 
 	int data_low_h[3] = {0, 12, 0};
-	int data_high_h[3] = {17, 40, 56};
+	int data_high_h[3] = {17, 40, 255};
 	int data_low_s[3] = {206, 183, 0};
-	int data_high_s[3] = {255, 255, 255};
-	int data_low_v[3] = {30, 3, 2};
-	int data_high_v[3] = {255, 255, 82};
+	int data_high_s[3] = {255, 255, 55};
+	int data_low_v[3] = {30, 3, 0};
+	int data_high_v[3] = {255, 255, 40};
 
 	void setParams(ros::NodeHandle &nh);
 
