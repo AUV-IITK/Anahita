@@ -258,7 +258,8 @@ void Gate::spinThreadFront()
 	std_msgs::Bool detection_bool;
 	geometry_msgs::PointStamped gate_point_message;
 	gate_point_message.header.frame_id = camera_frame_.c_str();
-
+	char str[200];
+	
 	while (ros::ok())
 	{
 		if (task_done) {
@@ -310,21 +311,40 @@ void Gate::spinThreadFront()
 					bounding_rectangle = cv::boundingRect(cv::Mat(contours[index]));
 					double x_length = bounding_rectangle.br().x - bounding_rectangle.tl().x;
 					double y_length = bounding_rectangle.br().y - bounding_rectangle.tl().y;
-
 					double x_centre = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2;
 					double y_centre = (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
+					double distance_for;
+					if(y_length<x_length/7 && y_length>0)
+					{
+						ROS_INFO("We are observing a fucking bottom rod");
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
+						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre + x_length/3;
+						distance_for = x_length;
+					}
+					else if(x_length<y_length/7 && x_length>0)
+					{
+						ROS_INFO("This time its a fucking vertical rod");
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 + y_length/2;;
+						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
+						distance_for = y_length;
+					} 
+					else
+					{	
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
+						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
+					}
+					x_coordinate.data = pow(sqrt(distance_for)/ 7526.5, -.92678);
 
-					x_coordinate.data = pow(y_length/ 7526.5, -.92678)/2;
-	 				y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
-					z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
-
+					ROS_INFO("x_length = %f, y_length = %f", x_length, y_length);
 					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 				
 					cv::circle(image_marked, cv::Point(y_coordinate.data + image_front.size().width / 2, image_front.size().height / 2 - z_coordinate.data), 1, gate_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
-			
+					cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), cv::Scalar(100, 100, 200), 2, CV_AA);
+					//sprintf(str,"",t); putText(image_marked, str, Point2f(100,100), FONT_HERSHEY_PLAIN, 2,  Scalar(0,0,255,255));
 
-					if(contourArea(contours[index]) > 600 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+
+					if(distance_for>80 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
 						detection_bool.data = false;

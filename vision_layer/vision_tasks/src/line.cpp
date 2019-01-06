@@ -1,11 +1,11 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
-	this->low_h_ = 31;
-	this->high_h_ = 47;
-	this->low_s_ = 0;
+	this->low_h_ = 12;
+	this->high_h_ = 40;
+	this->low_s_ = 183;
 	this->high_s_ = 255;
-	this->low_v_ = 140;
+	this->low_v_ = 3;
 	this->high_v_ = 255;
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 0;
