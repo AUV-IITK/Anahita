@@ -22,7 +22,6 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["line"] = false;
 
     time_out_ =  _timeout;
-    //time_out_ref = time_out;
 
     vision_sub_ = nh_.subscribe("/detected", 1, &taskHandler::visionCB, this);
 }
@@ -30,7 +29,9 @@ taskHandler::taskHandler (double _timeout) {
 taskHandler::~taskHandler () {}
 
 void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
+    data_mutex.lock();
     data_ = _msg->data;
+    data_mutex.unlock();
 }
 
 bool taskHandler::isAchieved (double _target, double _band, std::string _topic) {
@@ -45,9 +46,6 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
 
     int count = 0;
     double then = ros::Time::now().toSec();
-
-    // double time_out_ref_ = time_out_;
-    // std::cout << "time_out " << time_out_ref_ << std::endl;
 
     if (_topic == "angle") {
         // double temp = data_ + _target;
@@ -68,18 +66,20 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     ros::Rate loop_rate(100);
 
     while (ros::ok()) {
+        data_mutex.lock();
         if (std::abs(data_ - _target) <= _band) {
             if (!count) {
                 then = ros::Time::now().toSec();
             }
             count++;
         }
+        data_mutex.unlock();
+        
         double now = ros::Time::now().toSec();
         double diff = now - then;
         double total_time = now - beginning;
-       	// std::cout << "data" << data_ <<std::endl;
+
         if (total_time >= time_out_) {
-	    // std::cout << "time_out " << time_out_ref_ << std::endl; 
             return false;
         }
         if (diff >= 1.0) {
@@ -100,14 +100,16 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
     double then = ros::Time::now().toSec();
     double now;
     double diff;
-    while (!task_map_[_task] && ros::ok()) {
+    vision_mutex.lock();
+    bool temp = !task_map_[_task];
+    vision_mutex.unlock();
+    while ( temp && ros::ok()) {
         now = ros::Time::now().toSec();
         diff = now - then;
         if (diff > vision_time_out_) {
             return false;
         }
     }
-    task_map_[_task] = false;
 
     return true;
 }
@@ -117,6 +119,7 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
     nh_.getParam("/current_task", current_task);
 
     if (_msg->data) {
+        vision_mutex.lock();
         if (current_task == "green_buoy") {
             task_map_["green_buoy"] = true;
         }
@@ -153,6 +156,7 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         else if (current_task == "line") {
             task_map_["line"] = true;
         }
+        vision_mutex.unlock();
     } 
 }
 

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <mutex>
 
 class depthStabilise {
 
@@ -28,11 +29,12 @@ protected:
 
     bool goalReceived;
     bool close_loop = false;
-    bool& goalReceived_ref = goalReceived;
     double depth;
     ros::Subscriber sub_;
 
     boost::thread* spin_thread;
+    std::mutex mtx;
+    std::mutex depth_mutex;
 
 public:
 

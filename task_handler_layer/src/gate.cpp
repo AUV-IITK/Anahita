@@ -37,9 +37,21 @@ bool gateTask::setActive(bool status) {
 
         nh_.setParam("/pwm_surge", 50);
 
-        while(ros::ok() && !forwardGoalReceived) {}
+        while(ros::ok()) {
+            mtx.lock();
+            if (forwardGoalReceived) {
+                break;
+            }
+            mtx.unlock();
+        }
 
-        while(forward_distance_ >= 200 && ros::ok()) {}
+        while(ros::ok()) {
+            mtx.lock();
+            if (forward_distance_ <= 200) {
+                break;
+            }
+            mtx.unlock();
+        }
 
         nh_.setParam("/pwm_surge", 0);	
 
@@ -67,6 +79,8 @@ bool gateTask::setActive(bool status) {
 }
 
 void gateTask::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
+    mtx.lock();
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
+    mtx.unlock();
 }

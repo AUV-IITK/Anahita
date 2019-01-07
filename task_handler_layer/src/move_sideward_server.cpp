@@ -16,9 +16,9 @@ void moveSideward::setActive(bool status) {
     	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
     else {
-        if (goalReceived) {
+        // if (goalReceived) {
            anglePIDClient.cancelGoal();
-        }
+        // }
         close_loop = true; 
         spin_thread->join();
         nh.setParam("/kill_signal", true);
@@ -28,18 +28,18 @@ void moveSideward::setActive(bool status) {
 void moveSideward::spinThread() {
     ROS_INFO("Waiting for turnPID server to start.");
     anglePIDClient.waitForServer();
-    double then = ros::Time::now().toSec();
-    while(!goalReceived) {
-        double now = ros::Time::now().toSec();
-        if (now - then > 5 || close_loop) {
-            break;
-        }
-    }
-    if (goalReceived) {
+    // double then = ros::Time::now().toSec();
+    // while(!goalReceived) {
+    //     double now = ros::Time::now().toSec();
+    //     if (now - then > 5 || close_loop) {
+    //         break;
+    //     }
+    // }
+    // if (goalReceived) {
         ROS_INFO("turnPID server started, sending goal.");
         angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
-    }
+    // }
 }
 
 void moveSideward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {

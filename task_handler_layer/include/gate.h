@@ -17,6 +17,8 @@
 
 #include <task_handler.h>
 
+#include <mutex>
+
 class gateTask
 {
 private:
@@ -37,6 +39,8 @@ private:
     taskHandler th;
     double forward_distance_ = 0;
     bool forwardGoalReceived = true;
+
+    std::mutex mtx;
 
 public:
     gateTask();

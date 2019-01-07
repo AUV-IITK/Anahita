@@ -14,6 +14,7 @@
 
 #include <boost/thread.hpp>
 #include <string>
+#include <mutex>
 
 #include <task_handler.h>
 
@@ -37,6 +38,8 @@ private:
     ros::Subscriber sub_;
 
     taskHandler th;
+
+    std::mutex mtx;
 
     double angle_ = 0;
     bool angleReceived = false;

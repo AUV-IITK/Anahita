@@ -45,7 +45,7 @@ void singleBuoy::setActive(bool status) {
         ROS_INFO("Waiting for forwardPID server to start.");
         forwardPIDClient.waitForServer();
 
-        while (!forwardGoalReceived && ros::ok()) {}
+        // while (!forwardGoalReceived && ros::ok()) {}
 
         ROS_INFO("forward distance received");
 
