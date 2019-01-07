@@ -11,15 +11,13 @@ moveStraight::~moveStraight() {
 
 void moveStraight::setActive(bool status) {
     if (status) {
-        spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
         spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
     else {
-        if (goalReceived) {
+        // if (goalReceived) {
             anglePIDClient.cancelGoal();
-        }
-        close_loop = true;
-        spin_thread_->join();
+        // }
+        // close_loop = true;
         ROS_INFO("Straight Server goal cancelled");
         spin_thread->join();
         nh.setParam("/kill_signal", true);
@@ -35,26 +33,25 @@ void moveStraight::spinThread() {
 
     ROS_INFO("Waiting for turnPID server to start.");
     anglePIDClient.waitForServer();
-    ROS_INFO("Server waiting compelted");
-    double then = ros::Time::now().toSec();
-    while (!goalReceived_ref) {
-        double now = ros::Time::now().toSec();
-        if (now - then > 5 || close_loop) {
-            break;
-        }
-    }
-    if (goalReceived_ref) { 
+    // double then = ros::Time::now().toSec();
+    // while (!goalReceived_ref) {
+    //     double now = ros::Time::now().toSec();
+    //     if (now - then > 5 || close_loop) {
+    //         break;
+    //     }
+    // }
+    // if (goalReceived_ref) { 
         ROS_INFO("turnPID server started, sending goal.");
         angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
         ROS_INFO("Sent the goal to client");
-    }
-}
-
-void moveStraight::spinThread_() {
-    // ros::spin();
+    // }
 }
 
 void moveStraight::setThrust(int _pwm) {
-    nh.setParam("/pwm_surge", _pwm);
+    int pub_count = 0;
+    while (ros::ok() && pub_count <= 10) {
+        nh.setParam("/pwm_surge", _pwm);
+        pub_count++;
+    }
 }

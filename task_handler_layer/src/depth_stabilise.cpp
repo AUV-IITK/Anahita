@@ -16,7 +16,9 @@ void depthStabilise::setActive(bool status) {
         if (goalReceived) {
             anglePIDClient.cancelGoal();
         }
+        mtx.lock();
         close_loop = true;
+        mtx.unlock();
         ROS_INFO("Depth Stabilise Server goal cancelled");
         spin_thread->join();
         nh.setParam("/kill_signal", true);
@@ -24,8 +26,10 @@ void depthStabilise::setActive(bool status) {
 }   
 
 void depthStabilise::depthCB(const std_msgs::Float32Ptr &_msg) {
+    depth_mutex.lock();
     depth = _msg->data;
     goalReceived = true;
+    depth_mutex.unlock();
 }
 
 void depthStabilise::spinThread() {
@@ -41,16 +45,22 @@ void depthStabilise::spinThread() {
     upwardPIDClient.waitForServer();
 
     double then = ros::Time::now().toSec();
-    while (!goalReceived_ref) {
+    while (ros::ok()) {
         double now = ros::Time::now().toSec();
-        if (now - then > 5 || close_loop) {
+        mtx.lock();
+        depth_mutex.lock();
+        if (now - then > 5 || close_loop || goalReceived) {
             break;
         }
+        depth_mutex.unlock();
+        mtx.unlock();
     }
-    if (goalReceived_ref) { 
+    depth_mutex.lock();
+    if (goalReceived) { 
         ROS_INFO("upwardPID server started, sending goal.");
         upward_PID_goal.target_depth = depth;
         upwardPIDClient.sendGoal(upward_PID_goal);        
         ROS_INFO("Sent the upward goal to client, depth stabilise");
     }
+    depth_mutex.lock();
 }

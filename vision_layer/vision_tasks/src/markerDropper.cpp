@@ -189,7 +189,7 @@ void MarkerDropper::bottomTaskHandling(bool status) {
 
 void MarkerDropper::spinThreadBottom() {
 
-	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
+	this->bottom_image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;

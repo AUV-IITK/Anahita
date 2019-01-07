@@ -17,6 +17,8 @@
 #include <boost/thread.hpp>
 #include <string>
 
+#include <mutex>
+
 class singleBuoy {
 public:
     singleBuoy();
@@ -43,5 +45,7 @@ private:
     taskHandler th;
 
     double forward_distance_;
+
+    std::mutex mtx;
 };
 #endif // SINGLE_BUOY_H

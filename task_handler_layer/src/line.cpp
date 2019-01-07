@@ -33,13 +33,27 @@ bool lineTask::setActive(bool value) {
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
 
-        while (ros::ok() && !angleReceived) { continue; }
+        bool temp = false;
+
+        while (ros::ok()) {
+            mtx.lock();
+            temp = angleReceived;
+            mtx.unlock();
+            if (temp) {
+                break;
+            }
+        }
 
         ROS_INFO("anglePID server started, sending goal.");
-        angle_PID_goal.target_angle = -angle_;
+        
+        mtx.lock();
+        double angle = angle_;
+        mtx.unlock();
+
+        angle_PID_goal.target_angle = -angle;
         anglePIDClient.sendGoal(angle_PID_goal);
 
-        th.isAchieved(-angle_, 2, "angle");
+        th.isAchieved(-angle, 2, "angle");
     }
     else {
         anglePIDClient.cancelGoal();
@@ -50,6 +64,8 @@ bool lineTask::setActive(bool value) {
 }
 
 void lineTask::angleCB(const std_msgs::Float32ConstPtr& _msg) {
+    mtx.lock();
     angle_ = _msg->data;
     angleReceived = true;
+    mtx.unlock();
 }

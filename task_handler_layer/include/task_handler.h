@@ -7,6 +7,8 @@
 #include <std_msgs/Bool.h>
 #include <string>
 
+#include <mutex>
+
 using namespace std;
 
 class taskHandler {
@@ -31,6 +33,9 @@ private:
     double data_;
     double time_out_;
     double vision_time_out_;
+
+    std::mutex data_mutex;
+    std::mutex vision_mutex;
 
     bool is_subscribed_= false;
 };
