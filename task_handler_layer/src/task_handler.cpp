@@ -22,8 +22,7 @@ taskHandler::taskHandler (double _timeout) {
     task_map_["line"] = false;
 
     time_out_ =  _timeout;
-
-    ros::Time::init();
+    //time_out_ref = time_out;
 
     vision_sub_ = nh_.subscribe("/detected", 1, &taskHandler::visionCB, this);
 }
@@ -47,12 +46,15 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     int count = 0;
     double then = ros::Time::now().toSec();
 
-    if (_topic == "angle") {
-        double temp = data_ + _target;
+    // double time_out_ref_ = time_out_;
+    // std::cout << "time_out " << time_out_ref_ << std::endl;
 
-        // double reference_angle = 0;
-        // nh.getParam("/reference_yaw", reference_angle);
-        // temp = reference_angle + _target;
+    if (_topic == "angle") {
+        // double temp = data_ + _target;
+
+        double reference_angle = 0;
+        nh_.getParam("/reference_yaw", reference_angle);
+        double temp = reference_angle + _target;
 
         if (temp > 180) {
             temp = temp - 360;
@@ -62,6 +64,8 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         }
         _target = temp;
     }
+
+    ros::Rate loop_rate(100);
 
     while (ros::ok()) {
         if (std::abs(data_ - _target) <= _band) {
@@ -73,8 +77,9 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         double now = ros::Time::now().toSec();
         double diff = now - then;
         double total_time = now - beginning;
-
+       	// std::cout << "data" << data_ <<std::endl;
         if (total_time >= time_out_) {
+	    // std::cout << "time_out " << time_out_ref_ << std::endl; 
             return false;
         }
         if (diff >= 1.0) {
@@ -85,6 +90,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
                 count = 0;
             }
         }
+	    loop_rate.sleep();
     }
     return true;
 }

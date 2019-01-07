@@ -30,6 +30,7 @@ private:
 
     double data_;
     double time_out_;
+    double& data_ref = data_;
     double vision_time_out_;
 
     bool is_subscribed_= false;

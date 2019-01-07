@@ -53,21 +53,21 @@ int main(int argc, char** argv) {
         pwm.upward_south_east = -pwm_heave - pwm_roll + pwm_pitch;
         pwm.upward_south_west = -pwm_heave + pwm_roll - pwm_pitch;
 
-	if (kill_signal) {
+        if (kill_signal) {
 
-        ROS_INFO("KILL SIGNAL RECIEVED");
-        
-        nh.setParam("/pwm_sway", 0);
-        nh.setParam("/pwm_surge", 0);
-        nh.setParam("/pwm_heave", 0);
-        nh.setParam("/pwm_yaw", 0);
-        nh.setParam("/pwm_roll", 0);
-        nh.setParam("/pwm_pitch", 0);
+            ROS_INFO("KILL SIGNAL RECIEVED");
+            
+            nh.setParam("/pwm_sway", 0);
+            nh.setParam("/pwm_surge", 0);
+            nh.setParam("/pwm_heave", 0);
+            nh.setParam("/pwm_yaw", 0);
+            nh.setParam("/pwm_roll", 0);
+            nh.setParam("/pwm_pitch", 0);
 
-        nh.setParam("/kill_signal", false);
-	}
-		
-	pwmPublisher.publish(pwm);
+            nh.setParam("/kill_signal", false);
+        }
+            
+        pwmPublisher.publish(pwm);
 
         r.sleep();
     }

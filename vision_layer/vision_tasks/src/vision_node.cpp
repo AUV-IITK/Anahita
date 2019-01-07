@@ -9,7 +9,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "green_torpedo";
+std::string current_task = "gate_front";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -56,6 +56,12 @@ int main(int argc, char *argv[])
             }
             if (previous_task == "gate_front") {
                 gate.frontTaskHandling(false);
+            }
+            if (current_task == "gate_bottom") {
+                gate.bottomTaskHandling(true);
+            }
+            if (previous_task == "gate_bottom") {
+                gate.bottomTaskHandling(false);
             }
             if (current_task == "green_torpedo") {
                 torpedo.switchColor(0);

@@ -13,7 +13,6 @@ moveSideward::~moveSideward() {
 void moveSideward::setActive(bool status) {
     
     if (status == true) {
-        spin_thread_ = new boost::thread(boost::bind(&moveSideward::spinThread_, this));
     	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
     else {
@@ -23,7 +22,6 @@ void moveSideward::setActive(bool status) {
         close_loop = true; 
         spin_thread->join();
         nh.setParam("/kill_signal", true);
-        spin_thread_->join();
     }
 }
 
@@ -44,15 +42,15 @@ void moveSideward::spinThread() {
     }
 }
 
-void moveSideward::spinThread_() {
-    // ros::spin();
-}
-
 void moveSideward::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
 	angle = _msg->data;
     goalReceived = true;
 }
 
 void moveSideward::setThrust(int _pwm) {
-    nh.setParam("/pwm_sway", _pwm);
+    int pub_count = 0;
+    while (ros::ok() && pub_count <= 10) {
+        nh.setParam("/pwm_sway", _pwm);
+        pub_count++;
+    }
 }
