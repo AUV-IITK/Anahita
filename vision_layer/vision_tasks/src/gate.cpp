@@ -333,7 +333,7 @@ void Gate::spinThreadFront()
 						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
 					}
-					x_coordinate.data = pow(sqrt(distance_for)/ 7526.5, -.92678);
+					x_coordinate.data = pow(sqrt(x_length*x_length + y_length*y_length)/ 7526.5, -.92678);
 
 					ROS_INFO("x_length = %f, y_length = %f", x_length, y_length);
 					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
