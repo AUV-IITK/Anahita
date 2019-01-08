@@ -75,16 +75,16 @@ bool MarkerDropper::setActive(bool status) {
         ROS_INFO("Current task: Marker Dropper Bottom");
 
         move_straight.setThrust(50);
-        move_straight.setActive(true);
+        move_straight.setActive(true, "current");
 
         ROS_INFO("Finding Marker Dropper ....");
 
         if (!th.isDetected("marker_dropper_bottom", 15)) {
             ROS_INFO("Unable to detect Marker Dropper");
-            move_straight.setActive(false);
+            move_straight.setActive(false, "current");
             return false;
         }
-        move_straight.setActive(false);
+        move_straight.setActive(false, "current");
         ROS_INFO("Marker Dropper Detected");
 
         ROS_INFO("Waiting for forwardPID server to start.");

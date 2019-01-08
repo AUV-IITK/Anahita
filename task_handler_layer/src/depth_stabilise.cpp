@@ -1,6 +1,6 @@
 #include <depth_stabilise.h>
 
-depthStabilise::depthStabilise() : anglePIDClient("turnPID"), upwardPIDClient("upwardPID") {
+depthStabilise::depthStabilise() : anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), move_straight(0, "current") {
     goalReceived = false;
     sub_ = nh.subscribe("/anahita/z_coordinate", 1, &depthStabilise::depthCB, this);
 }
@@ -11,11 +11,14 @@ depthStabilise::~depthStabilise() {
 void depthStabilise::setActive(bool status) {
     if (status) {
         spin_thread = new boost::thread(boost::bind(&depthStabilise::spinThread, this));
+        move_straight.setActive(true);
     }
     else {
+        move_straight.setActive(false);
+        
         depth_mutex.lock();
         if (goalReceived) {
-            anglePIDClient.cancelGoal();
+            upwardPIDClient.cancelGoal();
         }
         depth_mutex.unlock();
         
@@ -37,13 +40,6 @@ void depthStabilise::depthCB(const std_msgs::Float32Ptr &_msg) {
 }
 
 void depthStabilise::spinThread() {
-
-    ROS_INFO("Waiting for turnPID server to start.");
-    anglePIDClient.waitForServer();
-    ROS_INFO("Server waiting compelted");
-    ROS_INFO("turnPID server started, sending goal.");
-    angle_PID_goal.target_angle = 0;
-    anglePIDClient.sendGoal(angle_PID_goal);
 
     ROS_INFO("Waiting for upwardPID server to start, depth stabilise");
     upwardPIDClient.waitForServer();

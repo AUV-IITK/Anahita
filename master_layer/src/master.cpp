@@ -220,22 +220,25 @@ int main(int argc, char** argv) {
     }
     nh.setParam("/pwm_sway", 0);
 
+    ROS_INFO("Green Torpedo detected");
+
     // can include a function to find the line on its own
 
     nh.setParam("/current_task", "line");
 
     ROS_INFO("Finding Line....");
     move_straight.setThrust(50);
-    move_straight.setActive(true);
+    move_straight.setActive(true, "current");
 
     if (!th.isDetected("line", 10)) {
         ROS_INFO("Unable to detect line");
+        move_straight.setActive(false, "current");
         return 1;
     }
 
     // ros::Duration(2).sleep();
 
-    move_straight.setActive(false);
+    move_straight.setActive(false, "current");
 
     if (!line.setActive(true)) {
         ROS_INFO("Unable to center with the line");
@@ -260,14 +263,15 @@ int main(int argc, char** argv) {
     ROS_INFO("Current task: Red Torpedo");
 
     move_sideward.setThrust(100);
-    move_sideward.setActive(true);
+    move_sideward.setActive(true, "current");
 
     if (!th.isDetected("red_torpedo", 5)) {
         ROS_INFO("Unable to detect Red Torpedo");
+        move_sideward.setActive(false, "current");
         return 1;
     }
 
-    move_sideward.setActive(false);
+    move_sideward.setActive(false, "current");
 
     torpedo.setActive(true);
     torpedo.setActive(false);
@@ -280,19 +284,19 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "line");
 
     move_sideward.setThrust(-50);
-    move_sideward.setActive(true);
+    move_sideward.setActive(true, "current");
     ros::Duration(3).sleep();
-    move_sideward.setActive(false);
+    move_sideward.setActive(false, "current");
 
     move_straight.setThrust(-50);
-    move_straight.setActive(true);
+    move_straight.setActive(true, "current");
     if (!th.isDetected("line", 10)) {
         ROS_INFO("line not detected");
-        move_straight.setActive(false);
+        move_straight.setActive(false, "current");
         return 1;
     }
     ROS_INFO("Line Detected");
-    move_straight.setActive(false);
+    move_straight.setActive(false, "current");
 
     nh.setParam("/disable_imu", true);
 
@@ -322,9 +326,9 @@ int main(int argc, char** argv) {
     anglePIDClient.cancelGoal();
 
     move_straight.setThrust(75);
-    move_straight.setActive(true);
+    move_straight.setActive(true, "current");
     ros::Duration(6).sleep();
-    move_straight.setActive(false);
+    move_straight.setActive(false, "current");
 
     /////////////////////////////////////////////////////
 

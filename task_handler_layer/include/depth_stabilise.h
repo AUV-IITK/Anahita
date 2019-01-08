@@ -16,15 +16,15 @@
 #include <map>
 #include <mutex>
 
+#include <straight_server.h>
+
 class depthStabilise {
 
 protected:
 
     ros::NodeHandle nh;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
     actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;    
     
-    motion_layer::anglePIDGoal angle_PID_goal;
     motion_layer::upwardPIDGoal upward_PID_goal;
 
     bool goalReceived;
@@ -35,6 +35,8 @@ protected:
     boost::thread* spin_thread;
     std::mutex mtx;
     std::mutex depth_mutex;
+
+    moveStraight move_straight;
 
 public:
 

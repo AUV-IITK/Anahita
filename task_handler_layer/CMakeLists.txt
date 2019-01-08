@@ -144,13 +144,13 @@ add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sidewa
 add_dependencies(moveSideward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveSideward ${catkin_LIBRARIES})
 
-add_library(moveDownward SHARED src/move_downward_server.cpp include/move_downward_server.h)
-add_dependencies(moveDownward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(moveDownward ${catkin_LIBRARIES})
-
 add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
 add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveStraight ${catkin_LIBRARIES})
+
+add_library(moveDownward SHARED src/move_downward_server.cpp include/move_downward_server.h)
+add_dependencies(moveDownward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveDownward ${catkin_LIBRARIES})
 
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -170,7 +170,7 @@ target_link_libraries(torpedo ${catkin_LIBRARIES})
 
 add_library(marker_dropper SHARED src/marker_dropper.cpp include/marker_dropper.h)
 add_dependencies(marker_dropper ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(marker_dropper ${catkin_LIBRARIES})
+target_link_libraries(marker_dropper line ${catkin_LIBRARIES})
 
 add_library(octagon SHARED src/octagon.cpp include/octagon.h)
 add_dependencies(octagon ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
