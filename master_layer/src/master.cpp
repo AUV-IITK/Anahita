@@ -183,53 +183,53 @@ int main(int argc, char** argv) {
 
     // ROS_INFO("Moving straight ended");
 
-    // nh.setParam("/disable_imu", true);
+    nh.setParam("/disable_imu", true);
 
-    // current_task.data = "line";
-    // while (ros::ok() && pub_count <= 5) {
-    //     task_pub.publish(current_task);
-    //     pub_count++;
-    //     loop_rate.sleep();
-    // }
-    // pub_count = 0;
-    // nh.setParam("/current_task", "line");
-    // ROS_INFO("Current task: Line");
+    current_task.data = "line";
+    while (ros::ok() && pub_count <= 5) {
+        task_pub.publish(current_task);
+        pub_count++;
+        loop_rate.sleep();
+    }
+    pub_count = 0;
+    nh.setParam("/current_task", "line");
+    ROS_INFO("Current task: Line");
 
     // move_straight.setThrust(50);
     // moove_straight.setActive(true);
 
-    // if (!th.isDetected("line", 10)) {
-    //     ROS_INFO("Line not detected before the timeout");
-    //     move_straight.setActive(false)
-    //     return 1;
-    // }
+    if (!th.isDetected("line", 10)) {
+        ROS_INFO("Line not detected before the timeout");
+        move_straight.setActive(false);
+        return 1;
+    }
 
     // move_straight.setActive(false);
 
-    // ROS_INFO("Line Detected");
+    ROS_INFO("Line Detected");
 
-    // lineTask line;
+    lineTask line;
 
-    // if (!line.setActive(true)) {
-    //     ROS_INFO("Line Task Failed");
-    //     line.setActive(false);
-    //     return 1;
-    // }
-    // line.setActive(false);
-
-    // ROS_INFO("Completed the Line task");
-
-    // nh.setParam("/disable_imu", false);
-
-    gateTask gate_task;
-    if (!gate_task.setActive(true)) {
-        ROS_INFO("Gate Task Unsuccessful");
-        gate_task.setActive(false);
+    if (!line.setActive(true)) {
+        ROS_INFO("Line Task Failed");
+        line.setActive(false);
         return 1;
     }
-    gate_task.setActive(false);
+    line.setActive(false);
 
-    ROS_INFO("Gate Task Completed");
+    ROS_INFO("Completed the Line task");
+
+    nh.setParam("/disable_imu", false);
+
+    // gateTask gate_task;
+    // if (!gate_task.setActive(true)) {
+    //     ROS_INFO("Gate Task Unsuccessful");
+    //     gate_task.setActive(false);
+    //     return 1;
+    // }
+    // gate_task.setActive(false);
+
+    // ROS_INFO("Gate Task Completed");
 
     // ///////////////////////////////////////////////////
 

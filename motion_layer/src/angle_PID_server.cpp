@@ -48,11 +48,17 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     current_angle_ = msg->data;
 
     if (goalReceived) {
-        //goal_ = goal_ + current_angle_;
         
-         double reference_angle = 0;
-         nh_.getParam("/reference_yaw", reference_angle);
-         goal_ = goal_ + reference_angle;
+        bool temp = false;
+        nh_.getParam("/disable_imu", temp);
+        if (temp) {
+            goal_ = goal_ + current_angle_;
+        }
+        else {
+            double reference_angle = 0;
+            nh_.getParam("/reference_yaw", reference_angle);
+            goal_ = goal_ + reference_angle;
+        }
         
         angle.setReference(goal_);
 

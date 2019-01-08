@@ -48,11 +48,22 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     double then = ros::Time::now().toSec();
 
     if (_topic == "angle") {
-        // double temp = data_ + _target;
 
-        double reference_angle = 0;
-        nh_.getParam("/reference_yaw", reference_angle);
-        double temp = reference_angle + _target;
+        bool disable_imu = false;
+        nh_.getParam("/disable_imu", disable_imu);
+
+        double temp = 0;
+
+        if (disable_imu) {
+            data_mutex.lock();
+            temp = data_ + _target;
+            data_mutex.unlock();
+        }
+        else {
+            double reference_angle = 0;
+            nh_.getParam("/reference_yaw", reference_angle);
+            temp = reference_angle + _target;
+        }
 
         if (temp > 180) {
             temp = temp - 360;
@@ -74,7 +85,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
             count++;
         }
         data_mutex.unlock();
-        
+
         double now = ros::Time::now().toSec();
         double diff = now - then;
         double total_time = now - beginning;
