@@ -146,7 +146,8 @@ void Gate::bottomTaskHandling(bool status) {
 
 void Gate::spinThreadBottom()
 {
-    this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+    // this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+    this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this); // for gazebo only
 
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
@@ -202,12 +203,13 @@ void Gate::spinThreadBottom()
 				cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
 				cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
+				
 				}
 			}
 			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-			coordinates_pub_bottom.publish(pipe_point_message);
-			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
+			// coordinates_pub_bottom.publish(pipe_point_message);
+			// ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
 			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
@@ -234,7 +236,8 @@ void Gate::frontTaskHandling(bool status) {
 
 void Gate::spinThreadFront()
 {
-	this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+	// this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;

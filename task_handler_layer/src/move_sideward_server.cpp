@@ -10,9 +10,9 @@ void moveSideward::setActive(bool status) {
     	spin_thread = new boost::thread(boost::bind(&moveSideward::spinThread, this));
     }
     else {
+        nh.setParam("/kill_signal", true);
         anglePIDClient.cancelGoal();
         spin_thread->join();
-        nh.setParam("/kill_signal", true);
     }
 }
 
@@ -25,9 +25,6 @@ void moveSideward::spinThread() {
 }
 
 void moveSideward::setThrust(int _pwm) {
-    int pub_count = 0;
-    while (ros::ok() && pub_count <= 10) {
-        nh.setParam("/pwm_sway", _pwm);
-        pub_count++;
-    }
+    ros::Duration(1).sleep();
+    nh.setParam("/pwm_sway", _pwm);
 }

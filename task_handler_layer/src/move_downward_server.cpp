@@ -25,9 +25,6 @@ void moveDownward::spinThread() {
 }
 
 void moveDownward::setThrust(int _pwm) {
-    int pub_count = 0;
-    while (ros::ok() && pub_count <=10) {
-        pub_count++;
-        nh.setParam("/pwm_heave", _pwm);
-    }
+    ros::Duration(1).sleep();
+    nh.setParam("/pwm_heave", _pwm);
 }

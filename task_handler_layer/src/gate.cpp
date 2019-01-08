@@ -43,7 +43,7 @@ bool gateTask::setActive(bool status) {
     
     	ROS_INFO("Sideward Stabilised");
 
-        nh_.setParam("/pwm_surge", 50);        
+        nh_.setParam("/pwm_surge", 50);
     	ROS_INFO("setting surge to 50");
 
         while(ros::ok()) {
@@ -79,13 +79,13 @@ bool gateTask::setActive(bool status) {
         int pub_count = 0;
         ros::Rate loop_rate(10);
 
-    	current_task.data = "gate_bottom";
-	    while (ros::ok() && pub_count <= 5) {
-		task_pub.publish(current_task);
-		pub_count++;
-		loop_rate.sleep();
-	    }
-	    pub_count = 0;
+    	// current_task.data = "gate_bottom";
+	    // while (ros::ok() && pub_count <= 5) {
+		// task_pub.publish(current_task);
+		// pub_count++;
+		// loop_rate.sleep();
+	    // }
+	    // pub_count = 0;
 	    nh_.setParam("/current_task", "gate_bottom");
 	    ROS_INFO("Current task: Gate Bottom");
 
@@ -93,8 +93,9 @@ bool gateTask::setActive(bool status) {
         // ros::Duration(12).sleep();
         
 	    nh_.setParam("/pwm_surge", 50);
+
         if (!th.isDetected("gate_bottom", 30)) {
-            ROS_INFO("Unable to detect gate");
+            ROS_INFO("Unable to detect gate's bottom");
             return false;
         }
         return true;

@@ -10,10 +10,10 @@ void moveStraight::setActive(bool status) {
         spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
     else {
+        nh.setParam("/kill_signal", true);
         anglePIDClient.cancelGoal();
         ROS_INFO("Straight Server goal cancelled");
         spin_thread->join();
-        nh.setParam("/kill_signal", true);
     }
 }   
 
@@ -27,9 +27,6 @@ void moveStraight::spinThread() {
 }
 
 void moveStraight::setThrust(int _pwm) {
-    int pub_count = 0;
-    while (ros::ok() && pub_count <= 10) {
-        nh.setParam("/pwm_surge", _pwm);
-        pub_count++;
-    }
+    ros::Duration(1).sleep();
+    nh.setParam("/pwm_surge", _pwm);
 }
