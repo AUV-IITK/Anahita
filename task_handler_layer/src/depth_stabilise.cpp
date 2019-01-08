@@ -13,12 +13,16 @@ void depthStabilise::setActive(bool status) {
         spin_thread = new boost::thread(boost::bind(&depthStabilise::spinThread, this));
     }
     else {
+        depth_mutex.lock();
         if (goalReceived) {
             anglePIDClient.cancelGoal();
         }
+        depth_mutex.unlock();
+        
         mtx.lock();
         close_loop = true;
         mtx.unlock();
+
         ROS_INFO("Depth Stabilise Server goal cancelled");
         spin_thread->join();
         nh.setParam("/kill_signal", true);
@@ -47,14 +51,21 @@ void depthStabilise::spinThread() {
     double then = ros::Time::now().toSec();
     while (ros::ok()) {
         double now = ros::Time::now().toSec();
+        bool temp = false;
+
         mtx.lock();
-        depth_mutex.lock();
-        if (now - then > 5 || close_loop || goalReceived) {
-            break;
-        }
-        depth_mutex.unlock();
+        temp = close_loop;
         mtx.unlock();
+        if (temp) { break; }
+
+        depth_mutex.lock();
+        temp = goalReceived;
+        depth_mutex.unlock();
+        if (temp) { break; }
+
+        if (now - then > 5) { break; }
     }
+
     depth_mutex.lock();
     if (goalReceived) { 
         ROS_INFO("upwardPID server started, sending goal.");

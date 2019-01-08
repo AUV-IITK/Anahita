@@ -52,7 +52,7 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
-		ROS_INFO("Inside retreving callback");
+		// ROS_INFO("Inside retreving callback");
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
@@ -105,7 +105,7 @@ void Line::spinThread() {
 	cv::Mat image_marked;
 	std::vector<double> readings(5);
 	int good_values_num = 0;
-	cv::VideoCapture cap(0);
+	// cv::VideoCapture cap(0);
 	double theta, readings_avg;
 
 	std_msgs::Bool detection_bool;
@@ -115,7 +115,7 @@ void Line::spinThread() {
 		if (task_done) {
 			break;
 		}
-		cap >> image_;
+		// cap >> image_;
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -196,6 +196,7 @@ void Line::spinThread() {
 						good_values_num = 0;
 						ROS_INFO("Detection switch for line: 0");
 					}
+					z_coordinate.data = -z_coordinate.data;
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
@@ -206,6 +207,7 @@ void Line::spinThread() {
 					}
 				}
 			}
+			
 			x_coordinates_pub.publish(y_coordinate);
 			y_coordinates_pub.publish(x_coordinate);
 			z_coordinates_pub.publish(z_coordinate);

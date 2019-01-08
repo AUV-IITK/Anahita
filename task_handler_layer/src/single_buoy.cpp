@@ -7,7 +7,7 @@ singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sid
 }
 singleBuoy::~singleBuoy() {}
 
-void singleBuoy::setActive(bool status) {
+bool singleBuoy::setActive(bool status) {
 
     if (status) {
         ros::Duration(1).sleep();
@@ -52,14 +52,20 @@ void singleBuoy::setActive(bool status) {
         forwardPIDgoal.target_distance = 45;
         forwardPIDClient.sendGoal(forwardPIDgoal);
 
-        th.isAchieved(45, 15, "forward");
+        if (!th.isAchieved(45, 15, "forward")) {
+            ROS_INFO("Unable to achieve forward goal");
+            return false;
+        }
 
          // while(forward_distance_ >= 60 && ros::ok()) {
          // }
 
         ROS_INFO("forward distance equal 60");
     	ros::Duration(3).sleep();
-	    th.isAchieved(0, 15, "sideward");
+	    if (!th.isAchieved(0, 15, "sideward")) {
+            ROS_INFO("Unable to achieve sideward goal");
+            return false;
+        }
         ROS_INFO("hitting the buoy now");
 
         forwardPIDClient.cancelGoal();
@@ -98,7 +104,10 @@ void singleBuoy::setActive(bool status) {
          //     continue;
          // }
 
-        th.isAchieved(60, 15, "forward");
+        if (!th.isAchieved(60, 15, "forward")) {
+            ROS_INFO("Unable to achieve forward goal");
+            return false;
+        }
     }
     else {
         // upwardPIDClient.cancelGoal();
@@ -111,6 +120,7 @@ void singleBuoy::setActive(bool status) {
 	    
         nh_.setParam("/kill_signal", true);
     }
+    return true;
 }
 
 void singleBuoy::forwardCB(const std_msgs::Float32ConstPtr &_msg) {

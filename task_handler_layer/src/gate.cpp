@@ -1,4 +1,5 @@
 #include <gate.h>
+#include <std_msgs/String.h>
 
 gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
                     anglePIDClient("turnPID"), th(30), upwardPIDClient("upwardPID") {
@@ -35,36 +36,64 @@ bool gateTask::setActive(bool status) {
 
         /////////////////////////////////////////////////////
 
-        nh_.setParam("/pwm_surge", 50);
+        if (!th.isAchieved(0, 15, "sideward")) {
+            ROS_INFO("Time limit exceeded for the sideward PID");
+            return false;
+        }
+    
+    	ROS_INFO("Sideward Stabilised");
+
+        nh_.setParam("/pwm_surge", 50);        
+    	ROS_INFO("setting surge to 50");
 
         while(ros::ok()) {
             mtx.lock();
-            if (forwardGoalReceived) {
+	        bool temp = forwardGoalReceived;
+	        mtx.unlock();
+            if (temp) {
                 break;
-            }
-            mtx.unlock();
+            }           
         }
 
         while(ros::ok()) {
             mtx.lock();
-            if (forward_distance_ <= 200) {
+	        double forward_distance = forward_distance_;
+ 	        mtx.unlock();
+            if (forward_distance <= 250) {
                 break;
             }
-            mtx.unlock();
         }
 
         nh_.setParam("/pwm_surge", 0);	
 
-        if (th.isAchieved(0, 15, "sideward")) {
+        if (!th.isAchieved(0, 15, "sideward")) {
             ROS_INFO("Time limit exceeded for the sideward PID");
             return false;
         }
-    	nh_.setParam("/current_task", "gate_bottom");
+	    sidewardPIDClient.cancelGoal();
+       	nh_.setParam("/current_task", "gate_bottom");
+
+	    ros::Publisher task_pub = nh_.advertise<std_msgs::String>("/current_task", 1);
+
+        std_msgs::String current_task;
+        int pub_count = 0;
+        ros::Rate loop_rate(10);
+
+    	current_task.data = "gate_bottom";
+	    while (ros::ok() && pub_count <= 5) {
+		task_pub.publish(current_task);
+		pub_count++;
+		loop_rate.sleep();
+	    }
+	    pub_count = 0;
+	    nh_.setParam("/current_task", "gate_bottom");
+	    ROS_INFO("Current task: Gate Bottom");
 
         ROS_INFO("Forward distance less than 12");
         // ros::Duration(12).sleep();
-        nh_.setParam("/pwm_surge", 50);
-        if (!th.isDetected("gate_bottom", 15)) {
+        
+	    nh_.setParam("/pwm_surge", 50);
+        if (!th.isDetected("gate_bottom", 30)) {
             ROS_INFO("Unable to detect gate");
             return false;
         }

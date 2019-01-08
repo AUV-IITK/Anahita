@@ -28,8 +28,6 @@ bool lineTask::setActive(bool value) {
             return false;
         }
 
-	    // th.isAchieved(0, 10, "forward");
-
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
 
@@ -53,7 +51,10 @@ bool lineTask::setActive(bool value) {
         angle_PID_goal.target_angle = -angle;
         anglePIDClient.sendGoal(angle_PID_goal);
 
-        th.isAchieved(-angle, 2, "angle");
+        if (!th.isAchieved(-angle, 2, "angle")) {
+            ROS_INFO("Bot Unbale to align with the line");
+            return false;
+        }
     }
     else {
         anglePIDClient.cancelGoal();

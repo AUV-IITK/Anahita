@@ -9,7 +9,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "line";
+std::string current_task = "gate_front";
 std::string previous_task = "";
 
 void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             // }
             previous_task = current_task;
         }
-        nh.getParam("/current_task", current_task);
+        // nh.getParam("/current_task", current_task);
         loop_rate.sleep();
         ros::spinOnce();
     }

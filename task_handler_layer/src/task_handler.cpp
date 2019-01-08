@@ -32,6 +32,10 @@ void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
     data_mutex.lock();
     data_ = _msg->data;
     data_mutex.unlock();
+
+    mtx.lock();
+    dataReceived = true;
+    mtx.unlock();
 }
 
 bool taskHandler::isAchieved (double _target, double _band, std::string _topic) {
@@ -55,7 +59,14 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         double temp = 0;
 
         if (disable_imu) {
+            while (ros::ok()) {
+                mtx.lock();
+                bool dataReceived_ = dataReceived;
+                mtx.unlock();
+                if (dataReceived_) { break; }
+            }
             data_mutex.lock();
+            // ROS_INFO("looping");
             temp = data_ + _target;
             data_mutex.unlock();
         }
@@ -74,34 +85,47 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         _target = temp;
     }
 
+    // std::cout << "target " << _target << std::endl;
+
     ros::Rate loop_rate(100);
 
     while (ros::ok()) {
         data_mutex.lock();
-        if (std::abs(data_ - _target) <= _band) {
+        double data = data_;
+        data_mutex.unlock();
+
+        // std::cout << "diff: " << data - _target << std::endl;
+
+        if (std::abs(data - _target) <= _band) {
             if (!count) {
                 then = ros::Time::now().toSec();
             }
             count++;
+            // std::cout << "count: " << count << std::endl;
         }
-        data_mutex.unlock();
+        
 
         double now = ros::Time::now().toSec();
         double diff = now - then;
         double total_time = now - beginning;
 
+//        std::cout << "total time: " << total_time << std::endl;
+
         if (total_time >= time_out_) {
+            ROS_INFO("Failed");
             return false;
         }
+//	std::cout << "hdsuhf" << std::endl;
         if (diff >= 1.0) {
-            if (count >= 10) {
+            if (count >= 100) {
                 return true;
             }
             else {
                 count = 0;
             }
         }
-	    loop_rate.sleep();
+//	std::cout << "hdsuhf" << std::endl;	
+	loop_rate.sleep();
     }
     return true;
 }
@@ -111,10 +135,13 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
     double then = ros::Time::now().toSec();
     double now;
     double diff;
-    vision_mutex.lock();
-    bool temp = !task_map_[_task];
-    vision_mutex.unlock();
-    while ( temp && ros::ok()) {
+    while (ros::ok()) {
+        vision_mutex.lock();
+        bool temp = task_map_[_task];
+        vision_mutex.unlock();
+        if (temp) {
+            break;
+        }
         now = ros::Time::now().toSec();
         diff = now - then;
         if (diff > vision_time_out_) {
@@ -145,9 +172,6 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         }
         else if (current_task == "gate_bottom") {
             task_map_["gate_bottom"] = true;
-        }
-        else if (current_task == "buoy-gate") {
-            task_map_["buoy-gate"] = true;
         }
         else if (current_task == "red_torpedo") {
             task_map_["red_torpedo"] = true;

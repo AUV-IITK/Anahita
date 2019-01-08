@@ -23,7 +23,7 @@ class singleBuoy {
 public:
     singleBuoy();
     ~singleBuoy();
-    void setActive(bool);
+    bool setActive(bool);
     void forwardCB(const std_msgs::Float32ConstPtr &_msg);
 
 private:

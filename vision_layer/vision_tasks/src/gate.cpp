@@ -56,7 +56,7 @@ Gate::Gate() : it(nh) {
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
     
-	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000000);
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/detected", 1000000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 
@@ -327,7 +327,7 @@ void Gate::spinThreadFront()
 					else if(x_length<y_length/5 && x_length>0)
 					{
 						ROS_INFO("This time its a fucking vertical rod");
-						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 - y_length/2;;
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 + y_length/2;;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
 						distance_for = y_length;
 						sprintf(str,"fucking_vertical"); putText(image_marked, str, cv::Point2f(100,100), 0, 2,  cv::Scalar(0,0,255,255));

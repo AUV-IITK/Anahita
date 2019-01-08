@@ -18,10 +18,6 @@ protected:
     ros::NodeHandle nh;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
-    ros::Subscriber sub_;
-    double angle;
-    bool goalReceived;
-    bool close_loop = false;
 
 public:
 
@@ -29,11 +25,8 @@ public:
     ~moveDownward();
 
     boost::thread* spin_thread;
-    boost::thread* spin_thread_;
     void setActive(bool);
     void setThrust(int);
-    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
-    void spinThread_();
 };
 #endif // MOVE_DOWNWARD_SERVER_H

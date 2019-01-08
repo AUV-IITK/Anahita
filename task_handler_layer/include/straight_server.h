@@ -23,14 +23,9 @@ protected:
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
 
-    bool goalReceived;
-    bool close_loop = false;
-    bool& goalReceived_ref = goalReceived;
-    double angle;
     ros::Subscriber sub_;
 
     boost::thread* spin_thread;
-    boost::thread* spin_thread_;
 
 public:
 
@@ -39,8 +34,6 @@ public:
 
     void setActive(bool);
     void setThrust(int);
-    void spinThread_();
-    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
 };
 #endif // STRAIGHT_SERVER_H
