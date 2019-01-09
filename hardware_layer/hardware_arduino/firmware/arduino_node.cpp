@@ -5,14 +5,15 @@
 #include <ros/time.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
-#include <hyperion_msgs/Depth.h>
-#include <hyperion_msgs/Pressure.h>
+#include <std_msgs/Bool.h>
+// #include <hyperion_msgs/Depth.h>
+// #include <hyperion_msgs/Pressure.h>
 #include <hyperion_msgs/Thrust.h>
 
 #include <MS5837.h>
 
-#define MDpin1 25
-#define MDpin2 24
+#define MDPin1 25
+#define MDPin2 24
 
 #define servoEastPin 40       // pin definitions for forward thrusters
 #define servoWestPin 43
@@ -30,7 +31,7 @@
 #define permanentGround3 41
 #define permanentGround4 42
 
-#define analogPinPressureSensor A0      //pin definition for depth sensor
+#define MDServoPin 3      //pin definition for depth sensor
 
 Servo servoEast;
 Servo servoWest;
@@ -40,6 +41,7 @@ Servo servoNorthWestUp;
 Servo servoNorthEastUp;
 Servo servoSouthWestUp;
 Servo servoSouthEastUp;
+Servo servoMarkerDropper;
 
 void PWMCb(const hyperion_msgs::Thrust& msg_);
 void TEast(const int data);
@@ -51,6 +53,8 @@ void TNWUp(const int data);
 void TSWEUp(const int data);
 void TSWIUp(const int data);
 
+// void pressureCb(const std_msgs::Bool& _msg);
+
 int ESC_Zero = 1500;
 int deadZone = 25;
 ros::NodeHandle nh;
@@ -61,6 +65,8 @@ ros::NodeHandle nh;
 // pressure sensor
 MS5837 pressure_sensor;
 
+void MDCb(const std_msgs::Int32& msg);
+
 // declare subscribers
 ros::Subscriber<hyperion_msgs::Thrust> PWM_Sub("/pwm", &PWMCb);
 
@@ -69,11 +75,16 @@ void publish_pressure_data();
 
 // declaration of callback functions for all thrusters
 // declare publishers
+
+ros::Subscriber<std_msgs::Int32> Marker_Dropper_Sub("/marker_dropper", &MDCb);
+
 // std_msgs::Float32 pressure_msg;
 // ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
+
 std_msgs::Float32 depth_msg;
 ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
-// int enable_pressure = 0;
+
+// bool enable_pressure = false;
 
 void setup()
 {
@@ -85,7 +96,7 @@ void setup()
     servoWest.writeMicroseconds(ESC_Zero);
     servoSouthSway.attach(servoSouthSwayPin);
     servoSouthSway.writeMicroseconds(ESC_Zero);
-    
+  
     servoNorthWestUp.attach(servoNorthWestUpPin);
     servoNorthWestUp.writeMicroseconds(ESC_Zero);
     servoNorthEastUp.attach(servoNorthEastUpPin);
@@ -105,6 +116,8 @@ void setup()
     digitalWrite(permanentGround3, LOW);
     digitalWrite(permanentGround4, LOW);
     
+    servoMarkerDropper.attach(MDServoPin);
+    
     delay(7000);
     Serial.print("Successfully started servos");    
     
@@ -120,7 +133,8 @@ void setup()
 
     //start ros_node
     nh.subscribe(PWM_Sub);
-
+    nh.subscribe(Marker_Dropper_Sub);
+    
     // publisher
     // nh.advertise(ps_pressure_pub);
     nh.advertise(ps_depth_pub);
@@ -169,6 +183,48 @@ void publish_pressure_data()
     // ps_pressure_pub.publish(&pressure_msg);
 }
 
+void MDCb(const std_msgs::Int32& msg)
+{
+  nh.loginfo("Inside marker dropper callback");
+  int data = msg.data;
+  int pos = 0;
+  if(data == 1)
+  {
+    nh.loginfo("First ball being dropped");
+    for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
+    {                                  // in steps of 1 degree 
+      servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
+      delay(15);                       // waits 15ms for the servo to reach the position 
+    }
+  }
+  if(data == 2)
+  {
+    nh.loginfo("Second ball being dropped");
+    for(pos = 170; pos>=1; pos-=1)     // goes from 180 degrees to 0 degrees 
+    {                                
+      servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
+      delay(15);                       // waits 15ms for the servo to reach the position 
+    }
+  }
+ if(data == -1)
+ { 
+   nh.loginfo("Can now load the inner ball");
+   for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
+    {                                  // in steps of 1 degree 
+      servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
+      delay(15);                       // waits 15ms for the servo to reach the position 
+    }
+ }
+ if(data == -2)
+ {
+   nh.loginfo("Can now load the outer ball");
+   for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
+    {                                  // in steps of 1 degree 
+      servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
+      delay(15);                       // waits 15ms for the servo to reach the position 
+    }
+ }
+}
 void TEast(const int data)
 {
   if(data>0)
@@ -255,3 +311,6 @@ void PWMCb(const hyperion_msgs::Thrust& msg_)
     TSWUp(msg_.upward_south_west); 
 }
 
+// void pressureCb(const std_msgs::Bool& _msg) {
+//   enable_pressure = _msg.data;
+// }
