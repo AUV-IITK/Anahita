@@ -1,8 +1,8 @@
-int32 sideward_front
-int32 sideward_back
-int32 forward_right
-int32 forward_left
-int32 upward_north_east
-int32 upward_north_west
-int32 upward_south_east
-int32 upward_south_west
+int16 sideward_front
+int16 sideward_back
+int16 forward_right
+int16 forward_left
+int16 upward_north_east
+int16 upward_north_west
+int16 upward_south_east
+int16 upward_south_west

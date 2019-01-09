@@ -69,11 +69,11 @@ void publish_pressure_data();
 
 // declaration of callback functions for all thrusters
 // declare publishers
-std_msgs::Float32 pressure_msg;
-ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
+// std_msgs::Float32 pressure_msg;
+// ros::Publisher ps_pressure_pub("/pressure_sensor/pressure", &pressure_msg);
 std_msgs::Float32 depth_msg;
-ros::Publisher ps_depth_pub("/anahita/z_coordinate", &depth_msg);
-int enable_pressure = 0;
+ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
+// int enable_pressure = 0;
 
 void setup()
 {
@@ -122,7 +122,7 @@ void setup()
     nh.subscribe(PWM_Sub);
 
     // publisher
-    nh.advertise(ps_pressure_pub);
+    // nh.advertise(ps_pressure_pub);
     nh.advertise(ps_depth_pub);
     
     while (!nh.connected())
@@ -146,7 +146,7 @@ void loop()
     nh.loginfo("Data being recieved");
     delay(10);
 
-    nh.getParam("/enable_pressure", &enable_pressure, 1);
+    // nh.getParam("/enable_pressure", &enable_pressure, 1);
     
     nh.spinOnce();
 }
@@ -155,17 +155,18 @@ void loop()
 void publish_pressure_data()
 {
     pressure_sensor.read();
-    pressure_msg.data = pressure_sensor.pressure();
+    // pressure_msg.data = pressure_sensor.pressure();
 
     /** Depth returned in meters (valid for operation in incompressible
     *  liquids only. Uses density that is set for fresh or seawater.
     */
     depth_msg.data = -100*pressure_sensor.depth(); //convert to centimeters
 
-    if (enable_pressure) {
-      ps_depth_pub.publish(&depth_msg);
-    }
-    ps_pressure_pub.publish(&pressure_msg);
+    // if (enable_pressure) {
+    //   ps_depth_pub.publish(&depth_msg);
+    // }
+    ps_depth_pub.publish(&depth_msg);
+    // ps_pressure_pub.publish(&pressure_msg);
 }
 
 void TEast(const int data)

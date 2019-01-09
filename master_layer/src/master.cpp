@@ -58,6 +58,15 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////
 
+    // Random code to test
+
+    // move_sideward.setThrust(50);
+    // move_sideward.setActive(true, "current");
+    // ros::Duration(10).sleep();
+    // move_sideward.setActive(false, "current");
+
+    /////////////////////////////////////////////
+
     // ros::Duration(60).sleep();
 
     nh.setParam("/current_task", "red_buoy");
@@ -207,11 +216,11 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "green_torpedo");
     // ROS_INFO("Current task: Green Torpedo");
 
-  //  actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
-  //  motion_layer::anglePIDGoal anglePIDGoal;
+    //  actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+    //  motion_layer::anglePIDGoal anglePIDGoal;
 
-  //  ROS_INFO("Waiting for anglePID server to start.");
-  //  anglePIDClient.waitForServer();
+    //  ROS_INFO("Waiting for anglePID server to start.");
+    //  anglePIDClient.waitForServer();
 
     // ROS_INFO("anglePID server started, sending goal.");
 
@@ -223,47 +232,47 @@ int main(int argc, char** argv) {
     // anglePIDClient.cancelGoal();
 
     // ros::Duration(1).sleep();
-  //  nh.setParam("/pwm_yaw", 50);
+    // nh.setParam("/pwm_yaw", 50);
 
     // ROS_INFO("Finding Green Torpedo....");
     // if (!th.isDetected("green_torpedo", 10)) {
-        // ROS_INFO("Unable to detect Green torpedo");
-        // return 1;
+    //     ROS_INFO("Unable to detect Green torpedo");
+    //     return 1;
     // }
-  //  nh.setParam("/pwm_sway", 0);
+    // nh.setParam("/pwm_sway", 0);
 
     // ROS_INFO("Green Torpedo detected");
 
     // can include a function to find the line on its own
-/*
-    nh.setParam("/current_task", "line");
 
-    ROS_INFO("Finding Line....");
-    move_straight.setThrust(50);
-    move_straight.setActive(true, "current");
+    // nh.setParam("/current_task", "line");
 
-    if (!th.isDetected("line", 10)) {
-        ROS_INFO("Unable to detect line");
-        move_straight.setActive(false, "current");
-        return 1;
-    }
+    // ROS_INFO("Finding Line....");
+    // move_straight.setThrust(50);
+    // move_straight.setActive(true, "current");
 
-    // ros::Duration(2).sleep();
+    // if (!th.isDetected("line", 10)) {
+    //     ROS_INFO("Unable to detect line");
+    //     move_straight.setActive(false, "current");
+    //     return 1;
+    // }
 
-    move_straight.setActive(false, "current");
+    // // ros::Duration(2).sleep();
 
-    if (!line.setActive(true)) {
-        ROS_INFO("Unable to center with the line");
-        line.setActive(false);
-        return 1;
-    }
-    ROS_INFO("Centralized with the line");
+    // move_straight.setActive(false, "current");
 
-    if (!th.isDetected("green_torpedo", 5)) {
-        ROS_INFO("Unable to detect green torpedo");
-        return 1;
-    };
-*/
+    // if (!line.setActive(true)) {
+    //     ROS_INFO("Unable to center with the line");
+    //     line.setActive(false);
+    //     return 1;
+    // }
+    // ROS_INFO("Centralized with the line");
+
+    // if (!th.isDetected("green_torpedo", 5)) {
+    //     ROS_INFO("Unable to detect green torpedo");
+    //     return 1;
+    // }
+
     ///////////////////////////////////////////////////
 
     // torpedo.setActive(true);
@@ -271,92 +280,92 @@ int main(int argc, char** argv) {
 
     ////////////////////////////////////////////////////
 
-    /* nh.setParam("/current_task", "red_torpedo");
-    ROS_INFO("Current task: Red Torpedo");
+    // nh.setParam("/current_task", "red_torpedo");
+    // ROS_INFO("Current task: Red Torpedo");
 
-    move_sideward.setThrust(-50);
-    move_sideward.setActive(true, "current");
+    // move_sideward.setThrust(-50);
+    // move_sideward.setActive(true, "current");
 
-    if (!th.isDetected("red_torpedo", 5)) {
-        ROS_INFO("Unable to detect Red Torpedo");
-        move_sideward.setActive(false, "current");
-        return 1;
-    }
+    // if (!th.isDetected("red_torpedo", 5)) {
+    //     ROS_INFO("Unable to detect Red Torpedo");
+    //     move_sideward.setActive(false, "current");
+    //     return 1;
+    // }
 
-    move_sideward.setActive(false, "current");
+    // move_sideward.setActive(false, "current");
 
-    torpedo.setActive(true);
-    torpedo.setActive(false);*/
+    // torpedo.setActive(true);
+    // torpedo.setActive(false);
 
     /////////////////////////////////////////////////////
 
     // Torpedo-MarkerDropper Transition
-/*
-    ROS_INFO("Torpedo-MarkerDropper Transition ....");
-    nh.setParam("/current_task", "line");
 
-    move_sideward.setThrust(-50);
-    move_sideward.setActive(true, "current");
-    ros::Duration(3).sleep();
-    move_sideward.setActive(false, "current");
+    // ROS_INFO("Torpedo-MarkerDropper Transition ....");
+    // nh.setParam("/current_task", "line");
 
-    move_straight.setThrust(-50);
-    move_straight.setActive(true, "current");
-    if (!th.isDetected("line", 10)) {
-        ROS_INFO("line not detected");
-        move_straight.setActive(false, "current");
-        return 1;
-    }
-    ROS_INFO("Line Detected");
-    move_straight.setActive(false, "current");
+    // move_sideward.setThrust(-50);
+    // move_sideward.setActive(true, "current");
+    // ros::Duration(3).sleep();
+    // move_sideward.setActive(false, "current");
 
-    nh.setParam("/disable_imu", true);
+    // move_straight.setThrust(-50);
+    // move_straight.setActive(true, "current");
+    // if (!th.isDetected("line", 10)) {
+    //     ROS_INFO("line not detected");
+    //     move_straight.setActive(false, "current");
+    //     return 1;
+    // }
+    // ROS_INFO("Line Detected");
+    // move_straight.setActive(false, "current");
 
-    if (!line.setActive(true)) {
-        ROS_INFO("Line Task Failed");
-        line.setActive(false);
-        return 1;
-    }
-    line.setActive(false);
+    // nh.setParam("/disable_imu", true);
 
-    ROS_INFO("Completed the Line task");
+    // if (!line.setActive(true)) {
+    //     ROS_INFO("Line Task Failed");
+    //     line.setActive(false);
+    //     return 1;
+    // }
+    // line.setActive(false);
 
-    nh.setParam("/disable_imu", false);
+    // ROS_INFO("Completed the Line task");
+
+    // nh.setParam("/disable_imu", false);
     
-    // After finishing torpedo task turn 120 degree anticlockwise and then move straight
-    ROS_INFO("Master layer, anglePID server started, sending goal."); 
+    // // After finishing torpedo task turn 120 degree anticlockwise and then move straight
+    // ROS_INFO("Master layer, anglePID server started, sending goal."); 
 
-    anglePIDGoal.target_angle = -90;
-    anglePIDClient.sendGoal(anglePIDGoal);
+    // anglePIDGoal.target_angle = -90;
+    // anglePIDClient.sendGoal(anglePIDGoal);
 
-    if (!th.isAchieved(-90, 2, "angle")) {
-        ROS_INFO("Not Rotated 90 degrees");
-        anglePIDClient.cancelGoal();
-        return 1;
-    }
+    // if (!th.isAchieved(-90, 2, "angle")) {
+    //     ROS_INFO("Not Rotated 90 degrees");
+    //     anglePIDClient.cancelGoal();
+    //     return 1;
+    // }
 
-    anglePIDClient.cancelGoal();
+    // anglePIDClient.cancelGoal();
 
-    move_straight.setThrust(75);
-    move_straight.setActive(true, "current");
-    ros::Duration(6).sleep();
-    move_straight.setActive(false, "current");
-*/
+    // move_straight.setThrust(75);
+    // move_straight.setActive(true, "current");
+    // ros::Duration(6).sleep();
+    // move_straight.setActive(false, "current");
+
     /////////////////////////////////////////////////////
 
     // MarkerDropper
-/*
-    nh.setParam("/current_task", "marker_dropper_front");
-    ROS_INFO("Current task: Marker Dropper Front");
 
-    if (!th.isDetected("marker_dropper_front", 5)) {
-        ROS_INFO("Marker Dropper Detected");
-        return 1;
-    }*/
+    // nh.setParam("/current_task", "marker_dropper_front");
+    // ROS_INFO("Current task: Marker Dropper Front");
 
-    MarkerDropper md;
-    md.setActive(true);
-    md.setActive(false);
+    // if (!th.isDetected("marker_dropper_front", 5)) {
+    //     ROS_INFO("Marker Dropper Detected");
+    //     return 1;
+    // }
+
+    // MarkerDropper md;
+    // md.setActive(true);
+    // md.setActive(false);
 
     // /////////////////////////////////////////////////////
 
