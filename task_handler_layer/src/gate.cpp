@@ -47,22 +47,23 @@ bool gateTask::setActive(bool status) {
     	ROS_INFO("setting surge to 50");
 
         while(ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
 	        bool temp = forwardGoalReceived;
-	        mtx.unlock();
+	        // mtx.unlock();
             if (temp) {
                 break;
             }           
         }
 
         while(ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
 	        double forward_distance = forward_distance_;
- 	        mtx.unlock();
+ 	        // mtx.unlock();
             if (forward_distance <= 250) {
                 break;
             }
         }
+        ROS_INFO("Forward distance less than 250");
 
         nh_.setParam("/pwm_surge", 0);	
 
@@ -75,21 +76,9 @@ bool gateTask::setActive(bool status) {
 
 	    ros::Publisher task_pub = nh_.advertise<std_msgs::String>("/current_task", 1);
 
-        std_msgs::String current_task;
-        int pub_count = 0;
-        ros::Rate loop_rate(10);
-
-    	// current_task.data = "gate_bottom";
-	    // while (ros::ok() && pub_count <= 5) {
-		// task_pub.publish(current_task);
-		// pub_count++;
-		// loop_rate.sleep();
-	    // }
-	    // pub_count = 0;
 	    nh_.setParam("/current_task", "gate_bottom");
 	    ROS_INFO("Current task: Gate Bottom");
 
-        ROS_INFO("Forward distance less than 12");
         // ros::Duration(12).sleep();
         
 	    nh_.setParam("/pwm_surge", 50);
@@ -109,8 +98,8 @@ bool gateTask::setActive(bool status) {
 }
 
 void gateTask::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
-    mtx.lock();
+    // mtx.lock();
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
-    mtx.unlock();
+    // mtx.unlock();
 }

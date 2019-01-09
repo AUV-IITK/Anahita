@@ -49,15 +49,24 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 
     if (goalReceived) {
         
-        bool temp = false;
-        nh_.getParam("/disable_imu", temp);
-        if (temp) {
-            goal_ = goal_ + current_angle_;
-        }
-        else {
+        bool use_local_yaw = false;
+        nh_.getParam("/local_yaw", use_local_yaw);
+
+        bool use_reference_yaw = false;
+        nh_.getParam("/use_reference_yaw", use_reference_yaw);
+        
+        if (use_reference_yaw) {
             double reference_angle = 0;
             nh_.getParam("/reference_yaw", reference_angle);
             goal_ = goal_ + reference_angle;
+        }
+        else if (use_local_yaw) {
+            double local_angle = 0;
+            nh_.getParam("/local_yaw", local_angle);
+            goal_ = goal_ + local_angle;
+        }
+        else {
+            goal_ = goal_ + current_angle_;
         }
         
         angle.setReference(goal_);

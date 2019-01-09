@@ -65,6 +65,8 @@ int main(int argc, char **argv)
   
   ros::Rate loop_rate(200);
 
+  bool set_local_yaw = false;
+
   while(ros::ok()) {
     nh.getParam("/disable_imu", disable_imu);
     if (dataReceived) {
@@ -72,6 +74,11 @@ int main(int argc, char **argv)
         nh.setParam("/reference_yaw", imu_yaw.data);
         first_time = false;
       }
+    }
+    nh.getParam("/use_local_yaw", set_local_yaw);
+    if (set_local_yaw) {
+      nh.setParam("/local_yaw", imu_yaw.data);
+      nh.setParam("/use_local_yaw", false);
     }
     ros::spinOnce();
   }

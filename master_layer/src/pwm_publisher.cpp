@@ -41,10 +41,6 @@ int main(int argc, char** argv) {
 
 	    nh.getParam("/kill_signal", kill_signal);
 
-        if (pwm_surge) {
-            ROS_INFO("Moter Fucker");
-        }
-
         pwm.forward_left = -pwm_surge - pwm_yaw;
         pwm.forward_right = -pwm_surge + pwm_yaw;
 

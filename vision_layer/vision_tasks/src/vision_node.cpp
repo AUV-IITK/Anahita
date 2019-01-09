@@ -9,7 +9,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "gate_front";
+std::string current_task = "marker_dropper_bottom";
 std::string previous_task = "";
 
 // void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -66,10 +66,12 @@ int main(int argc, char *argv[])
             }
             if (current_task == "green_torpedo") {
                 torpedo.switchColor(0);
+                ROS_INFO("Starting green torpedo");
                 torpedo.TaskHandling(true);
             }
             if (current_task == "red_torpedo") {
                 torpedo.switchColor(1);
+                // torpedo.TaskHandling(true);
             }
             if (previous_task == "red_torpedo") {
                 torpedo.TaskHandling(false);     

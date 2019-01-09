@@ -30,16 +30,16 @@ bool MarkerDropper::setActive(bool status) {
         anglePIDClient.sendGoal(anglePIDGoal);
 
         while (ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
             bool temp = forwardGoalReceived;
-            mtx.unlock();
+            // mtx.unlock();
             if (temp) { break; }
         }
 
         while (ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
             double data = forward_distance_;
-            mtx.unlock();
+            // mtx.unlock();
             if (data <= 200) { break; }
         }
         sidewardPIDClient.cancelGoal();
@@ -79,7 +79,7 @@ bool MarkerDropper::setActive(bool status) {
 
         ROS_INFO("Finding Marker Dropper ....");
 
-        if (!th.isDetected("marker_dropper_bottom", 15)) {
+        if (!th.isDetected("marker_dropper_bottom", 20)) {
             ROS_INFO("Unable to detect Marker Dropper");
             move_straight.setActive(false, "current");
             return false;
@@ -116,22 +116,23 @@ bool MarkerDropper::setActive(bool status) {
 
         // Drop the ball
         
-        ROS_INFO("Killing the thrusters");
-	    nh.setParam("/kill_signal", true);
-
     }
     else {
         forwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         anglePIDClient.cancelGoal();
+
+        ROS_INFO("Killing the thrusters");
+	    nh.setParam("/kill_signal", true);
+
         ROS_INFO("Closing Marker Dropper");
     }
     return true;
 }
 
 void MarkerDropper::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
-    mtx.lock();
+    // mtx.lock();
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
-    mtx.unlock();
+    // mtx.unlock();
 }
