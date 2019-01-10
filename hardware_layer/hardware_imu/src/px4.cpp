@@ -75,10 +75,10 @@ int main(int argc, char **argv)
         first_time = false;
       }
     }
-    nh.getParam("/use_local_yaw", set_local_yaw);
+    nh.getParam("/set_local_yaw", set_local_yaw);
     if (set_local_yaw) {
       nh.setParam("/local_yaw", imu_yaw.data);
-      nh.setParam("/use_local_yaw", false);
+      nh.setParam("/set_local_yaw", false);
     }
     ros::spinOnce();
   }

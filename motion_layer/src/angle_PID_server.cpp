@@ -50,7 +50,7 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
     if (goalReceived) {
         
         bool use_local_yaw = false;
-        nh_.getParam("/local_yaw", use_local_yaw);
+        nh_.getParam("/use_local_yaw", use_local_yaw);
 
         bool use_reference_yaw = false;
         nh_.getParam("/use_reference_yaw", use_reference_yaw);

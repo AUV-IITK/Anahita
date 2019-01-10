@@ -22,4 +22,10 @@
 
   <param name="/use_local_yaw" value="false" type="bool" />
 
+  <param name="/reference_depth" value="false" type="double" />
+
+  <param name="/set_local_yaw" value="false" type="bool" />
+
+  <param name="/set_reference_yaw" value="false" type="bool" />
+
 </launch>
