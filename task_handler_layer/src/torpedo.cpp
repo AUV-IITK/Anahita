@@ -18,10 +18,10 @@ void Torpedo::setActive(bool status) {
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for upwardPID server to start, task torpedo.");
+        // ROS_INFO("Waiting for upwardPID server to start, task torpedo.");
         // upwardPIDClient.waitForServer();
 
-        ROS_INFO("upwardPID server started, sending goal, task torpedo.");
+        // ROS_INFO("upwardPID server started, sending goal, task torpedo.");
         // upwardPIDgoal.target_depth = 0; // for gazebo
         // upwardPIDClient.sendGoal(upwardPIDgoal);
 
@@ -42,18 +42,18 @@ void Torpedo::setActive(bool status) {
         forwardPIDClient.sendGoal(forwardPIDgoal);
 
         if (!th.isAchieved(12, 2, "forward")) {
-		ROS_INFO("Unable to achieve forward in time limit");
-		nh_.setParam("/kill_signal", true);		
-		return;	
-	}
+            ROS_INFO("Unable to achieve forward in time limit");
+            nh_.setParam("/kill_signal", true);		
+            return;	
+	    }
 
         ROS_INFO("Killing the thrusters");
 	    nh_.setParam("/kill_signal", true);
 
         forwardPIDClient.cancelGoal();
 	
-	ROS_INFO("Firing torpedo");
-	ros::Duration(4).sleep();
+        ROS_INFO("Firing torpedo");
+        ros::Duration(4).sleep();
 	
         // fire the torpedo
 

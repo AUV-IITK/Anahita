@@ -109,7 +109,7 @@ bool navigationHandler::find (std::string object) {
         return false;
     }
     ROS_INFO("object detected");
-    spin_thread-join();
+    spin_thread->join();
     return true;
 }
 
@@ -217,3 +217,5 @@ bool navigationHandler::isStable () {
 void navigationHandler::findNextTask () {}
 
 void navigationHandler::analyze () {}
+
+void navigationHandler::explore () {}

@@ -137,6 +137,9 @@ include_directories(
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
+add_executable(pressure_publisher src/pressure_publisher.cpp)
+target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
+
 add_executable(master src/master.cpp)
 add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(master 
@@ -145,7 +148,6 @@ target_link_libraries(master
   line
   moveSideward 
   moveStraight 
-  moveForward 
   task_handler 
   torpedo 
   moveDownward 

@@ -210,7 +210,13 @@ void Line::spinThread() {
 			
 			x_coordinates_pub.publish(y_coordinate);
 			y_coordinates_pub.publish(x_coordinate);
-			z_coordinates_pub.publish(z_coordinate);
+
+			bool temp = false;
+			nh.getParam("/disable_imu", temp);
+			if (temp) {
+				z_coordinates_pub.publish(z_coordinate);
+			}
+
 			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());

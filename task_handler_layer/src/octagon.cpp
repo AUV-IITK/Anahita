@@ -3,7 +3,7 @@
 Octagon::Octagon(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), th(15) {}
 Octagon::~Octagon() {}
 
-void Octagon::setActive(bool status) {
+bool Octagon::setActive(bool status) {
 
     if (status) {
 
@@ -25,22 +25,21 @@ void Octagon::setActive(bool status) {
 
         ////////////////////////////////////////////////////
 
-        th.isAchieved(0, 5, "forward");
+        if (!th.isAchieved(0, 15, "forward")) {
+            ROS_INFO("Octagon, Failed to achieve forward goal");
+            return false;
+        }
 
-        ros::Duration(3).sleep();
-
-        ROS_INFO("Octagon Task, going up");
-        nh_.setParam("/pwm_heave", 50);
-
-        ros::Duration(6).sleep();
-        
-        ROS_INFO("Killing the thrusters");
-	    nh_.setParam("/kill_signal", true);
-
+        if (!th.isAchieved(0, 10, "sideward")) {
+            ROS_INFO("Octagon, Failed to achieve sideward goal");
+            return false;
+        }
     }
     else {
         forwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         ROS_INFO("Closing Octagon");
+        ROS_INFO("Killing the thrusters");
+	    nh_.setParam("/kill_signal", true);
     }
 }

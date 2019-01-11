@@ -136,10 +136,6 @@ include_directories(
 add_library(task_handler SHARED src/task_handler.cpp include/task_handler.h)
 target_link_libraries(task_handler ${catkin_LIBRARIES})
 
-add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
-add_dependencies(moveForward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(moveForward ${catkin_LIBRARIES})
-
 add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sideward_server.h)
 add_dependencies(moveSideward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveSideward ${catkin_LIBRARIES})
@@ -166,7 +162,7 @@ target_link_libraries(singleBuoy task_handler ${catkin_LIBRARIES})
 
 add_library(line SHARED src/line.cpp include/line.h)
 add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
+target_link_libraries(line moveStraight ${catkin_LIBRARIES})
 
 add_library(gate SHARED src/gate.cpp include/gate.h)
 add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

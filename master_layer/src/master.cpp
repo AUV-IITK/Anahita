@@ -9,8 +9,8 @@
 
 #include <straight_server.h>
 #include <move_sideward_server.h>
-#include <move_forward_server.h>
 #include <move_downward_server.h>
+#include <depth_stabilise.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -62,18 +62,18 @@ int main(int argc, char** argv) {
 
     // Random code to test
 
-    navigationHandler nav_handle;
+    // navigationHandler nav_handle;
 
-    if (nav_handle.find("line")) {
-        if (!line.setActive(true)) {
-            ROS_INFO("Line Task Failed");
-            line.setActive(false);
-            return 1;
-        }
-        line.setActive(false);
-    }
+    // if (nav_handle.find("line")) {
+    //     if (!line.setActive(true)) {
+    //         ROS_INFO("Line Task Failed");
+    //         line.setActive(false);
+    //         return 1;
+    //     }
+    //     line.setActive(false);
+    // }
 
-    ROS_INFO("Nav Handle: Line not found");
+    // ROS_INFO("Nav Handle: Line not found");
 
     /////////////////////////////////////////////
 
@@ -81,6 +81,11 @@ int main(int argc, char** argv) {
 
     // nh.setParam("/current_task", "red_buoy");
     // ROS_INFO("Current task: Red Buoy");
+
+    // if (!th.isAchieved("red_buoy", 15)) {
+    //     ROS_INFO("Unable to detect red buoy");
+    //     return 1;
+    // }
     
     // if (!single_buoy.setActive(true)) {
     //     ROS_INFO("Red Buoy Failed");
@@ -222,6 +227,8 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "green_torpedo");
     // ROS_INFO("Current task: Green Torpedo");
 
+    // nh.setParam("/use_reference_yaw", true);
+
     //  actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
     //  motion_layer::anglePIDGoal anglePIDGoal;
 
@@ -233,9 +240,14 @@ int main(int argc, char** argv) {
     // anglePIDGoal.target_angle = 60;
     // anglePIDClient.sendGoal(anglePIDGoal);
 
-    // th.isAchieved(60, 2, "angle");
+    // if (!th.isAchieved(60, 2, "angle")) {
+    //     ROS_INFO("Angle goal not achieved");
+    //     return 1;
+    // }
 
     // anglePIDClient.cancelGoal();
+
+    // nh.setParam("/use_reference_yaw", false);
 
     // ros::Duration(1).sleep();
     // nh.setParam("/pwm_yaw", 50);
@@ -274,6 +286,8 @@ int main(int argc, char** argv) {
     // }
     // ROS_INFO("Centralized with the line");
 
+    // nh.setParam("/set_local_yaw", true);
+
     // if (!th.isDetected("green_torpedo", 5)) {
     //     ROS_INFO("Unable to detect green torpedo");
     //     return 1;
@@ -290,15 +304,15 @@ int main(int argc, char** argv) {
     // ROS_INFO("Current task: Red Torpedo");
 
     // move_sideward.setThrust(-50);
-    // move_sideward.setActive(true, "current");
+    // move_sideward.setActive(true, "local");
 
     // if (!th.isDetected("red_torpedo", 5)) {
     //     ROS_INFO("Unable to detect Red Torpedo");
-    //     move_sideward.setActive(false, "current");
+    //     move_sideward.setActive(false, "local");
     //     return 1;
     // }
 
-    // move_sideward.setActive(false, "current");
+    // move_sideward.setActive(false, "local");
 
     // torpedo.setActive(true);
     // torpedo.setActive(false);
@@ -311,21 +325,19 @@ int main(int argc, char** argv) {
     // nh.setParam("/current_task", "line");
 
     // move_sideward.setThrust(-50);
-    // move_sideward.setActive(true, "current");
+    // move_sideward.setActive(true, "local");
     // ros::Duration(3).sleep();
-    // move_sideward.setActive(false, "current");
+    // move_sideward.setActive(false, "local");
 
     // move_straight.setThrust(-50);
-    // move_straight.setActive(true, "current");
+    // move_straight.setActive(true, "local");
     // if (!th.isDetected("line", 10)) {
     //     ROS_INFO("line not detected");
-    //     move_straight.setActive(false, "current");
+    //     move_straight.setActive(false, "local");
     //     return 1;
     // }
     // ROS_INFO("Line Detected");
-    // move_straight.setActive(false, "current");
-
-    // nh.setParam("/disable_imu", true);
+    // move_straight.setActive(false, "local");
 
     // if (!line.setActive(true)) {
     //     ROS_INFO("Line Task Failed");
@@ -336,10 +348,10 @@ int main(int argc, char** argv) {
 
     // ROS_INFO("Completed the Line task");
 
-    // nh.setParam("/disable_imu", false);
-    
     // // After finishing torpedo task turn 120 degree anticlockwise and then move straight
-    // ROS_INFO("Master layer, anglePID server started, sending goal."); 
+    // ROS_INFO("Master layer, anglePID server started, sending goal.");
+
+    // nh.setParam("/use_reference_yaw", true);
 
     // anglePIDGoal.target_angle = -90;
     // anglePIDClient.sendGoal(anglePIDGoal);
@@ -351,6 +363,8 @@ int main(int argc, char** argv) {
     // }
 
     // anglePIDClient.cancelGoal();
+
+    // nh.setParam("/use_reference_yaw", false);
 
     // move_straight.setThrust(75);
     // move_straight.setActive(true, "current");
@@ -375,28 +389,46 @@ int main(int argc, char** argv) {
 
     // /////////////////////////////////////////////////////
 
+    // Marker Dropper - Octagon transition
+
+    // nh.setParam("/current_task", "line");
+    // ROS_INFO("Current task: Line");
+
+    // move_straight.setThrust(50);
+    // move_straight.setActive(true, "local");
+
+    // if (!th.isDetected("line", 10)) {
+    //     ROS_INFO("Line not detected");
+    //     move_straight.setActive(false, "local");
+    //     return 1;
+    // }
+    // move_straight.setActive(false, "local");
+
+    // if (!line.setActive(true)) {
+    //     ROS_INFO("Line not done");
+    //     line.setActive(false);
+    //     return 1;
+    // }
+    // line.setActive(false);
+
+    // nh.setParam("/set_local_yaw", true);
+
+    /////////////////////////////////////////////////////////
+
     // // Octagon
-
-    // ROS_INFO("Waiting for anglePID server to start.");
-    // anglePIDClient.waitForServer();
-
-    // ROS_INFO("anglePID server started, sending goal.");
-
-    // anglePIDGoal.target_angle = 60;
-    // anglePIDClient.sendGoal(anglePIDGoal);
-
-    // th.isAchieved(60, 2, "angle");
-
-    // anglePIDClient.cancelGoal();
 
     // nh.setParam("/current_task", "octagon");
     // ROS_INFO("Current task: Octagon");
 
-    // move_straight.setActive(true);
+    // move_straight.setActive(true, "current");
 
-    // th.isDetected("octagon", 10);
+    // if (!th.isDetected("octagon", 10)) {
+    //     ROS_INFO("Not able to detect octagon");
+    //     move_straight.setActive(false, "current");
+    //     return 1;
+    // }
 
-    // move_straight.setActive(false);
+    // move_straight.setActive(false, "current");
 
     // Octagon octagon;
     // octagon.setActive(true);

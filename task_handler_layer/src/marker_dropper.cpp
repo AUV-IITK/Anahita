@@ -11,9 +11,6 @@ bool MarkerDropper::setActive(bool status) {
 
     if (status) {
 
-        // move_straight.setThrust(50);
-        // move_straight.setActive(true);
-
         nh.setParam("/pwm_surge", 50);
 
         ROS_INFO("Waiting for sidewardPID server to start.");
@@ -26,7 +23,7 @@ bool MarkerDropper::setActive(bool status) {
 
         anglePIDClient.waitForServer();
 
-        anglePIDGoal.target_angle = -90;
+        anglePIDGoal.target_angle = 0;
         anglePIDClient.sendGoal(anglePIDGoal);
 
         while (ros::ok()) {
@@ -43,8 +40,6 @@ bool MarkerDropper::setActive(bool status) {
             if (data <= 200) { break; }
         }
         sidewardPIDClient.cancelGoal();
-
-        nh.setParam("disable_imu", true);
 
         nh.setParam("/current_task", "line");
         ROS_INFO("Current task: Line");
@@ -65,9 +60,9 @@ bool MarkerDropper::setActive(bool status) {
         }
         line.setActive(false);
 
-        nh.setParam("disable_imu", false);
-
         ROS_INFO("Aligned to the line");
+
+        nh.setParam("/set_local_yaw", true);
 
         ///////////////////////////////////////////////////
 
@@ -75,16 +70,16 @@ bool MarkerDropper::setActive(bool status) {
         ROS_INFO("Current task: Marker Dropper Bottom");
 
         move_straight.setThrust(50);
-        move_straight.setActive(true, "current");
+        move_straight.setActive(true, "local");
 
         ROS_INFO("Finding Marker Dropper ....");
 
         if (!th.isDetected("marker_dropper_bottom", 20)) {
             ROS_INFO("Unable to detect Marker Dropper");
-            move_straight.setActive(false, "current");
+            move_straight.setActive(false, "local");
             return false;
         }
-        move_straight.setActive(false, "current");
+        move_straight.setActive(false, "local");
         ROS_INFO("Marker Dropper Detected");
 
         ROS_INFO("Waiting for forwardPID server to start.");
@@ -103,12 +98,12 @@ bool MarkerDropper::setActive(bool status) {
 
         ////////////////////////////////////////////////////
 
-        if (!th.isAchieved(0, 10, "forward")) {
-            ROS_INFO("Forward not achieved");
+        if (!th.isAchieved(0, 15, "forward")) {
+            ROS_INFO("Marker Dropper, Forward not achieved");
             return false;
         }
-        if (!th.isAchieved(0, 10, "sideward")) {
-            ROS_INFO("sideward not achieved");
+        if (!th.isAchieved(0, 15, "sideward")) {
+            ROS_INFO("Marker Dropper, sideward not achieved");
             return false;
         }
 

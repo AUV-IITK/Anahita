@@ -37,6 +37,7 @@ public:
     bool isStable ();
     void findNextTask ();
     void analyze ();
+    void explore ();
 
 private:
     ros::NodeHandle nh;
