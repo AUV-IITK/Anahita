@@ -151,6 +151,7 @@ target_link_libraries(master
   moveDownward 
   marker_dropper
   octagon
+  navigation_handler
   ${catkin_LIBRARIES}
 )
 

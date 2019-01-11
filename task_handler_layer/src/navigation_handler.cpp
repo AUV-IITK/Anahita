@@ -1,7 +1,7 @@
 #include <navigation_handler.h>
 
 navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(15),
-                                        anglePIDClient("anglePID"), upwardPIDClient("upwardPID"), 
+                                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
                                         forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
 
 navigationHandler::~navigationHandler () {}
@@ -34,7 +34,6 @@ void navigationHandler::stabilise (std::string type) {
 }
 
 void navigationHandler::manouver () {
-    double yaw = 0;
     nh.setParam("/set_local_yaw", true);
     nh.setParam("/use_local_yaw", true);
 
@@ -50,21 +49,21 @@ void navigationHandler::manouver () {
         return;
     }
 
-    double depth = 0;
-    nh.getParam("/reference_depth", depth);
-    nh.setParam("/enable_pressure", true);
+    // double depth = 0;
+    // nh.getParam("/reference_depth", depth);
+    // nh.setParam("/enable_pressure", true);
 
-    ROS_INFO("Waiting for upwardPID server to start, Navigation Handle");
-    upwardPIDClient.waitForServer();
+    // ROS_INFO("Waiting for upwardPID server to start, Navigation Handle");
+    // upwardPIDClient.waitForServer();
 
-    ROS_INFO("upwardPID server started, sending goal");
-    upwardPIDGoal.target_depth = depth;
-    upwardPIDClient.sendGoal(upwardPIDGoal); 
+    // ROS_INFO("upwardPID server started, sending goal");
+    // upwardPIDGoal.target_depth = depth;
+    // upwardPIDClient.sendGoal(upwardPIDGoal); 
 
-    if (!th.isAchieved(depth, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward, Navigation Handle");
-        return;
-    }
+    // if (!th.isAchieved(depth, 10, "upward")) {
+    //     ROS_INFO("Time limit exceeded for upward, Navigation Handle");
+    //     return;
+    // }
 
     move_straight.setThrust(50);
     move_straight.setActive(true, "local_yaw");
@@ -76,6 +75,7 @@ void navigationHandler::manouver () {
     move_straight.setActive(false, "local_yaw");
     nh.setParam("/pwm_sway", 0);
 
+    move_straight.setThrust(50);
     move_straight.setActive(true, "local_yaw");
 
     nh.setParam("/pwm_sway", -50);
@@ -95,20 +95,21 @@ void navigationHandler::manouver () {
     move_straight.setActive(false, "local_yaw");
 
     anglePIDClient.cancelGoal();
-    upwardPIDClient.cancelGoal();
+    // upwardPIDClient.cancelGoal();
 
-    nh.setParam("/enable_pressure", false);
+    // nh.setParam("/enable_pressure", false);
     nh.setParam("/use_local_yaw", false);
 }
 
 bool navigationHandler::find (std::string object) {
     spin_thread = new boost::thread(boost::bind(&navigationHandler::manouver, this));
-    if (!th.isDetected(object, 25)) {
+    nh.setParam("/current_task", object);
+    if (!th.isDetected(object, 30)) {
         ROS_INFO("Not found");
         return false;
     }
     ROS_INFO("object detected");
-    spin_thread->join();
+    spin_thread-join();
     return true;
 }
 

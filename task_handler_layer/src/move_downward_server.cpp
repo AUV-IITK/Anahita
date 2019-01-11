@@ -1,7 +1,8 @@
 #include <move_downward_server.h>
 
 moveDownward::moveDownward(int pwm_): anglePIDClient("turnPID") { 
-    nh_.setParam("/pwm_heave", pwm_); 
+    pwm = pwm_; 
+    nh_.setParam("/pwm_heave", pwm);
     // sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &moveDownward::angleCB, this);
 }
 
@@ -42,6 +43,11 @@ void moveDownward::spinThread() {
     anglePIDClient.sendGoal(angle_PID_goal);
 }
 
+void moveDownward::setThrust(int _pwm) {
+    ros::Duration(1).sleep();
+    nh_.setParam("/pwm_heave", _pwm);
+}
+
 // void moveDownward::spinThread_() {
 //     ROS_INFO("Waiting for turnPID server to start.");
 //     anglePIDClient.waitForServer();
@@ -61,11 +67,6 @@ void moveDownward::spinThread() {
 //     // mtx.unlock();
 //     anglePIDClient.sendGoal(angle_PID_goal);
 // }
-
-void moveDownward::setThrust(int _pwm) {
-    ros::Duration(1).sleep();
-    nh_.setParam("/pwm_heave", _pwm);
-}
 
 // void moveDownward::angleCB(const std_msgs::Float32ConstPtr& _msg) {
 //     // mtx.lock();

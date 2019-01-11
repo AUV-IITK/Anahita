@@ -1,7 +1,8 @@
 #include <straight_server.h>
 
 moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") { 
-    nh_.setParam("/pwm_surge", pwm_); 
+    pwm = pwm_;
+    nh_.setParam("/pwm_surge", pwm);
     // sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &moveStraight::angleCB, this);
 }
 

@@ -8,7 +8,7 @@
   <param name="/pwm_surge" value="0" type="int" />
   <param name="/pwm_heave" value="0" type="int" />
 
-  <param name="/current_task" value="marker_dropper_bottom" type="string" />
+  <param name="/current_task" value="line" type="string" />
 
   <param name="/kill_signal" value="false" type="bool" />
 
@@ -22,7 +22,7 @@
 
   <param name="/use_local_yaw" value="false" type="bool" />
 
-  <param name="/reference_depth" value="false" type="double" />
+  <param name="/reference_depth" value="0" type="double" />
 
   <param name="/set_local_yaw" value="false" type="bool" />
 

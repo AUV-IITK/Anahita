@@ -25,6 +25,7 @@ protected:
     boost::thread* spin_thread_;
     std::mutex mtx;
 
+    int pwm = 0;
 
 public:
 

@@ -33,6 +33,8 @@ protected:
 
     std::mutex mtx;
 
+    int pwm = 0;
+
 public:
 
     moveStraight(int);

@@ -1,7 +1,8 @@
 #include <move_sideward_server.h>
 
 moveSideward::moveSideward(int pwm_): anglePIDClient("turnPID") { 
-    nh_.setParam("/pwm_sway", pwm_); 
+    pwm = pwm_;
+    nh_.setParam("/pwm_sway", pwm);
     // sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &moveSideward::angleCB, this);
 }
 

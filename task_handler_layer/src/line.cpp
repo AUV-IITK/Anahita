@@ -9,6 +9,10 @@ lineTask::~lineTask() {}
 
 bool lineTask::setActive(bool value) {
     if (value) {
+        nh_.setParam("/use_local_yaw", false);
+        nh_.setParam("/use_reference_yaw", false);
+        nh_.setParam("/disable_imu", true);
+
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();
 
@@ -60,6 +64,9 @@ bool lineTask::setActive(bool value) {
         anglePIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         forwardPIDClient.cancelGoal();
+        
+        nh_.setParam("/disable_imu", false);
+        nh_.setParam("/kill_signal", true);
     }
     return true;
 }
