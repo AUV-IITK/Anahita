@@ -1,6 +1,6 @@
 #include <depth_stabilise.h>
 
-depthStabilise::depthStabilise() : anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), move_straight(0, "current") {
+depthStabilise::depthStabilise() : upwardPIDClient("upwardPID"), move_straight(0) {
     goalReceived = false;
     sub_ = nh.subscribe("/anahita/z_coordinate", 1, &depthStabilise::depthCB, this);
 }
@@ -11,10 +11,10 @@ depthStabilise::~depthStabilise() {
 void depthStabilise::setActive(bool status) {
     if (status) {
         spin_thread = new boost::thread(boost::bind(&depthStabilise::spinThread, this));
-        move_straight.setActive(true);
+        move_straight.setActive(true, "current");
     }
     else {
-        move_straight.setActive(false);
+        move_straight.setActive(false, "current");
         
         // depth_mutex.lock();
         if (goalReceived) {

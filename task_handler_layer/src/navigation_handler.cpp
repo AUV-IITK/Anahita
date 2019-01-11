@@ -1,6 +1,9 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(15) {}
+navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(15),
+                                        anglePIDClient("anglePID"), upwardPIDClient("upwardPID"), 
+                                        forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
+
 navigationHandler::~navigationHandler () {}
 
 void navigationHandler::stabilise (std::string type) {
@@ -14,11 +17,11 @@ void navigationHandler::stabilise (std::string type) {
 
     ROS_INFO("upwardPID server started, sending goal.");
     upwardPIDGoal.target_depth = depth;
-    upwardPIDClient.sendGoal(upward_PID_goal);
+    upwardPIDClient.sendGoal(upwardPIDGoal);
 
     if (!th.isAchieved(depth, 10, "upward")) {
         ROS_INFO("Time limit exceeded for upward");
-        return
+        return;
     }
     
     move_straight.setThrust(0);
@@ -32,8 +35,8 @@ void navigationHandler::stabilise (std::string type) {
 
 void navigationHandler::manouver () {
     double yaw = 0;
-    nh.getParam("/set_local_yaw", true);
-    nh.getParam("/use_local_yaw", true);
+    nh.setParam("/set_local_yaw", true);
+    nh.setParam("/use_local_yaw", true);
 
     ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
     anglePIDClient.waitForServer();
@@ -56,11 +59,11 @@ void navigationHandler::manouver () {
 
     ROS_INFO("upwardPID server started, sending goal");
     upwardPIDGoal.target_depth = depth;
-    upwardPIDClient.sendGoal(upward_PID_goal); 
+    upwardPIDClient.sendGoal(upwardPIDGoal); 
 
     if (!th.isAchieved(depth, 10, "upward")) {
         ROS_INFO("Time limit exceeded for upward, Navigation Handle");
-        return
+        return;
     }
 
     move_straight.setThrust(50);

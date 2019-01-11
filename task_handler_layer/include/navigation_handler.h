@@ -36,13 +36,14 @@ public:
     bool find (std::string);
     bool isStable ();
     void findNextTask ();
-    void enalyze ();
+    void analyze ();
 
 private:
-    ros::NodeHandle nh_;
-    ros::Subscriber sub_;
+    ros::NodeHandle nh;
 
     taskHandler th;
+
+    boost::thread* spin_thread;
 
     moveStraight move_straight;
     moveSideward move_sideward;
