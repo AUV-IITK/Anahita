@@ -57,8 +57,8 @@ bool singleBuoy::setActive(bool status) {
             return false;
         }
 
-         // while(forward_distance_ >= 60 && ros::ok()) {
-         // }
+        // while(forward_distance_ >= 60 && ros::ok()) {
+        // }
 
         ROS_INFO("forward distance equal 60");
     	ros::Duration(3).sleep();
@@ -108,12 +108,17 @@ bool singleBuoy::setActive(bool status) {
             ROS_INFO("Unable to achieve forward goal");
             return false;
         }
+        sidewardPIDClient.cancelGoal();
+        forwardPIDClient.cancelGoal();
+
+        if (!th.isAchieved(0, 2, "forward")) {
+            ROS_INFO("Unable to achieve forward goal");
+            return false;
+        }
     }
     else {
         // upwardPIDClient.cancelGoal();
-        forwardPIDClient.cancelGoal();
         anglePIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
 
         ROS_INFO("Closing Single Buoy");
         ROS_INFO("Killing the thrusters");

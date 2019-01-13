@@ -6,3 +6,5 @@ int16 upward_north_east
 int16 upward_north_west
 int16 upward_south_east
 int16 upward_south_west
+int8 torpedo
+int8 marker_dropper

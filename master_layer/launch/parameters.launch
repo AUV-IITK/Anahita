@@ -8,24 +8,24 @@
   <param name="/pwm_surge" value="0" type="int" />
   <param name="/pwm_heave" value="0" type="int" />
 
+  <param name="/torpedo" value="0" type="int" />
+  <param name="/marker_dropper" value="0" type="int" />
+
   <param name="/current_task" value="line" type="string" />
 
   <param name="/kill_signal" value="false" type="bool" />
 
   <param name="/reference_yaw" value="0" type="double" />
-
+  <param name="/reference_depth" value="0" type="double" />
   <param name="/local_yaw" value="0" type="double" />
 
   <param name="/disable_imu" value="false" type="bool" />
+  <param name="/enable_pressure" value="false" type="bool" />
 
   <param name="/use_reference_yaw" value="false" type="bool" />
-
   <param name="/use_local_yaw" value="false" type="bool" />
 
-  <param name="/reference_depth" value="0" type="double" />
-
   <param name="/set_local_yaw" value="false" type="bool" />
-
   <param name="/set_reference_yaw" value="false" type="bool" />
 
 </launch>

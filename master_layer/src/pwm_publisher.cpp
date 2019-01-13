@@ -14,6 +14,9 @@ int main(int argc, char** argv) {
     int pwm_pitch;
     int pwm_heave;
 
+    int torpedo;
+    int marker_dropper;
+
     bool kill_signal = false;
 
     nh.setParam("/pwm_sway", 0);
@@ -25,7 +28,10 @@ int main(int argc, char** argv) {
 
     nh.setParam("/kill_signal", false);
 
-    ros::Rate r(50);
+    nh.setParam("/torpedo", 0);
+    nh.setParam("/marker_dropper", 0);
+
+    ros::Rate r(20);
 
     hyperion_msgs::Thrust pwm;
 
@@ -41,6 +47,9 @@ int main(int argc, char** argv) {
 
 	    nh.getParam("/kill_signal", kill_signal);
 
+        nh.getParam("/marker_dropper", marker_dropper);
+        nh.getParam("/torpedo", torpedo);
+
         pwm.forward_left = -pwm_surge - pwm_yaw;
         pwm.forward_right = -pwm_surge + pwm_yaw;
 
@@ -52,6 +61,9 @@ int main(int argc, char** argv) {
 
         pwm.upward_south_east = -pwm_heave - pwm_roll + pwm_pitch;
         pwm.upward_south_west = -pwm_heave + pwm_roll - pwm_pitch;
+
+        pwm.torpedo = torpedo;
+        pwm.marker_dropper = marker_dropper;
 
         if (kill_signal) {
 
