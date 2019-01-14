@@ -145,11 +145,11 @@ void setup()
      pressure_sensor.init();
      pressure_sensor.setFluidDensity(997);    //kg/m^3 (freshwater, 1029 for seawater)*/
     
-    //initialize ROS node
+    // initialize ROS node
     nh.initNode();
     nh.getHardware()->setBaud(57600);
 
-    //start ros_node
+    // start ros_node
     nh.subscribe(PWM_Sub);
     // nh.subscribe(Marker_Dropper_Sub);
     // nh.subscribe(SOV_Sub);
@@ -169,7 +169,7 @@ void loop()
 {
      static unsigned long prev_pressure_time = 0;
 
-    //this block publishes the pressure sensor data based on defined rate
+    // this block publishes the pressure sensor data based on defined rate
     if ((millis() - prev_pressure_time) >= (1000 / PRESSURE_PUBLISH_RATE))
     {
         // publish_pressure_data();

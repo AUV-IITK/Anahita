@@ -10,7 +10,8 @@ singleBuoy::~singleBuoy() {}
 bool singleBuoy::setActive(bool status) {
 
     if (status) {
-        ros::Duration(1).sleep();
+
+        nh_.setParam("/use_reference_yaw", true);
 
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
@@ -38,14 +39,15 @@ bool singleBuoy::setActive(bool status) {
         anglePIDGoal.target_angle = 0;
         anglePIDClient.sendGoal(anglePIDGoal);
 
+        if (!th.isAchieved(0, 60, "sideward")) {
+            ROS_INFO("Unable to achieve sideward goal");
+            return false;
+        }
+
         /////////////////////////////////////////////////////
-        // ROS_INFO("SETTING F0RWARD PWM TO 50");
-        // nh_.setParam("/pwm_surge", 50);
 
         ROS_INFO("Waiting for forwardPID server to start.");
         forwardPIDClient.waitForServer();
-
-        // while (!forwardGoalReceived && ros::ok()) {}
 
         ROS_INFO("forward distance received");
 
@@ -57,11 +59,8 @@ bool singleBuoy::setActive(bool status) {
             return false;
         }
 
-        // while(forward_distance_ >= 60 && ros::ok()) {
-        // }
-
-        ROS_INFO("forward distance equal 60");
-    	ros::Duration(3).sleep();
+        ROS_INFO("forward distance equal 45");
+    	
 	    if (!th.isAchieved(0, 15, "sideward")) {
             ROS_INFO("Unable to achieve sideward goal");
             return false;
@@ -74,7 +73,7 @@ bool singleBuoy::setActive(bool status) {
 
         nh_.setParam("/pwm_surge", 50);
 
-        ros::Duration(6).sleep(); // 8 for gazebo and 6 for real world
+        ros::Duration(7).sleep(); // 8 for gazebo and 6 for real world
         //////////////////////////////////////////////////////
         nh_.setParam("/pwm_surge", -50);
 
@@ -86,33 +85,31 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("moving backward finished");
 
-        ROS_INFO("SidewardPID Client sending goal again, task buoy.");
-        sidewardPIDgoal.target_distance = 0;
-        sidewardPIDClient.sendGoal(sidewardPIDgoal);
-        
-        // ROS_INFO("UpwardPID Client sending goal again, task buoy.");
-        // upwardPIDgoal.target_depth = 0;
-        // upwardPIDClient.sendGoal(upwardPIDgoal);
+        if (th.isDetected("red_buoy", 5)) {
+            ROS_INFO("SidewardPID Client sending goal again, task buoy.");
+            sidewardPIDgoal.target_distance = 0;
+            sidewardPIDClient.sendGoal(sidewardPIDgoal);
+            
+            // ROS_INFO("UpwardPID Client sending goal again, task buoy.");
+            // upwardPIDgoal.target_depth = 0;
+            // upwardPIDClient.sendGoal(upwardPIDgoal);
 
-        //////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////
 
-        ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
-        forwardPIDgoal.target_distance = 60;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+            ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
+            forwardPIDgoal.target_distance = 60;
+            forwardPIDClient.sendGoal(forwardPIDgoal);
 
-         // while(forward_distance_ <= 50 && ros::ok()) {
-         //     continue;
-         // }
-
-        if (!th.isAchieved(60, 15, "forward")) {
-            ROS_INFO("Unable to achieve forward goal");
-            return false;
+            if (!th.isAchieved(60, 15, "forward")) {
+                ROS_INFO("Unable to achieve forward goal");
+                return false;
+            }
+            sidewardPIDClient.cancelGoal();
+            forwardPIDClient.cancelGoal();
         }
-        sidewardPIDClient.cancelGoal();
-        forwardPIDClient.cancelGoal();
 
-        if (!th.isAchieved(0, 2, "forward")) {
-            ROS_INFO("Unable to achieve forward goal");
+        if (!th.isAchieved(0, 2, "angle")) {
+            ROS_INFO("Unable to achieve angle goal");
             return false;
         }
     }
@@ -123,6 +120,7 @@ bool singleBuoy::setActive(bool status) {
         ROS_INFO("Closing Single Buoy");
         ROS_INFO("Killing the thrusters");
 	    
+        nh_.setParam("/use_reference_yaw", true);
         nh_.setParam("/kill_signal", true);
     }
     return true;

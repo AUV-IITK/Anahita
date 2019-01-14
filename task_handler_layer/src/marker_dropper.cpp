@@ -12,6 +12,8 @@ bool MarkerDropper::setActive(bool status) {
     if (status) {
 
         nh.setParam("/pwm_surge", 50);
+        nh.setParam("/use_reference_yaw", false);
+        nh.setParam("/use_lcoal_yaw", false);
 
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();

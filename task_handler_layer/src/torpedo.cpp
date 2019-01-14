@@ -9,6 +9,9 @@ void Torpedo::setActive(bool status) {
 
     if (status) {
 
+        nh_.setParam("/use_local_yaw", true);
+        nh_.setParam("/use_reference_yaw", false);
+
         ROS_INFO("Waiting for sidewardPID server to start, task torpedo.");
         sidewardPIDClient.waitForServer();
 
@@ -69,6 +72,9 @@ void Torpedo::setActive(bool status) {
 
     }
     else {
+
+        nh_.setParam("/use_local_yaw", false);
+        
         forwardPIDClient.cancelGoal();
         // upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();

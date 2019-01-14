@@ -7,6 +7,9 @@ bool Octagon::setActive(bool status) {
 
     if (status) {
 
+        nh_.setParam("/use_local_yaw", true);
+        nh_.setParam("/use_reference_yaw", false);
+
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
 
@@ -36,6 +39,7 @@ bool Octagon::setActive(bool status) {
         }
     }
     else {
+        nh_.setParam("/use_local_yaw", false);
         forwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         ROS_INFO("Closing Octagon");

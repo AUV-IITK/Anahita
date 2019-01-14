@@ -17,6 +17,8 @@ int main (int argc, char** argv) {
     bool enable_pressure = false;
     std_msgs::Float32 depth;
 
+    bool set_reference_depth = false;
+
     ros::Rate loop_rate(50);
 
     while (ros::ok()) {
@@ -25,6 +27,12 @@ int main (int argc, char** argv) {
             depth.data = depth_data;
             depth_pub.publish(depth);
         }
+        nh.getParam("/set_reference_depth", set_reference_depth);
+        if (set_reference_depth) {
+            nh.setParam("/reference_depth", depth_data);
+            nh.setParam("/set_reference_depth", false);
+        }
+
         ros::spinOnce();
         loop_rate.sleep();
     }

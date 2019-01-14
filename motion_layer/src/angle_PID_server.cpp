@@ -59,14 +59,17 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
             double reference_angle = 0;
             nh_.getParam("/reference_yaw", reference_angle);
             goal_ = goal_ + reference_angle;
+            ROS_INFO("Reference Yaw used");
         }
         else if (use_local_yaw) {
             double local_angle = 0;
             nh_.getParam("/local_yaw", local_angle);
             goal_ = goal_ + local_angle;
+            ROS_INFO("Local Yaw Used");
         }
         else {
             goal_ = goal_ + current_angle_;
+            ROS_INFO("Current Yaw Used");
         }
         
         angle.setReference(goal_);

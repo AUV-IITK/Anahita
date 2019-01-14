@@ -168,8 +168,8 @@ target_link_libraries(motion_server
   ${catkin_LIBRARIES}
 )
 
-add_executable(temp src/temp.cpp)
-target_link_libraries(temp ${catkin_LIBRARIES})
+# add_executable(temp src/temp.cpp)
+# target_link_libraries(temp ${catkin_LIBRARIES})
 
 # add_executable(temp src/temp.cpp)
 # add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})

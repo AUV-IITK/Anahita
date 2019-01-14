@@ -10,6 +10,9 @@ gateTask::~gateTask() {}
 
 bool gateTask::setActive(bool status) {
     if (status) {
+
+        nh_.setParam("/use_local_yaw", true);
+
         ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
         sidewardPIDClient.waitForServer();
 
@@ -90,6 +93,9 @@ bool gateTask::setActive(bool status) {
         return true;
     }
     else {
+
+        nh_.setParam("/use_local_yaw", false);
+        
         sidewardPIDClient.cancelGoal();
         // upwardPIDClient.cancelGoal();
     	anglePIDClient.cancelGoal();

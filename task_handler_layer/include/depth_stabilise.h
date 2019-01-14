@@ -43,7 +43,7 @@ public:
     depthStabilise();
     ~depthStabilise();
 
-    void setActive(bool);
+    void setActive(bool, std::string);
     void depthCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
 };
