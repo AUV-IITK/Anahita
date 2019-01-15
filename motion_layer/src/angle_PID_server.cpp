@@ -12,7 +12,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &anglePIDAction::callBack, this);
 
-    angle.setPID(-3.5, 0, -0.2, 1);
+    angle.setPID(-4.5, 0, -0.2, 1);
 
     as_.start();
     ROS_INFO("angle_PID_server Initialised");
@@ -54,6 +54,9 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 
         bool use_reference_yaw = false;
         nh_.getParam("/use_reference_yaw", use_reference_yaw);
+
+        bool disable_imu = false;
+        nh_.getParam("/disable_imu", disable_imu);
         
         if (use_reference_yaw) {
             double reference_angle = 0;
@@ -66,6 +69,10 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
             nh_.getParam("/local_yaw", local_angle);
             goal_ = goal_ + local_angle;
             ROS_INFO("Local Yaw Used");
+        }
+        else if (disable_imu) {
+            goal_ = goal_;
+            ROS_INFO("Line Angle USed");	
         }
         else {
             goal_ = goal_ + current_angle_;

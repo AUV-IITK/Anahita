@@ -1,7 +1,7 @@
 #include <single_buoy.h>
 
 singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(15)
+                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(30)
 {
     forward_sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::forwardCB, this);
 }
@@ -41,7 +41,6 @@ bool singleBuoy::setActive(bool status) {
 
         if (!th.isAchieved(0, 60, "sideward")) {
             ROS_INFO("Unable to achieve sideward goal");
-            return false;
         }
 
         /////////////////////////////////////////////////////
@@ -51,19 +50,17 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("forward distance received");
 
-        forwardPIDgoal.target_distance = 45;
+        forwardPIDgoal.target_distance = 50;
         forwardPIDClient.sendGoal(forwardPIDgoal);
 
-        if (!th.isAchieved(45, 15, "forward")) {
+        if (!th.isAchieved(50, 10, "forward")) {
             ROS_INFO("Unable to achieve forward goal");
-            return false;
         }
 
-        ROS_INFO("forward distance equal 45");
+        ROS_INFO("forward distance equal 50");
     	
-	    if (!th.isAchieved(0, 15, "sideward")) {
+	    if (!th.isAchieved(0, 35, "sideward")) {
             ROS_INFO("Unable to achieve sideward goal");
-            return false;
         }
         ROS_INFO("hitting the buoy now");
 
@@ -85,7 +82,9 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("moving backward finished");
 
-        if (th.isDetected("red_buoy", 5)) {
+        if (th.isDetected("red_buoy", 7)) {
+
+	        ROS_INFO("detected the buoy after hitting");
             ROS_INFO("SidewardPID Client sending goal again, task buoy.");
             sidewardPIDgoal.target_distance = 0;
             sidewardPIDClient.sendGoal(sidewardPIDgoal);

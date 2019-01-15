@@ -170,6 +170,9 @@ int main(int argc, char** argv) {
     ROS_INFO("Moving Straight");
     move_straight.setThrust(50);
     move_straight.setActive(true, "reference");
+
+    nh.setParam("/current_task", "line");
+    ROS_INFO("Current task: Line");
     
     if (!th.isDetected("line", 10)) {
         ROS_INFO("Line not detected before the timeout");
@@ -181,9 +184,6 @@ int main(int argc, char** argv) {
     move_straight.setActive(false, "reference");
 
     ROS_INFO("Moving straight ended");
-
-    nh.setParam("/current_task", "line");
-    ROS_INFO("Current task: Line");
 
     if (!line.setActive(true)) {
         ROS_INFO("Line Task Failed");
@@ -199,10 +199,10 @@ int main(int argc, char** argv) {
 
     if (!th.isDetected("gate_front", 15)) {
         ROS_INFO("Unable to detect Gate");
-        move_straight.setActive(false, "reference");
+        // move_straight.setActive(false, "reference");
         return 1;
     }
-    move_straight.setActive(false, "reference");
+    // move_straight.setActive(false, "reference");
     ROS_INFO("Gate detected");
 
     if (!gate_task.setActive(true)) {
@@ -219,15 +219,14 @@ int main(int argc, char** argv) {
     // Gate-Torpedo Transition
 
     nh.setParam("/current_task", "green_torpedo");
-    ROS_INFO("Current task: Green Torpedo");
 
     nh.setParam("/use_reference_yaw", true);
 
-     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
-     motion_layer::anglePIDGoal anglePIDGoal;
+    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+    motion_layer::anglePIDGoal anglePIDGoal;
 
-     ROS_INFO("Waiting for anglePID server to start.");
-     anglePIDClient.waitForServer();
+    ROS_INFO("Waiting for anglePID server to start.");
+    anglePIDClient.waitForServer();
 
     ROS_INFO("anglePID server started, sending goal.");
 
@@ -244,14 +243,14 @@ int main(int argc, char** argv) {
     nh.setParam("/use_reference_yaw", false);
 
     ros::Duration(1).sleep();
-    nh.setParam("/pwm_yaw", 50);
+    // nh.setParam("/pwm_yaw", 50);
 
     ROS_INFO("Finding Green Torpedo....");
     if (!th.isDetected("green_torpedo", 10)) {
         ROS_INFO("Unable to detect Green torpedo");
         return 1;
     }
-    nh.setParam("/pwm_sway", 0);
+    // nh.setParam("/pwm_sway", 0);
 
     ROS_INFO("Green Torpedo detected");
 
@@ -281,6 +280,9 @@ int main(int argc, char** argv) {
     ROS_INFO("Centralized with the line");
 
     nh.setParam("/set_local_yaw", true);
+
+    nh.setParam("/current_task", "green_torpedo");
+    ROS_INFO("Current task: Green Torpedo");
 
     if (!th.isDetected("green_torpedo", 5)) {
         ROS_INFO("Unable to detect green torpedo");
@@ -381,7 +383,7 @@ int main(int argc, char** argv) {
     md.setActive(true);
     md.setActive(false);
 
-    // /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
 
     // Marker Dropper - Octagon transition
 

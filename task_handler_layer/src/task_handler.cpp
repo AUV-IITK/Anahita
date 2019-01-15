@@ -48,6 +48,8 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     sub_ = nh_.subscribe(topic_map_[_topic], 1, &taskHandler::callBack, this);
     is_subscribed_ = true;
 
+    ros::Duration(1.5).sleep();
+
     int count = 0;
     double then = ros::Time::now().toSec();
 
@@ -61,6 +63,9 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         bool use_local_yaw = false;
         nh_.getParam("/use_local_yaw", use_local_yaw);
 
+        bool disable_imu = false;
+        nh_.getParam("/disable_imu", disable_imu);
+
         if (use_reference_yaw) {
             double reference_angle = 0;
             nh_.getParam("/reference_yaw", reference_angle);
@@ -70,6 +75,9 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
             double local_angle = 0;
             nh_.getParam("/local_yaw", local_angle);
             temp = local_angle + _target;
+        }
+        else if (disable_imu) {
+            temp = _target;	
         }
         else {
             while (ros::ok()) {
@@ -81,6 +89,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
             // data_mutex.lock();
             temp = data_ + _target;
             // data_mutex.unlock();
+
         }
 
         if (temp > 180) {
@@ -90,6 +99,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
             temp = temp + 360;
         }
         _target = temp;
+
     }
 
     ros::Rate loop_rate(100);

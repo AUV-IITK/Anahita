@@ -95,7 +95,6 @@ bool gateTask::setActive(bool status) {
     else {
 
         nh_.setParam("/use_local_yaw", false);
-        
         sidewardPIDClient.cancelGoal();
         // upwardPIDClient.cancelGoal();
     	anglePIDClient.cancelGoal();

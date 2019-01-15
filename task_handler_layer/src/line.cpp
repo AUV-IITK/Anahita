@@ -1,7 +1,7 @@
 #include <line.h>
 
 lineTask::lineTask(): sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), 
-                    forwardPIDClient("forwardPID"), th(15) {
+                    forwardPIDClient("forwardPID"), th(30) {
     sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &lineTask::angleCB, this);
 }
 
@@ -52,10 +52,10 @@ bool lineTask::setActive(bool value) {
         double angle = angle_;
         // mtx.unlock();
 
-        angle_PID_goal.target_angle = -angle;
+        angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
 
-        if (!th.isAchieved(-angle, 2, "angle")) {
+        if (!th.isAchieved(0, 5, "angle")) {
             ROS_INFO("Bot Unbale to align with the line");
             return false;
         }

@@ -103,7 +103,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES singleBuoy line gate moveForward moveSideward moveStraight
+  LIBRARIES singleBuoy line gate moveSideward moveStraight
   CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs motion_layer message_generation
   # DEPENDS system_lib
 )
