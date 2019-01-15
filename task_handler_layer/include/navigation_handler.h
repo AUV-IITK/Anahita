@@ -44,7 +44,11 @@ private:
 
     taskHandler th;
 
+    std::mutex mtx;
+
     boost::thread* spin_thread;
+
+    bool stop_manouver = false;
 
     moveStraight move_straight;
     moveSideward move_sideward;

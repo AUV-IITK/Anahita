@@ -50,18 +50,18 @@ bool gateTask::setActive(bool status) {
     	ROS_INFO("setting surge to 50");
 
         while(ros::ok()) {
-            // mtx.lock();
+            mtx.lock();
 	        bool temp = forwardGoalReceived;
-	        // mtx.unlock();
+	        mtx.unlock();
             if (temp) {
                 break;
             }           
         }
 
         while(ros::ok()) {
-            // mtx.lock();
+            mtx.lock();
 	        double forward_distance = forward_distance_;
- 	        // mtx.unlock();
+ 	        mtx.unlock();
             if (forward_distance <= 250) {
                 break;
             }
@@ -103,8 +103,8 @@ bool gateTask::setActive(bool status) {
 }
 
 void gateTask::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
-    // mtx.lock();
+    mtx.lock();
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
-    // mtx.unlock();
+    mtx.unlock();
 }

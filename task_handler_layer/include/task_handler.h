@@ -36,9 +36,9 @@ private:
 
     bool dataReceived = false;
 
-    // std::mutex data_mutex;
-    // std::mutex vision_mutex;
-    // std::mutex mtx;
+    std::mutex data_mutex;
+    std::mutex vision_mutex;
+    std::mutex mtx;
 
     bool is_subscribed_= false;
 };

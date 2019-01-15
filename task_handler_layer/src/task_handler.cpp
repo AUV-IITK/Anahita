@@ -29,13 +29,13 @@ taskHandler::taskHandler (double _timeout) {
 taskHandler::~taskHandler () {}
 
 void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
-    // data_mutex.lock();
+    data_mutex.lock();
     data_ = _msg->data;
-    // data_mutex.unlock();
-
-    // mtx.lock();
+    data_mutex.unlock();
+    
+    mtx.lock();
     dataReceived = true;
-    // mtx.unlock();
+    mtx.unlock();
 }
 
 bool taskHandler::isAchieved (double _target, double _band, std::string _topic) {
@@ -81,14 +81,14 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         }
         else {
             while (ros::ok()) {
-                // mtx.lock();
+                mtx.lock();
                 bool dataReceived_ = dataReceived;
-                // mtx.unlock();
+                mtx.unlock();
                 if (dataReceived_) { break; }
             }
-            // data_mutex.lock();
+            data_mutex.lock();
             temp = data_ + _target;
-            // data_mutex.unlock();
+            data_mutex.unlock();
 
         }
 
@@ -105,9 +105,9 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     ros::Rate loop_rate(100);
 
     while (ros::ok()) {
-        // data_mutex.lock();
+        data_mutex.lock();
         double data = data_;
-        // data_mutex.unlock();
+        data_mutex.unlock();
 
         if (std::abs(data - _target) <= _band) {
             if (!count) {
@@ -144,9 +144,9 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
     double now;
     double diff;
     while (ros::ok()) {
-        // vision_mutex.lock();
+        vision_mutex.lock();
         bool temp = task_map_[_task];
-        // vision_mutex.unlock();
+        vision_mutex.unlock();
         if (temp) {
             break;
         }
@@ -165,7 +165,7 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
     nh_.getParam("/current_task", current_task);
 
     if (_msg->data) {
-        // vision_mutex.lock();
+        vision_mutex.lock();
         if (current_task == "green_buoy") {
             task_map_["green_buoy"] = true;
         }
@@ -199,7 +199,7 @@ void taskHandler::visionCB (const std_msgs::BoolPtr& _msg) {
         else if (current_task == "line") {
             task_map_["line"] = true;
         }
-        // vision_mutex.unlock();
+        vision_mutex.unlock();
     } 
 }
 
