@@ -1,12 +1,15 @@
 #include <gate.h>
+#include <std_msgs/String.h>
 
-gateTask::gateTask(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                    anglePIDClient("turnPID"), th(15) {}
+gateTask::gateTask(): sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), th(30) {}
 
 gateTask::~gateTask() {}
 
-void gateTask::setActive(bool status) {
+bool gateTask::setActive(bool status) {
     if (status) {
+
+        depth_stabilise.setActive(true, "reference");
+
         ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
         sidewardPIDClient.waitForServer();
 
@@ -26,15 +29,19 @@ void gateTask::setActive(bool status) {
 
         /////////////////////////////////////////////////////
 
-        nh_.setParam("/pwm_surge", 100);
-        nh_.setParam("/pwm_surge", 100);
+        if (!th.isAchieved(0, 15, "sideward")) {
+            ROS_INFO("Time limit exceeded for the sideward PID");
+            return false;
+        }
+    
+    	ROS_INFO("Gate Front completed successfully");
 
+        return true;
+    }
+    else {
         sidewardPIDClient.cancelGoal();
-        ros::Duration(6).sleep();
-
-        anglePIDClient.cancelGoal();
-
+    	anglePIDClient.cancelGoal();
+        depth_stabilise.setActive(false, "reference");
         nh_.setParam("/kill_signal", true);
     }
-    else { }
 }

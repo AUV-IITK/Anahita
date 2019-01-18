@@ -25,6 +25,17 @@
 #include <vision_commons/morph.h>
 #include <vision_commons/threshold.h>
 
+#define SHELLSCRIPT_DUMP_RED_BUOY "\
+#/bin/bash \n\
+echo -e \"Parameters dumped!!\" \n\
+rosparam dump -v ~/Projects/anahita/src/Anahita/vision_layer/vision_tasks/thresholding/red_buoy.yaml /vision_node\
+"
+#define SHELLSCRIPT_LOAD_RED_BUOY "\
+#/bin/bash \n\
+echo -e \"Parameters loaded!!\" \n\
+rosparam load -v ~/Projects/anahita/src/Anahita/vision_layer/vision_tasks/thresholding/red_buoy.yaml /vision_node\
+"
+
 class Buoy
 {
 protected:
@@ -56,29 +67,33 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[3] = {0, 15, 45};
-	int data_high_h[3] = {13, 23, 72};
-	int data_low_s[3] = {239, 236, 249};
-	int data_high_s[3] = {255, 255, 255};
-	int data_low_v[3] = {52, 72, 24};
-	int data_high_v[3] = {111, 217, 201};
+	int data_low_h[3] = {0, 0, 0};
+	int data_high_h[3] = {127, 8, 2};
+	int data_low_s[3] = {0, 49, 3};
+	int data_high_s[3] = {105, 243, 67};
+	int data_low_v[3] = {248, 36, 10};
+	int data_high_v[3] = {255, 255, 96};
 
-	bool close_task = false;
+	void setParams(ros::NodeHandle &nh);
 
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
 	Buoy();
+	~Buoy();
 	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;
 	cv::Mat image_;
 	cv::Mat image_marked;
 	boost::thread* spin_thread; 
+	image_transport::ImageTransport it;
 	void TaskHandling(bool);
 	void switchColor(int);
 	void spinThread();
 	int current_color;
+	bool close_task = false;
+	bool task_on = false;
 };
 #endif // BUOY_TASK_H

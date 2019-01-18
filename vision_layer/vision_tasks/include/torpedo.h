@@ -56,22 +56,21 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[2] = {43, 0};
-	int data_high_h[2] = {74, 13};
-	int data_low_s[2] = {41, 220};
+	int data_low_h[2] = {30, 0};
+	int data_high_h[2] = {84, 64};
+	int data_low_s[2] = {17, 0};
 	int data_high_s[2] = {255, 255};
-	int data_low_v[2] = {0, 87};
-	int data_high_v[2] = {255, 181};
-
-	bool close_task = false;
+	int data_low_v[2] = {0, 0};
+	int data_high_v[2] = {255, 255};
 
 	void callback(vision_tasks::torpedoRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
 public:
     Torpedo();
+	~Torpedo();
     ros::NodeHandle nh;
-	image_transport::ImageTransport it();
+	image_transport::ImageTransport it;
 	cv::Mat image_;
 	cv::Mat image_marked;
 	boost::thread* spin_thread; 
@@ -82,6 +81,9 @@ public:
 	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;
+
+	bool close_task = false;
+	bool task_on = false;
 };
 #endif // TORPEDO_TASK_H
 

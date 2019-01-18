@@ -35,14 +35,14 @@ protected:
     int front_clahe_bilateral_iter_ = 8;
     int front_balanced_bilateral_iter_ = 4;
     double front_denoise_h_ = 10.0;
-    int front_low_h_ = 0;
-    int front_high_h_ = 255;
-    int front_low_s_ = 0;
-    int front_high_s_ = 255;
-    int front_low_v_ = 0;
-    int front_high_v_ = 255;
-    int front_closing_mat_point_ = 1;
-    int front_closing_iter_ = 1;
+    int front_low_h_;
+    int front_high_h_;
+    int front_low_s_;
+    int front_high_s_;
+    int front_low_v_;
+    int front_high_v_;
+    int front_closing_mat_point_;
+    int front_closing_iter_;
     int front_canny_threshold_low_ = 0;
     int front_canny_threshold_high_ = 1000;
     int front_canny_kernel_size_ = 3;
@@ -58,14 +58,14 @@ protected:
     int bottom_clahe_bilateral_iter_ = 8;
     int bottom_balanced_bilateral_iter_ = 4;
     double bottom_denoise_h_ = 10.0;
-    int bottom_low_h_ = 10;
-    int bottom_low_s_ = 0;
-    int bottom_low_v_ = 0;
-    int bottom_high_h_ = 90;
-    int bottom_high_s_ = 255;
-    int bottom_high_v_ = 255;
-    int bottom_closing_mat_point_ = 1;
-    int bottom_closing_iter_ = 1;
+    int bottom_low_h_;
+    int bottom_low_s_;
+    int bottom_low_v_;
+    int bottom_high_h_;
+    int bottom_high_s_;
+    int bottom_high_v_;
+    int bottom_closing_mat_point_;
+    int bottom_closing_iter_;
 
     bool task_done = false;
 
@@ -97,8 +97,9 @@ protected:
 
 public:
     Gate();
+    ~Gate();
     ros::NodeHandle nh;
-	image_transport::ImageTransport it();
+	image_transport::ImageTransport it;
 	cv::Mat image_front;
     cv::Mat image_bottom;
 	cv::Mat image_marked;

@@ -137,19 +137,23 @@ include_directories(
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
+add_executable(pressure_publisher src/pressure_publisher.cpp)
+target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
+
 add_executable(master src/master.cpp)
 add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(master 
   singleBuoy 
-  gate 
+  gate
+  line
   moveSideward 
   moveStraight 
-  moveForward 
   task_handler 
   torpedo 
   moveDownward 
   marker_dropper
   octagon
+  navigation_handler
   ${catkin_LIBRARIES}
 )
 
@@ -163,6 +167,17 @@ target_link_libraries(motion_server
   pitchPIDServer 
   ${catkin_LIBRARIES}
 )
+
+# add_executable(temp src/temp.cpp)
+# target_link_libraries(temp ${catkin_LIBRARIES})
+
+# add_executable(temp src/temp.cpp)
+# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(temp
+#   line
+#   task_handler
+#   ${catkin_LIBRARIES}
+# )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

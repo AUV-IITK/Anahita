@@ -22,6 +22,10 @@ protected:
     motion_layer::upwardPIDFeedback feedback_;
     motion_layer::upwardPIDResult result_;
     double goal_;
+
+    double current_depth_ = 0;
+    bool goalReceived = false;
+
     ros::Subscriber sub_;
     ErrorDescriptor z_coord;
 

@@ -19,7 +19,7 @@ class Torpedo {
 public:
     Torpedo();
     ~Torpedo();
-    void setActive(bool);
+    bool setActive(bool);
 
 private:
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;

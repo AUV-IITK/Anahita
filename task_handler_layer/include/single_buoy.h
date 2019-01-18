@@ -17,12 +17,15 @@
 #include <boost/thread.hpp>
 #include <string>
 
+#include <depth_stabilise.h>
+
+#include <mutex>
+
 class singleBuoy {
 public:
     singleBuoy();
     ~singleBuoy();
-    void setActive(bool);
-    void forwardCB(const std_msgs::Float32ConstPtr &_msg);
+    bool setActive(bool);
 
 private:
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
@@ -31,9 +34,6 @@ private:
     actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;
 
     ros::NodeHandle nh_;
-    ros::Subscriber forward_sub_;
-
-    bool forwardGoalReceived = false;
 
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
@@ -42,6 +42,6 @@ private:
 
     taskHandler th;
 
-    double forward_distance_;
+    std::mutex mtx;
 };
 #endif // SINGLE_BUOY_H

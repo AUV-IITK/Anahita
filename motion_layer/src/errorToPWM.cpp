@@ -8,7 +8,7 @@ ErrorDescriptor::ErrorDescriptor(std::string _name): p_(0), i_(0), d_(0),
     pwm_(0), previous_time_stamp_(0), current_time_stamp_(0)
 {   
     this->name_ = _name;
-    ROS_INFO("%s type ErrorDecriptor is constructed.", this->name_);
+    std::cout << this->name_ << " type ErrorDecriptor is constructed" << std::endl;
 }
 
 ErrorDescriptor::~ErrorDescriptor() {}
@@ -34,7 +34,7 @@ void ErrorDescriptor::setReference(double _value) {
         }
     }
 
-    ROS_INFO("%s, Reference set to: %f", this->name_, reference_value_);
+    std::cout << this->name_ << ", Reference set to: " << reference_value_ << std::endl;
 }
 
 void ErrorDescriptor::setType(std::string _name) {
@@ -55,14 +55,9 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     // dt = current_time_stamp_ - previous_time_stamp_;
     
     if (this->name_ == "ANGLE") { dt = 0.02; }
-    else { dt = 0.1; }
+    else { dt = 0.05; }
 
-    if (this->name_ == "ANGLE") {
-        this->error_ = this->reference_value_ - this->current_value_;
-    }
-    else {
-        this->error_ = this->current_value_ - this->reference_value_;
-    }
+    this->error_ = this->current_value_ - this->reference_value_;
 
     if (this->name_ == "ANGLE") {
         if (this->error_ < 0) 
@@ -88,17 +83,17 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
 void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM values within a limit
 {
     float maxOutput = 800, minOutput = -maxOutput;
-    float scale = 400 / maxOutput;
+    float scale = 200 / maxOutput;
     if (output > maxOutput)
         output = maxOutput;
     if (output < minOutput)
         output = minOutput;
     float temp = output * scale;
     int output_pwm = static_cast<int>(temp);
-    if (output_pwm > 400)
-        output_pwm = 400;
-    if (output_pwm < -400)
-        output_pwm = -400;
+    if (output_pwm > 200)
+        output_pwm = 200;
+    if (output_pwm < -200)
+        output_pwm = -200;
     this->pwm_ = output_pwm;
 }
 

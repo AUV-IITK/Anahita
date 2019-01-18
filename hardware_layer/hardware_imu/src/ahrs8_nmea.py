@@ -162,7 +162,6 @@ if __name__ == '__main__':
     rospy.loginfo("AHRS-8: Output reset, beginning to retrieve data.")
 
     while not rospy.is_shutdown():
-	then = rospy.get_time()
         # Get angular velocity
         compass_serial.write("$PSPA,G\r\n")
         response = compass_serial.readline()
@@ -192,6 +191,4 @@ if __name__ == '__main__':
         imu_msg.header.stamp = rospy.Time.now()
         # Publish the current message.
         imu_pub.publish(imu_msg)
-	now = rospy.get_time()
-	rospy.loginfo("diff: %f", now - then)
 

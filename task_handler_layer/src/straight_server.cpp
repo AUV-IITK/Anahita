@@ -1,60 +1,39 @@
 #include <straight_server.h>
 
-moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") {
-    nh.setParam("/pwm_surge", pwm_);
-    goalReceived = false;
-    sub_ = nh.subscribe("/mavros/imu/yaw", 1, &moveStraight::imuAngleCB, this);
+moveStraight::moveStraight(int pwm_) : anglePIDClient("turnPID") { 
+    pwm = pwm_;
+    nh_.setParam("/pwm_surge", pwm);
 }
 
 moveStraight::~moveStraight() {
 }
 
-void moveStraight::setActive(bool status) {
-    if (status) {
-        spin_thread_ = new boost::thread(boost::bind(&moveStraight::spinThread_, this));
+void moveStraight::setActive(bool status, std::string type) {
+    if (status == true) {
+        if (type == "reference") { nh_.setParam("/use_reference_yaw", true); }
+        else if (type == "local") { nh_.setParam("/use_local_yaw", true); }
+        ros::Duration(1).sleep();
         spin_thread = new boost::thread(boost::bind(&moveStraight::spinThread, this));
     }
     else {
-        if (goalReceived) {
-            anglePIDClient.cancelGoal();
-        }
-        close_loop = true;
-        spin_thread_->join();
-        ROS_INFO("Straight Server goal cancelled");
+        nh_.setParam("/use_reference_yaw", false);
+        nh_.setParam("/use_local_yaw", false);
+        anglePIDClient.cancelGoal();
         spin_thread->join();
-        nh.setParam("/kill_signal", 1);
+        nh_.setParam("/kill_signal", true);
     }
 }   
-
-void moveStraight::imuAngleCB(const std_msgs::Float32Ptr &_msg) {
-    angle = _msg->data;
-    goalReceived = true;
-}
 
 void moveStraight::spinThread() {
 
     ROS_INFO("Waiting for turnPID server to start.");
     anglePIDClient.waitForServer();
-    ROS_INFO("Server waiting compelted");
-    double then = ros::Time::now().toSec();
-    while (!goalReceived_ref) {
-        double now = ros::Time::now().toSec();
-        if (now - then > 5 || close_loop) {
-            break;
-        }
-    }
-    if (goalReceived_ref) { 
-        ROS_INFO("turnPID server started, sending goal.");
-        angle_PID_goal.target_angle = 0;
-        anglePIDClient.sendGoal(angle_PID_goal);
-        ROS_INFO("Sent the goal to client");
-    }
-}
-
-void moveStraight::spinThread_() {
-    // ros::spin();
+    ROS_INFO("turnPID server started, sending goal.");
+    angle_PID_goal.target_angle = 0;
+    anglePIDClient.sendGoal(angle_PID_goal);
 }
 
 void moveStraight::setThrust(int _pwm) {
-    nh.setParam("/pwm_surge", _pwm);
+    ros::Duration(1).sleep();
+    nh_.setParam("/pwm_surge", _pwm);
 }
