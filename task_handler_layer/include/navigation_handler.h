@@ -38,6 +38,7 @@ public:
     void findNextTask ();
     void analyze ();
     bool scan (std::string);
+    bool dive (std::string);
 
 private:
     ros::NodeHandle nh;

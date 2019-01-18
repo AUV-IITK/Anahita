@@ -40,12 +40,12 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
     ros::Publisher task_pub = nh.advertise<std_msgs::String>("/current_task", 1); 
     ros::Time::init();
-    int pub_count = 0;
-    std_msgs::String current_task;
-    ros::Rate loop_rate(10);
-    taskHandler th(15); // time out 15 seconds
+
+    taskHandler th(30); // time out 15 seconds
 
     navigationHandler nav_handle;
+
+    boost::thread spin_thread(&spinThread);
     
     singleBuoy single_buoy;
     lineTask line;
@@ -53,14 +53,20 @@ int main(int argc, char** argv) {
     Torpedo torpedo;
     Octagon octagon;
 
-    boost::thread spin_thread(&spinThread);
-
     moveSideward move_sideward(0);
     moveStraight move_straight(0);
     moveDownward move_downward(0);
     depthStabilise depth_stabilise;
 
-    // Need to program for task failure and what to do when failed to detect something
+    actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");
+    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
+    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
+    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+
+    motion_layer::sidewardPIDGoal sidewardPIDGoal;
+    motion_layer::forwardPIDGoal forwardPIDGoal;
+    motion_layer::upwardPIDGoal upwardPIDGoal;
+    motion_layer::anglePIDGoal anglePIDGoal;
 
     /////////////////////////////////////////////
 
@@ -104,7 +110,15 @@ int main(int argc, char** argv) {
     depth_stabilise.setActive(true, "reference");
 
     ros::Duration(10).sleep();
-    
+
+    // nh_.setParam("/use_reference_yaw", true);
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
+
+    // ROS_INFO("anglePID server started, sending goal.");
+    // anglePIDGoal.target_angle = 45;
+    // anglePIDClient.sendGoal(anglePIDGoal);
+
     ROS_INFO("Finding Yellow Buoy....");
     if (!th.isDetected("yellow_buoy", 15)){
         ROS_INFO("Failed to detect yellow buoy");
@@ -113,6 +127,10 @@ int main(int argc, char** argv) {
     }
     ROS_INFO("Yellow Buoy Detected");
     move_sideward.setActive(false, "reference");
+
+    // th.isAchieved(45, 2, "angle");
+    // anglePIDClient.cancelGoal();
+    // nh_.setParam("/use_reference_yaw", false);
 
     depth_stabilise.setActive(false, "reference");
     
@@ -126,6 +144,18 @@ int main(int argc, char** argv) {
     ROS_INFO("Yellow Buoy done");
     
     //////////////////////////////////////////////
+
+    // nh_.setParam("/use_reference_yaw", true);
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
+
+    // ROS_INFO("anglePID server started, sending goal.");
+    // anglePIDGoal.target_angle = 0;
+    // anglePIDClient.sendGoal(anglePIDGoal);
+
+    // th.isAchieved(0, 2, "angle");
+    // anglePIDClient.cancelGoal();
+    // nh_.setParam("/use_reference_yaw", false);
 
     depth_stabilise.setActive(true, "reference");
     move_straight.setThrust(-50);
@@ -141,11 +171,24 @@ int main(int argc, char** argv) {
     move_sideward.setThrust(-50);
     move_sideward.setActive(true, "reference");
 
+    // nh_.setParam("/use_reference_yaw", true);
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
+
+    // ROS_INFO("anglePID server started, sending goal.");
+    // anglePIDGoal.target_angle = -70;
+    // anglePIDClient.sendGoal(anglePIDGoal);
+
+    // th.isAchieved(-70, 2, "angle");
+
     if (!th.isDetected("green_buoy", 15)) {
         ROS_INFO("Unable to detect green buoy");
         move_sideward.setActive(false, "reference");
         return 1;
     }
+
+    // anglePIDClient.cancelGoal();
+    // nh_.setParam("/use_reference_yaw", false);
 
     ROS_INFO("Green Buoy Detected");        
     move_sideward.setActive(false, "reference");
@@ -229,14 +272,10 @@ int main(int argc, char** argv) {
 
     nh.setParam("/use_reference_yaw", true);
 
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
-    motion_layer::anglePIDGoal anglePIDGoal;
-
     ROS_INFO("Waiting for anglePID server to start.");
     anglePIDClient.waitForServer();
 
     ROS_INFO("anglePID server started, sending goal.");
-
     anglePIDGoal.target_angle = 60;
     anglePIDClient.sendGoal(anglePIDGoal);
 
@@ -246,9 +285,12 @@ int main(int argc, char** argv) {
         ROS_INFO("Unable to detect Green torpedo");
         return 1;
     }
+
+    th.isAchieved(60, 2, "angle");
     anglePIDClient.cancelGoal();
 
     nh.setParam("/use_reference_yaw", false);
+    nh.setParam("/set_local_yaw", true);
 
     ros::Duration(1).sleep();
 
@@ -305,6 +347,30 @@ int main(int argc, char** argv) {
     ROS_INFO("Torpedo-MarkerDropper Transition ....");
     nh.setParam("/current_task", "line");
 
+    // nh_.setParam("/use_local_yaw", true);
+    // ROS_INFO("Waiting for anglePID server to start.");
+    // anglePIDClient.waitForServer();
+
+    // ROS_INFO("anglePID server started, sending goal.");
+    // anglePIDGoal.target_angle = 175;
+    // anglePIDClient.sendGoal(anglePIDGoal);
+
+    // th.isAchieved(175, 2, "angle");
+    // anglePIDClient.cancelGoal();
+    // nh_.setParam("/use_local_yaw", false);
+
+    // if (nav_handle.find("line")) {
+    //     if (!line.setActive(true)) {
+    //         ROS_INFO("Line Task Failed");
+    //         line.setActive(false);
+    //         return 1;
+    //     }
+    //     line.setActive(false);
+    // }
+    // else {
+    //     ROS_INFO("Nav Handle: Line not found");    
+    // }
+
     move_sideward.setThrust(-50);
     move_sideward.setActive(true, "local");
     ros::Duration(3).sleep();
@@ -344,7 +410,6 @@ int main(int argc, char** argv) {
     }
 
     anglePIDClient.cancelGoal();
-
     nh.setParam("/use_reference_yaw", false);
 
     move_straight.setThrust(75);
@@ -367,6 +432,27 @@ int main(int argc, char** argv) {
     MarkerDropper md;
     md.setActive(true);
     md.setActive(false);
+
+    /////////////////////////////////////////////////////
+
+    // Torpedo - Octagon transition
+
+    move_sideward.setThrust(-50);
+    move_sideward.setActive(true, "local");
+    ros::Duration(7).sleep();
+    move_sideward.setActive(false, "local");
+
+    if (nav_handle.find("line")) {
+        if (!line.setActive(true)) {
+            ROS_INFO("Line Task Failed");
+            line.setActive(false);
+            return 1;
+        }
+        line.setActive(false);
+    }
+    else {
+        ROS_INFO("Nav Handle: Line not found");    
+    }
 
     /////////////////////////////////////////////////////
 
@@ -408,6 +494,18 @@ int main(int argc, char** argv) {
         move_straight.setActive(false, "current");
         return 1;
     }
+
+    // if (nav_handle.find("octagon")) {
+    //     if (!octagon.setActive(true)) {
+    //         ROS_INFO("Line Task Failed");
+    //         octagon.setActive(false);
+    //         return 1;
+    //     }
+    //     octagon.setActive(false);
+    // }
+    // else {
+    //     ROS_INFO("Nav Handle: Octagon not found");    
+    // }
 
     move_straight.setActive(false, "current");
 

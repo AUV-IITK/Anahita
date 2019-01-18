@@ -1,6 +1,6 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(15),
+navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(30),
                                         anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
                                         forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
 
@@ -401,4 +401,28 @@ bool navigationHandler::scan (std::string object) {
     nh.setParam("/use_reference_yaw", false);
 
     return false;
+}
+
+bool navigationHandler::dive (std::string target) {
+
+    nh.setParam("/enable_pressure", true);
+    nh.setParam("/use_referene_yaw", true);
+
+    ROS_INFO("Waiting for upwardPID server to start.");
+    upwardPIDClient.waitForServer();
+
+    ROS_INFO("upwardPID server started, sending goal.");
+    upwardPIDGoal.target_depth = 40;
+    upwardPIDClient.sendGoal(upwardPIDGoal);
+
+    if (scan(target)) { 
+        nh.setParam("/use_reference_yaw", false);
+        nh.setParam("/enable_pressure", false);    
+        return true; 
+    }
+    else { 
+        nh.setParam("/use_reference_yaw", false);
+        nh.setParam("/enable_pressure", false);        
+        return false; 
+    }
 }
