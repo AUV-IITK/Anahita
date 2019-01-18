@@ -5,7 +5,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "pwm_publisher");
     ros::NodeHandle nh;
 
-    ros::Publisher pwmPublisher = nh.advertise<hyperion_msgs::Thrust>("/pwm", 1000);
+    ros::Publisher pwmPublisher = nh.advertise<hyperion_msgs::Thrust>("/pwm", 1);
 
     int pwm_sway;
     int pwm_surge;
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         nh.getParam("/pwm_roll", pwm_roll);
         nh.getParam("/pwm_pitch", pwm_pitch);
 
-	    nh.getParam("/kill_signal", kill_signal);
+    	nh.getParam("/kill_signal", kill_signal);
 
         nh.getParam("/marker_dropper", marker_dropper);
         nh.getParam("/torpedo", torpedo);
@@ -77,6 +77,9 @@ int main(int argc, char** argv) {
             nh.setParam("/pwm_pitch", 0);
 
             nh.setParam("/kill_signal", false);
+
+            nh.setParam("/marker_dropper", 0);
+            nh.setParam("/torpedo", 0);
         }
             
         pwmPublisher.publish(pwm);

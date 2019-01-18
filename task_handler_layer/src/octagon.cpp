@@ -37,6 +37,8 @@ bool Octagon::setActive(bool status) {
             ROS_INFO("Octagon, Failed to achieve sideward goal");
             return false;
         }
+
+        ROS_INFO("Octagon Finished");
     }
     else {
         nh_.setParam("/use_local_yaw", false);

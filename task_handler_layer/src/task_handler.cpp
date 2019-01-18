@@ -32,7 +32,7 @@ void taskHandler::callBack (const std_msgs::Float32Ptr &_msg) {
     data_mutex.lock();
     data_ = _msg->data;
     data_mutex.unlock();
-    
+
     mtx.lock();
     dataReceived = true;
     mtx.unlock();
@@ -102,6 +102,35 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
 
     }
 
+    if (_topic == "upward") {
+        bool use_reference_depth = false;
+        bool enable_pressure = false;
+
+        double temp = 0;
+
+        nh_.getParam("/enable_pressure", enable_pressure);
+        nh_.getParam("/use_reference_depth", use_reference_depth);
+
+        if (enable_pressure) {
+            if (use_reference_depth) {
+                double reference_depth = 0;
+                nh_.getParam("/reference_depth", reference_depth);
+                temp = reference_depth + _target;
+            }
+            else {
+                while (ros::ok()) {
+                    mtx.lock();
+                    bool dataReceived_ = dataReceived;
+                    mtx.unlock();
+                    if (dataReceived_) { break; }
+                }
+                data_mutex.lock();
+                temp = data_ + _target;
+                data_mutex.unlock();
+            }
+        }
+    }
+
     ros::Rate loop_rate(100);
 
     while (ros::ok()) {
@@ -156,7 +185,7 @@ bool taskHandler::isDetected (std::string _task, double _timeout) {
             return false;
         }
     }
-
+    task_map_[_task] = false;
     return true;
 }
 

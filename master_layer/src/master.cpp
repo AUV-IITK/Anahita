@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
     std_msgs::String current_task;
     ros::Rate loop_rate(10);
     taskHandler th(15); // time out 15 seconds
+
+    navigationHandler nav_handle;
     
     singleBuoy single_buoy;
     lineTask line;
@@ -56,25 +58,13 @@ int main(int argc, char** argv) {
     moveSideward move_sideward(0);
     moveStraight move_straight(0);
     moveDownward move_downward(0);
+    depthStabilise depth_stabilise;
 
     // Need to program for task failure and what to do when failed to detect something
 
     /////////////////////////////////////////////
 
     // Random code to test
-
-    // navigationHandler nav_handle;
-
-    // if (nav_handle.find("line")) {
-    //     if (!line.setActive(true)) {
-    //         ROS_INFO("Line Task Failed");
-    //         line.setActive(false);
-    //         return 1;
-    //     }
-    //     line.setActive(false);
-    // }
-
-    // ROS_INFO("Nav Handle: Line not found");
 
     /////////////////////////////////////////////
 
@@ -83,10 +73,17 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "red_buoy");
     ROS_INFO("Current task: Red Buoy");
 
-    if (!th.isDetected("red_buoy", 15)) {
+    move_straight.setThrust(50);
+    move_straight.setActive(true, "reference");
+
+    ros::Duration(4).sleep();
+
+    if (!th.isDetected("red_buoy", 20)) {
         ROS_INFO("Unable to detect red buoy");
         return 1;
     }
+
+    move_straight.setActive(false, "reference");
     
     if (!single_buoy.setActive(true)) {
         ROS_INFO("Red Buoy Failed");
@@ -102,8 +99,11 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "yellow_buoy");
     ROS_INFO("Current task: Yellow Buoy");
 
-    move_sideward.setThrust(-50);
+    move_sideward.setThrust(50);
     move_sideward.setActive(true, "reference");
+    depth_stabilise.setActive(true, "reference");
+
+    ros::Duration(10).sleep();
     
     ROS_INFO("Finding Yellow Buoy....");
     if (!th.isDetected("yellow_buoy", 15)){
@@ -111,10 +111,11 @@ int main(int argc, char** argv) {
         move_sideward.setActive(false, "reference");
         return 1;
     }
-    
     ROS_INFO("Yellow Buoy Detected");
     move_sideward.setActive(false, "reference");
 
+    depth_stabilise.setActive(false, "reference");
+    
     if (!single_buoy.setActive(true)) {
         ROS_INFO("Yellow Buoy Failed");
         single_buoy.setActive(false);
@@ -126,7 +127,9 @@ int main(int argc, char** argv) {
     
     //////////////////////////////////////////////
 
+    depth_stabilise.setActive(true, "reference");
     move_straight.setThrust(-50);
+
     move_straight.setActive(true, "reference");
     ros::Duration(5).sleep(); // configurable 
     move_straight.setActive(false, "reference");
@@ -135,9 +138,8 @@ int main(int argc, char** argv) {
     ROS_INFO("Current task: Green Buoy");
 
     ROS_INFO("Finding Green Buoy...");
-    move_sideward.setThrust(50);
-    move_sideward.setActive(true, "reference"); // until the green buoy is detected (for vision node)
-    // ros::Duration(8).sleep(); // configurable
+    move_sideward.setThrust(-50);
+    move_sideward.setActive(true, "reference");
 
     if (!th.isDetected("green_buoy", 15)) {
         ROS_INFO("Unable to detect green buoy");
@@ -148,6 +150,8 @@ int main(int argc, char** argv) {
     ROS_INFO("Green Buoy Detected");        
     move_sideward.setActive(false, "reference");
 
+    depth_stabilise.setActive(false, "reference");
+    
     if (!single_buoy.setActive(true)) {
         ROS_INFO("Green Buoy Failed");
         single_buoy.setActive(false);
@@ -159,51 +163,38 @@ int main(int argc, char** argv) {
   
     //////////////////////////////////////////////
 
-    ROS_INFO("Finding Gate ...");
-
-    move_sideward.setThrust(-50);
+    move_sideward.setThrust(50);
     move_sideward.setActive(true, "reference"); // until gate is detected
-    
-    ros::Duration(5).sleep(); // time depends, better to have a node telling when the gate is detected
+    depth_stabilise.setActive(true, "reference");
+    ros::Duration(7.5).sleep(); // time depends, better to have a node telling when the gate is detected
+
     move_sideward.setActive(false, "reference");
+    depth_stabilise.setActive(false, "reference");
 
-    ROS_INFO("Moving Straight");
-    move_straight.setThrust(50);
-    move_straight.setActive(true, "reference");
-
-    nh.setParam("/current_task", "line");
-    ROS_INFO("Current task: Line");
-    
-    if (!th.isDetected("line", 10)) {
-        ROS_INFO("Line not detected before the timeout");
-        move_straight.setActive(false, "reference");
-        return 1;
-    }
-    ROS_INFO("Line Detected");
-
-    move_straight.setActive(false, "reference");
-
-    ROS_INFO("Moving straight ended");
-
-    if (!line.setActive(true)) {
-        ROS_INFO("Line Task Failed");
+    if (nav_handle.find("line")) {
+        if (!line.setActive(true)) {
+            ROS_INFO("Line Task Failed");
+            line.setActive(false);
+            return 1;
+        }
         line.setActive(false);
-        return 1;
     }
-    line.setActive(false);
+    else {
+        ROS_INFO("Nav Handle: Line not found");    
+    }
 
-    ROS_INFO("Completed the Line task");
-
-    nh.setParam("/current_task", "gate_front");
+	nh.setParam("/current_task", "gate_front");
     ROS_INFO("Current Task: Gate Front");
+
+    depth_stabilise.setActive(true, "reference");
 
     if (!th.isDetected("gate_front", 15)) {
         ROS_INFO("Unable to detect Gate");
-        // move_straight.setActive(false, "reference");
         return 1;
     }
-    // move_straight.setActive(false, "reference");
     ROS_INFO("Gate detected");
+
+    depth_stabilise.setActive(false, "reference");
 
     if (!gate_task.setActive(true)) {
         ROS_INFO("Gate Task Unsuccessful");
@@ -212,7 +203,23 @@ int main(int argc, char** argv) {
     }
     gate_task.setActive(false);
 
-    ROS_INFO("Gate Task Completed");
+    depth_stabilise.setActive(true, "reference");
+
+    nh.setParam("/current_task", "gate_bottom");        
+    nh.setParam("/use_local_yaw", true);
+
+	move_straight.setThrust(50);
+	nh.setParam("/pwm_surge", 50);	
+	move_straight.setActive(true, "local");
+
+    if (!th.isDetected("gate_bottom", 30)) {
+        ROS_INFO("Unable to detect gate's bottom");
+        move_straight.setActive(false, "local");
+        return false;
+    }
+	move_straight.setActive(false, "local");
+
+    depth_stabilise.setActive(false, "reference");
 
     ///////////////////////////////////////////////////
 
@@ -233,53 +240,31 @@ int main(int argc, char** argv) {
     anglePIDGoal.target_angle = 60;
     anglePIDClient.sendGoal(anglePIDGoal);
 
-    if (!th.isAchieved(60, 2, "angle")) {
-        ROS_INFO("Angle goal not achieved");
+    ROS_INFO("Finding Green Torpedo....");
+
+    if (!th.isDetected("green_torpedo", 10)) {
+        ROS_INFO("Unable to detect Green torpedo");
         return 1;
     }
-
     anglePIDClient.cancelGoal();
 
     nh.setParam("/use_reference_yaw", false);
 
     ros::Duration(1).sleep();
-    // nh.setParam("/pwm_yaw", 50);
-
-    ROS_INFO("Finding Green Torpedo....");
-    if (!th.isDetected("green_torpedo", 10)) {
-        ROS_INFO("Unable to detect Green torpedo");
-        return 1;
-    }
-    // nh.setParam("/pwm_sway", 0);
 
     ROS_INFO("Green Torpedo detected");
 
-    // can include a function to find the line on its own
-
-    nh.setParam("/current_task", "line");
-
-    ROS_INFO("Finding Line....");
-    move_straight.setThrust(50);
-    move_straight.setActive(true, "current");
-
-    if (!th.isDetected("line", 10)) {
-        ROS_INFO("Unable to detect line");
-        move_straight.setActive(false, "current");
-        return 1;
-    }
-
-    // ros::Duration(2).sleep();
-
-    move_straight.setActive(false, "current");
-
-    if (!line.setActive(true)) {
-        ROS_INFO("Unable to center with the line");
+    if (nav_handle.find("line")) {
+        if (!line.setActive(true)) {
+            ROS_INFO("Line Task Failed");
+            line.setActive(false);
+            return 1;
+        }
         line.setActive(false);
-        return 1;
     }
-    ROS_INFO("Centralized with the line");
-
-    nh.setParam("/set_local_yaw", true);
+    else {
+        ROS_INFO("Nav Handle: Line not found");    
+    }
 
     nh.setParam("/current_task", "green_torpedo");
     ROS_INFO("Current task: Green Torpedo");

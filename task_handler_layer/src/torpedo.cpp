@@ -5,7 +5,7 @@ Torpedo::Torpedo(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardP
 
 Torpedo::~Torpedo() {}
 
-void Torpedo::setActive(bool status) {
+bool Torpedo::setActive(bool status) {
 
     if (status) {
 
@@ -21,12 +21,12 @@ void Torpedo::setActive(bool status) {
 
         ///////////////////////////////////////////////////
 
-        // ROS_INFO("Waiting for upwardPID server to start, task torpedo.");
-        // upwardPIDClient.waitForServer();
+        ROS_INFO("Waiting for upwardPID server to start, task torpedo.");
+        upwardPIDClient.waitForServer();
 
-        // ROS_INFO("upwardPID server started, sending goal, task torpedo.");
-        // upwardPIDgoal.target_depth = 0; // for gazebo
-        // upwardPIDClient.sendGoal(upwardPIDgoal);
+        ROS_INFO("upwardPID server started, sending goal, task torpedo.");
+        upwardPIDgoal.target_depth = 0; // for gazebo
+        upwardPIDClient.sendGoal(upwardPIDgoal);
 
         ///////////////////////////////////////////////////
 
@@ -47,7 +47,7 @@ void Torpedo::setActive(bool status) {
         if (!th.isAchieved(12, 2, "forward")) {
             ROS_INFO("Unable to achieve forward in time limit");
             nh_.setParam("/kill_signal", true);		
-            return;	
+            return false;	
 	    }
 
         ROS_INFO("Killing the thrusters");
@@ -65,20 +65,22 @@ void Torpedo::setActive(bool status) {
         forwardPIDClient.sendGoal(forwardPIDgoal);
 
         if (!th.isAchieved(25, 4, "forward")) {
-		ROS_INFO("Unable to achieve forward in time limit");
-		nh_.setParam("/kill_signal", true);
-		return;	
-	}
-
+            ROS_INFO("Unable to achieve forward in time limit");
+            nh_.setParam("/kill_signal", true);
+            return false;	
+	    }
+        ROS_INFO("Torpedo Finished");
     }
     else {
 
         nh_.setParam("/use_local_yaw", false);
         
         forwardPIDClient.cancelGoal();
-        // upwardPIDClient.cancelGoal();
+        upwardPIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         anglePIDClient.cancelGoal();
         ROS_INFO("Closing Torpedo");
     }
+
+    return true;
 }

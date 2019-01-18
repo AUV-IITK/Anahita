@@ -11,7 +11,7 @@ upwardPIDAction::upwardPIDAction(std::string name) :
 
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &upwardPIDAction::depthCB, this);
-    z_coord.setPID(2.5, 0, 0.5, 15);
+    z_coord.setPID(-1.5, 0, 0, 4);
 
     as_.start();
     ROS_INFO("upward_PID_server Initiated");

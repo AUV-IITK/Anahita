@@ -98,13 +98,15 @@ void Torpedo::TaskHandling(bool status){
 	if(status)
 	{
 		ROS_INFO("Printing task handling start");
+		task_on = true;
 		spin_thread = new boost::thread(boost::bind(&Torpedo::spinThread, this)); 
 	}
 
 	else 
 	{
 		close_task = true;
-        spin_thread->join();
+	        spin_thread->join();
+		task_on = false;
 		image_raw_sub.shutdown();
 		std::cout << "Task Handling function over" << std::endl;	
 	}

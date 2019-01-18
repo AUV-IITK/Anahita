@@ -63,8 +63,6 @@ protected:
 	int data_low_v[2] = {0, 0};
 	int data_high_v[2] = {255, 255};
 
-	bool close_task = false;
-
 	void callback(vision_tasks::torpedoRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
 
@@ -83,6 +81,9 @@ public:
 	std_msgs::Float32 x_coordinate;
 	std_msgs::Float32 y_coordinate;
 	std_msgs::Float32 z_coordinate;
+
+	bool close_task = false;
+	bool task_on = false;
 };
 #endif // TORPEDO_TASK_H
 

@@ -23,7 +23,6 @@ public:
     lineTask ();
     ~lineTask ();
     bool setActive (bool);
-    void angleCB (const std_msgs::Float32ConstPtr&);
 
 private:
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
@@ -40,8 +39,5 @@ private:
     taskHandler th;
 
     std::mutex mtx;
-
-    double angle_ = 0;
-    bool angleReceived = false;
 };
 #endif // LINE_H

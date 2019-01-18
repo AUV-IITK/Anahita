@@ -67,16 +67,14 @@ protected:
 	int closing_mat_point_;
 	int closing_iter_;
 
-	int data_low_h[3] = {0, 12, 0};
-	int data_high_h[3] = {17, 40, 255};
-	int data_low_s[3] = {206, 183, 0};
-	int data_high_s[3] = {255, 255, 55};
-	int data_low_v[3] = {30, 3, 0};
-	int data_high_v[3] = {255, 255, 40};
+	int data_low_h[3] = {0, 0, 0};
+	int data_high_h[3] = {127, 8, 2};
+	int data_low_s[3] = {0, 49, 3};
+	int data_high_s[3] = {105, 243, 67};
+	int data_low_v[3] = {248, 36, 10};
+	int data_high_v[3] = {255, 255, 96};
 
 	void setParams(ros::NodeHandle &nh);
-
-	bool close_task = false;
 
 	void callback(vision_tasks::buoyRangeConfig &config, double level);
 	void imageCallback(const sensor_msgs::Image::ConstPtr &msg);
@@ -95,5 +93,7 @@ public:
 	void switchColor(int);
 	void spinThread();
 	int current_color;
+	bool close_task = false;
+	bool task_on = false;
 };
 #endif // BUOY_TASK_H

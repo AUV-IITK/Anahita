@@ -11,7 +11,7 @@ int main (int argc, char** argv) {
     ros::init(argc, argv, "pressure_publisher");
     ros::NodeHandle nh;
 
-    ros::Subscriber pressure_sub = nh.subscribe<std_msgs::Float32>("/pressure_sensor/depth", 1000, &pressureCB);
+    ros::Subscriber pressure_sub = nh.subscribe<std_msgs::Float32>("/depth", 1000, &pressureCB);
     ros::Publisher depth_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 
     bool enable_pressure = false;

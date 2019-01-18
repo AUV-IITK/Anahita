@@ -60,7 +60,7 @@ target_link_libraries(markerDropper_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 # target_link_libraries(octagon_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_executable(vision_node src/vision_node.cpp)
-# add_executable(vision_node_temp src/temp.cpp)
+add_executable(vision_node_temp src/temp.cpp)
 target_link_libraries(vision_node 
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES} 
@@ -73,13 +73,13 @@ target_link_libraries(vision_node
   # octagon_task
 )
 
-# target_link_libraries(vision_node_temp
-#   ${catkin_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   vision_commons
-#   buoy_task
-#   gate_task
-#   line_task
-#   torpedo_task
-#   markerDropper_task
-#   )
+target_link_libraries(vision_node_temp
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  vision_commons
+  buoy_task
+  gate_task
+  line_task
+  torpedo_task
+  markerDropper_task
+  )

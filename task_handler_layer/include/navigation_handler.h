@@ -37,22 +37,22 @@ public:
     bool isStable ();
     void findNextTask ();
     void analyze ();
-    void explore ();
+    bool scan (std::string);
 
 private:
     ros::NodeHandle nh;
 
     taskHandler th;
 
+    bool stop_manouver = false;
     std::mutex mtx;
 
     boost::thread* spin_thread;
 
-    bool stop_manouver = false;
-
     moveStraight move_straight;
     moveSideward move_sideward;
     moveDownward move_downward;
+    depthStabilise depth_stabilise;
 
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
     actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;

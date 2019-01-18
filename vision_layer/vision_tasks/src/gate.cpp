@@ -7,13 +7,13 @@ Gate::Gate() : it(nh) {
     this->front_balanced_bilateral_iter_ = 4;
     this->front_denoise_h_ = 10.0;
     this->front_low_h_ = 0;
-    this->front_high_h_ = 17;
-    this->front_low_s_ = 206;
+    this->front_high_h_ = 16;
+    this->front_low_s_ = 225;
     this->front_high_s_ = 255;
-    this->front_low_v_ = 30;
+    this->front_low_v_ = 210;
     this->front_high_v_ = 255;
     this->front_closing_mat_point_ = 1;
-    this->front_closing_iter_ = 1;
+    this->front_closing_iter_ = 2;
     this->front_canny_threshold_low_ = 0;
     this->front_canny_threshold_high_ = 1000;
     this->front_canny_kernel_size_ = 3;
@@ -29,14 +29,14 @@ Gate::Gate() : it(nh) {
     this->bottom_clahe_bilateral_iter_ = 8;
     this->bottom_balanced_bilateral_iter_ = 4;
     this->bottom_denoise_h_ = 10.0;
-    this->bottom_low_h_ = 10;
-    this->bottom_low_s_ = 0;
-    this->bottom_low_v_ = 0;
-    this->bottom_high_h_ = 90;
+    this->bottom_low_h_ = 0;
+    this->bottom_low_s_ = 225;
+    this->bottom_low_v_ = 210;
+    this->bottom_high_h_ = 16;
     this->bottom_high_s_ = 255;
     this->bottom_high_v_ = 255;
-    this->bottom_closing_mat_point_ = 2;
-    this->bottom_closing_iter_ = 3;
+    this->bottom_closing_mat_point_ = 1;
+    this->bottom_closing_iter_ = 2;
 
     this->camera_frame_ = "auv-iitk";
 
@@ -147,7 +147,7 @@ void Gate::bottomTaskHandling(bool status) {
 void Gate::spinThreadBottom()
 {
     // this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
-    this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this); // for gazebo only
+    this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this); // for gazebo only
 
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
@@ -194,7 +194,7 @@ void Gate::spinThreadBottom()
 				pipe_point_message.point.y = bounding_rectangle.center.x - (image_bottom.size().width) / 2;
 				pipe_point_message.point.z = 0.0;
 				ROS_INFO("Contour Area of bottom: %f", cv::contourArea(contours[0]));
-				task_done_message.data = (pipe_point_message.point.x < 0) && (cv::contourArea(contours[0])>200);
+				task_done_message.data = (pipe_point_message.point.x < 0) && (cv::contourArea(contours[0])>9000);
 				bounding_rectangle.points(vertices2f);
 				for (int i = 0; i < 4; ++i)
 				{
@@ -237,7 +237,7 @@ void Gate::frontTaskHandling(bool status) {
 void Gate::spinThreadFront()
 {
 	// this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+	this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
@@ -330,7 +330,7 @@ void Gate::spinThreadFront()
 					else if(x_length<y_length/5 && x_length>0)
 					{
 						ROS_INFO("This time its a fucking vertical rod");
-						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 + y_length/2;;
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 - y_length/2;;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
 						distance_for = y_length;
 						sprintf(str,"fucking_vertical"); putText(image_marked, str, cv::Point2f(100,100), 0, 2,  cv::Scalar(0,0,255,255));
@@ -351,7 +351,7 @@ void Gate::spinThreadFront()
 					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
 					cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), cv::Scalar(100, 100, 200), 2, CV_AA);
 
-					if(distance_for>80 && contourArea(contours[0]) > 800 &&  abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					if(distance_for>80 && contourArea(contours[0]) > 1500 &&  abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
 						detection_bool.data = false;

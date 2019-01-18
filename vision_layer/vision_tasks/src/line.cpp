@@ -1,16 +1,16 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
-	this->low_h_ = 31;
-	this->high_h_ = 47;
-	this->low_s_ = 0;
+	this->low_h_ = 11;
+	this->high_h_ = 38;
+	this->low_s_ = 166;
 	this->high_s_ = 255;
-	this->low_v_ = 140;
+	this->low_v_ = 0;
 	this->high_v_ = 255;
 	this->opening_mat_point_ = 1;
-	this->opening_iter_ = 0;
-	this->closing_mat_point_ = 2;
-	this->closing_iter_ = 3;
+	this->opening_iter_ = 3;
+	this->closing_mat_point_ = 1;
+	this->closing_iter_ = 0;
 	this->camera_frame_ = "auv-iitk";
 	// image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
@@ -83,12 +83,12 @@ void Line::TaskHandling(bool status)
 
 void Line::spinThread() {
 
-	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
-	f = boost::bind(&Line::callback, this, _1, _2);
-	server.setCallback(f);
+	//f = boost::bind(&Line::callback, this, _1, _2);
+	//server.setCallback(f);
 
 	cv::Scalar line_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -167,7 +167,7 @@ void Line::spinThread() {
 					{
 						readings_avg = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
 						readings[0] = readings[1]; readings[1] = readings[2]; readings[2] = readings[3]; readings[3] = readings[4];
-						if(abs(readings_avg - theta) < 25)
+						if(abs(readings_avg - theta) < 170)
 						{
 							readings[4] = theta;
 						}
@@ -183,8 +183,10 @@ void Line::spinThread() {
 					z_coordinate.data = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
 
 					int non_zero = countNonZero(image_thresholded);
+					
+					std::cout << "non zero: " << non_zero << std::endl;
 
-					if (non_zero > (3072 * 0.20) && good_values_num>0)
+					if (non_zero > (7000) && good_values_num>0)
 					{
 						good_values_num++;
 						detection_bool.data=true;
@@ -210,13 +212,11 @@ void Line::spinThread() {
 			
 			x_coordinates_pub.publish(y_coordinate);
 			y_coordinates_pub.publish(x_coordinate);
-
 			bool temp = false;
 			nh.getParam("/disable_imu", temp);
 			if (temp) {
-				z_coordinates_pub.publish(z_coordinate);
+				z_coordinates_pub.publish(z_coordinate);			
 			}
-
 			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());

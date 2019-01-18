@@ -9,7 +9,7 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "marker_dropper_bottom";
+std::string current_task = "red_buoy";
 std::string previous_task = "";
 
 // void taskCallback(const std_msgs::String::ConstPtr& msg)
@@ -41,16 +41,22 @@ int main(int argc, char *argv[])
         if (current_task != previous_task) {
             if (current_task == "red_buoy") {
                 buoy.switchColor(0);
-                buoy.TaskHandling(true);
+                if (!buoy.task_on)
+                    buoy.TaskHandling(true);
             }
             if (current_task == "yellow_buoy") {
                 buoy.switchColor(1);
+                if (!buoy.task_on)
+                    buoy.TaskHandling(true);
             }
             if (current_task == "green_buoy") {
                 buoy.switchColor(2);
+                if (!buoy.task_on)
+                    buoy.TaskHandling(true);
             }
-            if (previous_task == "yellow_buoy") {
-                buoy.TaskHandling(false);
+            if (previous_task == "yellow_buoy" || previous_task == "red_buoy" || previous_task == "green_buoy") {
+                if (current_task == "red_buoy" || current_task == "yellow_buoy" || current_task == "green_buoy") {}
+                else { buoy.TaskHandling(false); }
             }
             if (current_task == "gate_front") {
                 gate.frontTaskHandling(true);
@@ -66,15 +72,17 @@ int main(int argc, char *argv[])
             }
             if (current_task == "green_torpedo") {
                 torpedo.switchColor(0);
-                ROS_INFO("Starting green torpedo");
-                torpedo.TaskHandling(true);
+                if (!torpedo.task_on)
+                    torpedo.TaskHandling(true);
             }
             if (current_task == "red_torpedo") {
                 torpedo.switchColor(1);
-                // torpedo.TaskHandling(true);
+                if (!torpedo.task_on)
+                    torpedo.TaskHandling(true);
             }
-            if (previous_task == "red_torpedo") {
-                torpedo.TaskHandling(false);     
+            if (previous_task == "red_torpedo" || previous_task == "green_torpedo") {
+                if (current_task == "red_torpedo" || current_task == "green_torpedo") {}
+                else { torpedo.TaskHandling(false); }     
             }
             if (current_task == "marker_dropper_front") {
                 md.frontTaskHandling(true);
@@ -107,3 +115,4 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
+

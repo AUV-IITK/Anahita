@@ -7,11 +7,11 @@ Buoy::Buoy() : it(nh){
 	this->balanced_bilateral_iter_ = 4;
 	this->denoise_h_ = 10.0;
 	this->low_h_ = 0;
-	this->high_h_ = 25;
-	this->low_s_ = 245;
-	this->high_s_ = 255;
-	this->low_v_ = 78;
-	this->high_v_ = 115;
+	this->high_h_ = 79;
+	this->low_s_ = 0;
+	this->high_s_ = 24;
+	this->low_v_ = 185;
+	this->high_v_ = 255;
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 3;
 	this->closing_mat_point_ = 1;
@@ -129,11 +129,13 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 void Buoy::TaskHandling (bool status) {
 	if(status)
 	{
+		task_on = true;
 		spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
 	}
 	else 
 	{
 		close_task = true;
+		task_on = false;
         spin_thread->join();
 		image_raw_sub.shutdown();
 		std::cout << "Buoy Task Handling function over" << std::endl;	
@@ -193,7 +195,8 @@ void Buoy::spinThread(){
 			{	
 				int64 t0 = cv::getTickCount();
 				std::cout<<"Colour being detected is: " << current_color << std::endl;
-				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+				//cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+				image_hsv = blue_filtered;
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, low_h_, high_h_, low_s_, high_s_, low_v_, high_v_);
 				int64 t1 = cv::getTickCount();
 				// ROS_INFO("Time taken by thresholding: %lf", (t1-t0)/cv::getTickFrequency());
@@ -246,7 +249,7 @@ void Buoy::spinThread(){
 					z_coordinate.data = ((float)image_.size().height) / 2 - center[0].y;
 					ROS_INFO("Buoy Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 					ROS_INFO("Maximum Contour area: %.2f", contourArea(contours[index]));
-					if(contourArea(contours[index]) > 600 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					if(contourArea(contours[index]) > 1000 && abs(y_coordinate.data) < 235 && abs(z_coordinate.data) < 310) 
 					{
 						detection_bool.data = true;
 						good_values_num++;

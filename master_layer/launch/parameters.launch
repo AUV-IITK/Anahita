@@ -11,12 +11,12 @@
   <param name="/torpedo" value="0" type="int" />
   <param name="/marker_dropper" value="0" type="int" />
 
-  <param name="/current_task" value="line" type="string" />
+  <param name="/current_task" value="red_buoy" type="string" />
 
   <param name="/kill_signal" value="false" type="bool" />
 
   <param name="/reference_yaw" value="0" type="double" />
-  <param name="/reference_depth" value="0" type="double" />
+  <param name="/reference_depth" value="30" type="double" />
   <param name="/local_yaw" value="0" type="double" />
 
   <param name="/disable_imu" value="false" type="bool" />

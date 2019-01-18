@@ -17,12 +17,8 @@ protected:
     ros::NodeHandle nh_;
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
-    ros::Subscriber sub_;
 
-    double angle_ = 0;
-    bool angleReceived = false;
     boost::thread* spin_thread;
-    boost::thread* spin_thread_;
     std::mutex mtx;
 
     int pwm = 0;
@@ -35,7 +31,5 @@ public:
     void setActive(bool, std::string);
     void setThrust(int);
     void spinThread();
-    void spinThread_();
-    void angleCB(const std_msgs::Float32ConstPtr& _msg);
 };
 #endif // MOVE_SIDEWARD_SERVER_H

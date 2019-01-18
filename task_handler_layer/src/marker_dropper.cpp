@@ -29,16 +29,16 @@ bool MarkerDropper::setActive(bool status) {
         anglePIDClient.sendGoal(anglePIDGoal);
 
         while (ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
             bool temp = forwardGoalReceived;
-            mtx.unlock();
+            // mtx.unlock();
             if (temp) { break; }
         }
 
         while (ros::ok()) {
-            mtx.lock();
+            // mtx.lock();
             double data = forward_distance_;
-            mtx.unlock();
+            // mtx.unlock();
             if (data <= 200) { break; }
         }
         sidewardPIDClient.cancelGoal();
@@ -112,6 +112,8 @@ bool MarkerDropper::setActive(bool status) {
         ros::Duration(3).sleep();
 
         // Drop the ball
+
+        ROS_INFO("Marker Dropper Finished");
         
     }
     else {
@@ -128,8 +130,8 @@ bool MarkerDropper::setActive(bool status) {
 }
 
 void MarkerDropper::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
-    mtx.lock();
+    // mtx.lock();
     forward_distance_ = _msg->data;
     forwardGoalReceived = true;
-    mtx.unlock();
+    // mtx.unlock();
 }
