@@ -1,7 +1,7 @@
 #include "buoy.h"
 #include "gate.h"
 #include "markerDropper.h"
-// #include "octagon.h"
+#include "octagon.h"
 #include "torpedo.h"
 #include "line.h"
 
@@ -23,11 +23,13 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "vision_node");    
     ros::NodeHandle nh;
 
+    system("rosparam delete /vision_node");
+
     Buoy buoy;
     Gate gate;
     Torpedo torpedo;
     MarkerDropper md;
-    // Octagon octagon;
+    Octagon octagon;
     Line line;
 
     // ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);

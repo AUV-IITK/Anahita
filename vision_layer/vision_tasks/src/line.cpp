@@ -1,16 +1,16 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
-	this->low_h_ = 11;
-	this->high_h_ = 38;
-	this->low_s_ = 166;
+	this->low_h_ = 0;
+	this->high_h_ = 81;
+	this->low_s_ = 3;
 	this->high_s_ = 255;
 	this->low_v_ = 0;
-	this->high_v_ = 255;
+	this->high_v_ = 183;
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 3;
 	this->closing_mat_point_ = 1;
-	this->closing_iter_ = 0;
+	this->closing_iter_ = 5;
 	this->camera_frame_ = "auv-iitk";
 	// image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);

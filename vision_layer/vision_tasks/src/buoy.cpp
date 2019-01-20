@@ -285,7 +285,11 @@ void Buoy::spinThread(){
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
-			z_coordinates_pub.publish(z_coordinate);
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
+				z_coordinates_pub.publish(z_coordinate);
+			}
 			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else

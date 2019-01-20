@@ -119,8 +119,8 @@ void Torpedo::spinThread(){
 
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
-	//f = boost::bind(&Torpedo::callback, this, _1, _2);
-	//server.setCallback(f);
+	f = boost::bind(&Torpedo::callback, this, _1, _2);
+	server.setCallback(f);
 
 	cv::Scalar torpedo_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -198,8 +198,12 @@ void Torpedo::spinThread(){
 			detection_pub.publish(detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
+
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
 			z_coordinates_pub.publish(z_coordinate);
-			
+			}
 			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);

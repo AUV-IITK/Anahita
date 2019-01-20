@@ -7,10 +7,10 @@ Gate::Gate() : it(nh) {
     this->front_balanced_bilateral_iter_ = 4;
     this->front_denoise_h_ = 10.0;
     this->front_low_h_ = 0;
-    this->front_high_h_ = 16;
-    this->front_low_s_ = 225;
+    this->front_high_h_ = 12;
+    this->front_low_s_ = 115;
     this->front_high_s_ = 255;
-    this->front_low_v_ = 210;
+    this->front_low_v_ = 225;
     this->front_high_v_ = 255;
     this->front_closing_mat_point_ = 1;
     this->front_closing_iter_ = 2;
@@ -30,13 +30,13 @@ Gate::Gate() : it(nh) {
     this->bottom_balanced_bilateral_iter_ = 4;
     this->bottom_denoise_h_ = 10.0;
     this->bottom_low_h_ = 0;
-    this->bottom_low_s_ = 225;
-    this->bottom_low_v_ = 210;
-    this->bottom_high_h_ = 16;
-    this->bottom_high_s_ = 255;
+    this->bottom_low_s_ =9;
+    this->bottom_low_v_ = 115;
+    this->bottom_high_h_ = 255;
+    this->bottom_high_s_ = 115;
     this->bottom_high_v_ = 255;
     this->bottom_closing_mat_point_ = 1;
-    this->bottom_closing_iter_ = 2;
+    this->bottom_closing_iter_ = 4;
 
     this->camera_frame_ = "auv-iitk";
 
@@ -149,14 +149,18 @@ void Gate::spinThreadBottom()
     // this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
     this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this); // for gazebo only
 
+
+    system("rosparam delete /vision_node");
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
-	f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
-	server.setCallback(f_bottom);
+	//f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
+	//server.setCallback(f_bottom);
 
     cv::Scalar pipe_center_color(255, 255, 255);
     cv::Scalar image_center_color(0, 0, 0);
     cv::Scalar bounding_rectangle_color(255, 0, 0);
+
+
 
     cv::Mat blue_filtered;
     cv::Mat image_hsv;
@@ -241,8 +245,8 @@ void Gate::spinThreadFront()
 
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
-	f_front = boost::bind(&Gate::frontCallback, this, _1, _2);
-	server.setCallback(f_front);
+	//f_front = boost::bind(&Gate::frontCallback, this, _1, _2);
+	//server.setCallback(f_front);
 
 	cv::Scalar gate_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -467,8 +471,12 @@ void Gate::spinThreadFront()
 			ROS_INFO("Detection switch is %d", detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
+
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
 			z_coordinates_pub.publish(z_coordinate);
-		
+			}
 			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
 			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());

@@ -30,13 +30,13 @@ MarkerDropper::MarkerDropper() : it(nh) {
     this->bottom_balanced_bilateral_iter_ = 4;
     this->bottom_denoise_h_ = 10.0;
     this->bottom_low_h_ = 0;
-    this->bottom_low_s_ = 166;
-    this->bottom_low_v_ = 0;
-    this->bottom_high_h_ = 73;
-    this->bottom_high_s_ = 255;
+    this->bottom_low_s_ = 27;
+    this->bottom_low_v_ = 186;
+    this->bottom_high_h_ = 255;
+    this->bottom_high_s_ = 41;
     this->bottom_high_v_ = 255;
     this->bottom_closing_mat_point_ = 1;
-    this->bottom_closing_iter_ = 1;
+    this->bottom_closing_iter_ = 0;
 
 	this->bottom_low_h_blue = 0;
     this->bottom_low_s_blue = 42;
@@ -193,8 +193,8 @@ void MarkerDropper::spinThreadBottom() {
 
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig>::CallbackType f;
-	f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
-	server.setCallback(f);
+	//f = boost::bind(&MarkerDropper::bottomCallback, this, _1, _2);
+	//server.setCallback(f);
 
 	//cv::VideoCapture cap(0);
 
@@ -236,12 +236,12 @@ void MarkerDropper::spinThreadBottom() {
 			blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
 		    if ((bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_) && (bottom_high_h_blue > bottom_low_h_blue && bottom_high_s_blue > bottom_low_s_blue && bottom_high_v_blue > bottom_low_v_blue))
 			{
-			 	cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
-				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
+			    cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
+			    image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
 			    image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * bottom_opening_mat_point_ + 1, bottom_opening_mat_point_, bottom_opening_mat_point_, bottom_opening_iter_);
 			    image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
 			
-				image_thresholded_blue = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_blue, bottom_high_h_blue, bottom_low_s_blue, bottom_high_s_blue, bottom_low_v_blue, bottom_high_v_blue);
+			    image_thresholded_blue = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_blue, bottom_high_h_blue, bottom_low_s_blue, bottom_high_s_blue, bottom_low_v_blue, bottom_high_v_blue);
 			    image_thresholded_blue = vision_commons::Morph::open(image_thresholded_blue, 2 * bottom_opening_mat_point_blue + 1, bottom_opening_mat_point_blue, bottom_opening_mat_point_blue, bottom_opening_iter_blue);
 			    image_thresholded_blue = vision_commons::Morph::close(image_thresholded_blue, 2 * bottom_closing_mat_point_blue + 1, bottom_closing_mat_point_blue, bottom_closing_mat_point_blue, bottom_closing_iter_blue);
 			    
@@ -252,12 +252,12 @@ void MarkerDropper::spinThreadBottom() {
 		     	{
 					for(int i = 0; i<contours.size(); i++)
 					{
-						approxPolyDP(cv::Mat(contours[i]), polygons[i],0.1*arcLength(contours[i], true), true);
-     					mu[i] = moments( polygons[i], false ); 
+						approxPolyDP(cv::Mat(contours[i]), polygons[i],0.*arcLength(contours[i], true), true);
+				    		mu[i] = moments( polygons[i], false ); 
 						mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );			
 					}
-					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
 
+					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
 					mc[0].x = (bounding_rectangle.tl().x+bounding_rectangle.br().x)/2;
 					mc[0].y = (bounding_rectangle.tl().y+bounding_rectangle.br().y)/2;
 					z_coordinate.data = pow(contourArea(contours[0]) / 7526.5, -.92678);
@@ -267,7 +267,9 @@ void MarkerDropper::spinThreadBottom() {
 
 					if(contourArea(contours[0])>5000)
 					{
-						if(polygons.size()<15)
+					    int color = (int) image_thresholded.at<uchar>(mc[0].x, mc[0].y);
+					    ROS_INFO("%d: color", color);
+						if(color==255)
 							ROS_INFO("Detecting a cross");
 						else
 							ROS_INFO("Detecting a circle");
@@ -324,7 +326,12 @@ void MarkerDropper::spinThreadBottom() {
 			detection_pub.publish(detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
+
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
 			z_coordinates_pub.publish(z_coordinate);	
+			}
 			ROS_INFO("Center Location (x, y, z) = (%f, %f, %f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 			bin_center_message.header.stamp = ros::Time();
 			ROS_INFO("Detection bool is %d", detection_bool.data);
@@ -425,7 +432,11 @@ void MarkerDropper::spinThreadFront () {
 			}
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
-			z_coordinates_pub.publish(z_coordinate);
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
+			z_coordinates_pub.publish(z_coordinate);	
+			}
 			bin_center_message.header.stamp = ros::Time();
 			ROS_INFO("Detection bool is %d", detection_bool.data);
             front_blue_filtered_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", blue_filtered).toImageMsg());

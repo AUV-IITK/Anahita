@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="vision_node" type="vision_node" pkg="vision_tasks" respawn="true" output="screen">
+  </node>
+
+</launch>
