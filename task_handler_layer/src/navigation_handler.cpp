@@ -1,6 +1,6 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(30),
+navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(20),
                                         anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
                                         forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
 
@@ -27,6 +27,8 @@ void navigationHandler::manouver () {
 
     nh.setParam("/use_local_yaw", true);
 
+    depth_stabilise.setActive(true, "reference");
+
     ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
     anglePIDClient.waitForServer();
 
@@ -36,18 +38,17 @@ void navigationHandler::manouver () {
 
     if (!th.isAchieved(0, 2, "angle")) {
         ROS_INFO("Time limit exceeded for angle, Navigation Handle");
-        return;
+        // return;
+    }
+    else {
+        ros::Duration(3).sleep();
     }
     anglePIDClient.cancelGoal();
 
-    depth_stabilise.setActive(true, "reference");
-
     if (!th.isAchieved(0, 10, "upward")) {
         ROS_INFO("Time limit exceeded for upward, Navigation Handle");
-        return;
+        // return;
     }
-
-    depth_stabilise.setActive(false, "reference");
 
     move_straight.setThrust(50);
     move_straight.setActive(true, "local_yaw");
@@ -110,7 +111,7 @@ void navigationHandler::manouver () {
             move_straight.setActive(false, "local_yaw");
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
-	    ROS_INFO("Stopping signal detected");
+	        ROS_INFO("Stopping signal detected");
             return;
         }
         loop_rate.sleep();
@@ -214,23 +215,23 @@ void navigationHandler::manouver () {
             move_straight.setActive(false, "local_yaw");
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
-	    ROS_INFO("Stopping signal detected");
+	        ROS_INFO("Stopping signal detected");
             return;
         }
         loop_rate.sleep();
     }
 
     move_straight.setActive(false, "local_yaw");
-
+    depth_stabilise.setActive(false, "reference");
     nh.setParam("/use_reference_yaw", false);
 }
 
-bool navigationHandler::find (std::string object) {
+bool navigationHandler::find (std::string object, double time_out) {
     spin_thread = new boost::thread(boost::bind(&navigationHandler::manouver, this));
     nh.setParam("/current_task", object);
     std::cout << "NV, Finding Object: " << object << std::endl;
     ros::Duration(1).sleep();
-    if (!th.isDetected(object, 50)) {
+    if (!th.isDetected(object, time_out)) {
         ROS_INFO("Not found");
         return false;
     }
@@ -349,56 +350,20 @@ void navigationHandler::analyze () {}
 
 bool navigationHandler::scan (std::string object) {
     nh.setParam("/use_reference_yaw", true);
+    nh.setParam("/current_task", object);
 
-    ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
-    anglePIDClient.waitForServer();
+    depth_stabilise.setActive(true, "reference");
 
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 90;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
+    nh.setParam("/pwm_yaw", 25);
+    
     if (th.isDetected(object, 20)) {
         anglePIDClient.cancelGoal();
         nh.setParam("/kill_signal", true);
         return true;
     }
-
-    th.isAchieved(90, 2, "angle");
-
-    anglePIDClient.cancelGoal();
-
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
-    th.isAchieved(0, 2, "angle");
-
-    anglePIDClient.cancelGoal();
-
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = -90;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
-    if (th.isDetected(object, 20)) {
-        anglePIDClient.cancelGoal();
-        nh.setParam("/kill_signal", true);
-        return true;
-    }
-
-    th.isAchieved(-90, 2, "angle");
-
-    anglePIDClient.cancelGoal();
-
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
-    th.isAchieved(0, 2, "angle");
-
-    anglePIDClient.cancelGoal();
 
     nh.setParam("/kill_signal", true);
-    nh.setParam("/use_reference_yaw", false);
+    depth_stabilise.setActive(true, "reference");
 
     return false;
 }

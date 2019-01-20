@@ -33,7 +33,7 @@ public:
 
     void stabilise (std::string);
     void manouver ();
-    bool find (std::string);
+    bool find (std::string, double);
     bool isStable ();
     void findNextTask ();
     void analyze ();

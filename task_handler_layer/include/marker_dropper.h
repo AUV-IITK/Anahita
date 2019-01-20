@@ -7,6 +7,7 @@
 #include <motion_layer/anglePIDAction.h>
 
 #include <straight_server.h>
+#include <depth_stabilise.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -39,6 +40,7 @@ private:
     ros::Subscriber forward_sub_;
     std::mutex mtx;
     moveStraight move_straight;
+    depthStabilise depth_stabilise;
 
     bool forwardGoalReceived = false;
     double forward_distance_ = 0;

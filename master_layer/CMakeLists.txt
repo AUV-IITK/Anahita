@@ -157,6 +157,57 @@ target_link_libraries(master
   ${catkin_LIBRARIES}
 )
 
+add_executable(master2 src/master2.cpp)
+add_dependencies(master2 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master2 
+  singleBuoy 
+  gate
+  line
+  moveSideward 
+  moveStraight 
+  task_handler 
+  torpedo 
+  moveDownward 
+  marker_dropper
+  octagon
+  navigation_handler
+  ${catkin_LIBRARIES}
+)
+
+add_executable(master3 src/master3.cpp)
+add_dependencies(master3 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master3 
+  singleBuoy 
+  gate
+  line
+  moveSideward 
+  moveStraight 
+  task_handler 
+  torpedo 
+  moveDownward 
+  marker_dropper
+  octagon
+  navigation_handler
+  ${catkin_LIBRARIES}
+)
+
+add_executable(master4 src/master4.cpp)
+add_dependencies(master4 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master4 
+  singleBuoy 
+  gate
+  line
+  moveSideward 
+  moveStraight 
+  task_handler 
+  torpedo 
+  moveDownward 
+  marker_dropper
+  octagon
+  navigation_handler
+  ${catkin_LIBRARIES}
+)
+
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
   sidewardPIDServer 

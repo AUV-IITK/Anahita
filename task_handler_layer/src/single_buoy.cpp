@@ -8,8 +8,6 @@ bool singleBuoy::setActive(bool status) {
 
     if (status) {
 
-        nh_.setParam("/use_reference_yaw", true);
-
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
 
@@ -56,9 +54,9 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("forward distance equal 50");
     	
-    	// if (!th.isAchieved(0, 35, "sideward")) {
-        //     ROS_INFO("Unable to achieve sideward goal");
-        // }
+    	if (!th.isAchieved(0, 35, "sideward")) {
+            ROS_INFO("Unable to achieve sideward goal");
+        }
 
         ROS_INFO("Hitting the buoy now!");
 
@@ -112,7 +110,7 @@ bool singleBuoy::setActive(bool status) {
             // forwardPIDClient.cancelGoal();
         // }
 
-        sidewardPIDClient.cancelGoal();
+        // sidewardPIDClient.cancelGoal();
 
         if (!th.isAchieved(0, 2, "angle")) {
             ROS_INFO("Unable to achieve angle goal");

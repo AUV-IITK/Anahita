@@ -89,110 +89,129 @@ int main(int argc, char** argv) {
 
     move_straight.setActive(false, "reference");
 
-    if (!th.isDetected("red_buoy", 20)) {
-        ROS_INFO("Unable to detect red buoy");
-        // return 1;
-    }
-
     bool red_buoy = false;
 
-    nh.setParam("/use_reference_yaw", true);
-    red_buoy = single_buoy.setActive(true);
-    if (!red_buoy) {
-        ROS_INFO("Red Buoy Failed");
+    if (nav_handle.scan("red_buoy")) {
+
+        nh.setParam("/use_reference_yaw", true);
+        red_buoy = single_buoy.setActive(true);
+        if (!red_buoy) {
+            ROS_INFO("Red Buoy Failed");
+        }
+        else {
+            ROS_INFO("Completed the first buoy task, Now let's move on to the second");
+        }
+        single_buoy.setActive(false);
+
     }
     else {
-        ROS_INFO("Completed the first buoy task, Now let's move on to the second");
+        ROS_INFO("Red Buoy not detected");
+        nav_handle.stabilise("reference");
     }
-    single_buoy.setActive(false);
-    nh.setParam("/use_reference_yaw", false);
         
     ///////////////////////////////////////////////
 
     nh.setParam("/current_task", "yellow_buoy");
     ROS_INFO("Current task: Yellow Buoy");
+    
+    bool buoy_found = false;
+    bool yellow_buoy_done = false;
 
-    move_sideward.setThrust(50);
-    move_sideward.setActive(true, "reference");
-    depth_stabilise.setActive(true, "reference");
+    if (red_buoy) {
+        move_sideward.setThrust(50);
+        move_sideward.setActive(true, "reference");
+        depth_stabilise.setActive(true, "reference");
 
-    ros::Duration(10).sleep();
+        ros::Duration(10).sleep();
 
-    ROS_INFO("Finding Yellow Buoy....");
-    if (!th.isDetected("yellow_buoy", 15)){
-        ROS_INFO("Failed to detect yellow buoy");
+        ROS_INFO("Finding Yellow Buoy....");
+        if (!th.isDetected("yellow_buoy", 15)){
+            ROS_INFO("Failed to detect yellow buoy");
+            move_sideward.setActive(false, "reference");
+            return 1;
+        }
+        ROS_INFO("Yellow Buoy Detected");
         move_sideward.setActive(false, "reference");
-        return 1;
-    }
-    ROS_INFO("Yellow Buoy Detected");
-    move_sideward.setActive(false, "reference");
-    depth_stabilise.setActive(false, "reference");
 
-    nh.setParam("/use_reference_yaw", true);
-    if (!single_buoy.setActive(true)) {
-        ROS_INFO("Yellow Buoy Failed");
-        single_buoy.setActive(false);
-        return 1;
+        depth_stabilise.setActive(false, "reference");
     }
-    single_buoy.setActive(false);
-    ROS_INFO("Yellow Buoy done");
+    else {
+        buoy_found = nav_handle.scan("yellow_buoy");
+        nh.setParam("/set_local_yaw", true);
+    }
+
+    if (buoy_found) {
+
+        nh.setParam("/use_local_yaw", true);
+
+        yellow_buoy_done = single_buoy.setActive(true);
+        if (!yellow_buoy_done) {
+            ROS_INFO("Yellow Buoy Failed");            
+        }
+        single_buoy.setActive(false);
+        ROS_INFO("Yellow Buoy done");
+
+    }
+    else {
+        nav_handle.stabilise("reference");
+    }
     
     //////////////////////////////////////////////
 
     nh.setParam("/current_task", "green_buoy");
     ROS_INFO("Current task: Green Buoy");
 
-    nh.setParam("/use_reference_yaw", true);
-    depth_stabilise.setActive(true, "reference");
+    bool green_buoy_detected = false;
 
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
+    if (yellow_buoy_done) {
+        nh.setParam("/use_reference_yaw", true);
+        depth_stabilise.setActive(true, "reference");
+        ROS_INFO("Waiting for anglePID server to start.");
+        anglePIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal.");
-    anglePIDGoal.target_angle = -75;
-    anglePIDClient.sendGoal(anglePIDGoal);
+        ROS_INFO("anglePID server started, sending goal.");
+        anglePIDGoal.target_angle = -75;
+        anglePIDClient.sendGoal(anglePIDGoal);
 
-    th.isAchieved(-75, 2, "angle");
-    anglePIDClient.cancelGoal();
-    nh.setParam("/use_reference_yaw", false);
+        th.isAchieved(-75, 2, "angle");
+        anglePIDClient.cancelGoal();
+        nh.setParam("/use_reference_yaw", false);
 
-    move_straight.setThrust(50);
+        nh.setParam("/set_local_yaw", true);
 
-    move_straight.setActive(true, "current");
-    ros::Duration(5).sleep(); // configurable 
-    move_straight.setActive(false, "current");
+        move_straight.setThrust(50);
 
-    ROS_INFO("Finding Green Buoy...");
+        move_straight.setActive(true, "current");
+        ros::Duration(5).sleep(); // configurable 
+        move_straight.setActive(false, "current");
 
-    if (!th.isDetected("green_buoy", 15)) {
-        ROS_INFO("Unable to detect green buoy");
-        return 1;
+        ROS_INFO("Finding Green Buoy...");
+
+        if (!th.isDetected("green_buoy", 15)) {
+            ROS_INFO("Unable to detect green buoy");
+        }
+        green_buoy_detected = true;
+
+        depth_stabilise.setActive(false, "reference");
     }
-    ROS_INFO("Green Buoy Detected");        
-    depth_stabilise.setActive(false, "reference");
-    
-    if (!single_buoy.setActive(true)) {
-        ROS_INFO("Green Buoy Failed");
-        single_buoy.setActive(false);
-        return 1;
+    else {
+        green_buoy_detected = nav_handle.scan("green_buoy");
+        if (green_buoy_detected) { nh.setParam("/set_local_yaw", true); }
     }
+
+    bool green_buoy_done = false;
+    if (green_buoy_detected) { 
+        ROS_INFO("Green Buoy Detected");
+        green_buoy_done = single_buoy.setActive(true);
+    }
+                
+    if (!green_buoy_done) { ROS_INFO("Green Buoy Failed"); }
+    else { ROS_INFO("Green Buoy Done"); }
     single_buoy.setActive(false);
-    ROS_INFO("Green Buoy Done");
 
     //////////////////////////////////////////////
 
-    nh.setParam("/use_reference_yaw", true);
-    depth_stabilise.setActive(true, "reference");
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
-
-    ROS_INFO("anglePID server started, sending goal.");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
-    th.isAchieved(0, 2, "angle");
-    anglePIDClient.cancelGoal();
-    nh.setParam("/use_reference_yaw", false);
+    nav_handle.stabilise("reference");
 
     //////////////////////////////////////////////
 
@@ -223,20 +242,25 @@ int main(int argc, char** argv) {
         depth_stabilise.setActive(true, "reference");
 
         if (!th.isDetected("gate_front", 15)) {
-            ROS_INFO("Unable to detect Gate");
-            return 1;
+        ROS_INFO("Unable to detect Gate");
+        return 1;
         }
         ROS_INFO("Gate detected");
 
         depth_stabilise.setActive(false, "reference");
 
-        gate_found = true;
-        if (!gate_task.setActive(true)) {
-            ROS_INFO("Gate Task Unsuccessful");
+        if (nav_handle.scan("gate_front")) {
+            gate_found = true;
+            if (!gate_task.setActive(true)) {
+                ROS_INFO("Gate Task Unsuccessful");
+                gate_task.setActive(false);
+                return 1;
+            }
             gate_task.setActive(false);
-            return 1;
         }
-        gate_task.setActive(false);
+        else {
+            nav_handle.stabilise("reference");
+        }
     }
 
     if (gate_found) {
@@ -262,27 +286,12 @@ int main(int argc, char** argv) {
     ///////////////////////////////////////////////////
 
     // Gate-Torpedo Transition
+    double found_torpedo = false;
 
-    nh.setParam("/use_reference_yaw", true);
-
-    ROS_INFO("Waiting for anglePID server to start.");
-    anglePIDClient.waitForServer();
-
-    ROS_INFO("anglePID server started, sending goal.");
-    anglePIDGoal.target_angle = 60;
-    anglePIDClient.sendGoal(anglePIDGoal);
-
-    th.isAchieved(60, 2, "angle");
-    anglePIDClient.cancelGoal();
-
-    nh.setParam("/use_reference_yaw", false);
+    found_torpedo = nav_handle.scan("green_torpedo");
     nh.setParam("/set_local_yaw", true);
 
-    ros::Duration(1).sleep();
-
     ROS_INFO("Green Torpedo detected");
-
-    double found_torpedo = false;
 
     if (nav_handle.find("line", 20)) {
         found_torpedo = true;
@@ -295,16 +304,7 @@ int main(int argc, char** argv) {
     }
     else {
         ROS_INFO("Nav Handle: Line not found");
-
-        // found_torpedo = nav_handle.scan("green_torpedo");
-        // nh.setParam("/set_local_yaw", true);
-
-        found_torpedo = th.isDetected("green_torpedo", 10);
-        if (!found_torpedo) {
-            ROS_INFO("Green Torpedo Not detected");
-            return 1;
-        }
-
+        found_torpedo = nav_handle.scan("green_torpedo");    
     }
 
     if (found_torpedo) {
@@ -337,6 +337,9 @@ int main(int argc, char** argv) {
 
         torpedo.setActive(true);
         torpedo.setActive(false);
+    }
+    else {
+        nav_handle.stabilise("reference");
     }
 
     /////////////////////////////////////////////////////
@@ -517,7 +520,6 @@ int main(int argc, char** argv) {
     nh.setParam("/current_task", "octagon");
     ROS_INFO("Current task: Octagon");
 
-    move_straight.setThrust(50);
     move_straight.setActive(true, "current");
 
     if (!th.isDetected("octagon", 10)) {
