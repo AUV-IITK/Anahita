@@ -1,13 +1,17 @@
 #include <single_buoy.h>
 
 singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(30) {}
+                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(30) {
+    sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::callback, this);
+}
 singleBuoy::~singleBuoy() {}
 
 bool singleBuoy::setActive(bool status) {
 
     if (status) {
 
+        ros::Duration(1.5).sleep();
+        nh_.setParam("/enable_pressure", false);
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
 
@@ -40,6 +44,12 @@ bool singleBuoy::setActive(bool status) {
 
         /////////////////////////////////////////////////////
 
+        nh_.setParam("/pwm_surge", 50);
+
+        while (ros::ok()) {
+            if (forward_distance <= 125) { break; }
+        }
+
         ROS_INFO("Waiting for forwardPID server to start.");
         forwardPIDClient.waitForServer();
 
@@ -54,9 +64,9 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("forward distance equal 50");
     	
-    	if (!th.isAchieved(0, 35, "sideward")) {
-            ROS_INFO("Unable to achieve sideward goal");
-        }
+    	// if (!th.isAchieved(0, 35, "sideward")) {
+        //     ROS_INFO("Unable to achieve sideward goal");
+        // }
 
         ROS_INFO("Hitting the buoy now!");
 
@@ -130,4 +140,8 @@ bool singleBuoy::setActive(bool status) {
     }
 
     return true;
+}
+
+void singleBuoy::callback (const std_msgs::Float32Ptr& _msg) {
+    forward_distance = _msg->data;
 }

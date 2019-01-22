@@ -47,7 +47,7 @@ bool Torpedo::setActive(bool status) {
         if (!th.isAchieved(12, 2, "forward")) {
             ROS_INFO("Unable to achieve forward in time limit");
             nh_.setParam("/kill_signal", true);		
-            return false;	
+            // return false;	
 	    }
 
         ROS_INFO("Killing the thrusters");
@@ -67,7 +67,7 @@ bool Torpedo::setActive(bool status) {
         if (!th.isAchieved(25, 4, "forward")) {
             ROS_INFO("Unable to achieve forward in time limit");
             nh_.setParam("/kill_signal", true);
-            return false;	
+            // return false;	
 	    }
         ROS_INFO("Torpedo Finished");
     }

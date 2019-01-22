@@ -1,10 +1,9 @@
 <launch>
     <include file="$(find master_layer)/launch/parameters.launch" />
     <include file="$(find hardware_camera)/launch/camera_logitech.launch" />
-    <!-- <include file="$(find hardware_arduino)/launch/hardware_arduino.launch" /> -->
 
     <node pkg="hardware_imu" name="px4" type="px4" output="screen"/>
     <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" output="screen"/>
     <node pkg="master_layer" name="pressure_publisher" type="pressure_publisher" output="screen" />
-    <node pkg="vision_tasks" name="vision_node" type="vision_node" output="screen" />
+    <node pkg="vision_tasks" name="vision_node" type="vision_node" />
 </launch>

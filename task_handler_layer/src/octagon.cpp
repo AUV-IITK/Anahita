@@ -30,12 +30,12 @@ bool Octagon::setActive(bool status) {
 
         if (!th.isAchieved(0, 15, "forward")) {
             ROS_INFO("Octagon, Failed to achieve forward goal");
-            return false;
+            // return false;
         }
 
         if (!th.isAchieved(0, 10, "sideward")) {
             ROS_INFO("Octagon, Failed to achieve sideward goal");
-            return false;
+            // return false;
         }
 
         ROS_INFO("Octagon Finished");

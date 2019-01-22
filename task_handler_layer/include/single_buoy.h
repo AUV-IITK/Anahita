@@ -23,9 +23,10 @@
 
 class singleBuoy {
 public:
-    singleBuoy();
-    ~singleBuoy();
-    bool setActive(bool);
+    singleBuoy ();
+    ~singleBuoy ();
+    bool setActive (bool);
+    void callback (const std_msgs::Float32Ptr&);
 
 private:
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
@@ -34,6 +35,7 @@ private:
     actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;
 
     ros::NodeHandle nh_;
+    ros::Subscriber sub_;
 
     motion_layer::sidewardPIDGoal sidewardPIDgoal;
     motion_layer::forwardPIDGoal forwardPIDgoal;
@@ -41,6 +43,7 @@ private:
     motion_layer::upwardPIDGoal upwardPIDgoal;
 
     taskHandler th;
+    double forward_distance = 0;
 
     std::mutex mtx;
 };

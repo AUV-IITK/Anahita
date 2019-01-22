@@ -81,8 +81,8 @@ bool MarkerDropper::setActive(bool status) {
 
         if (!th.isDetected("marker_dropper_bottom", 20)) {
             ROS_INFO("Unable to detect Marker Dropper");
-            move_straight.setActive(false, "local");
-            return false;
+            // move_straight.setActive(false, "local");
+            // return false;
         }
         nh.setParam("/pwm_sway", 0);
 
@@ -107,11 +107,11 @@ bool MarkerDropper::setActive(bool status) {
 
         if (!th.isAchieved(0, 15, "forward")) {
             ROS_INFO("Marker Dropper, Forward not achieved");
-            return false;
+            // return false;
         }
         if (!th.isAchieved(0, 15, "sideward")) {
             ROS_INFO("Marker Dropper, sideward not achieved");
-            return false;
+            // return false;
         }
 
         ros::Duration(3).sleep();

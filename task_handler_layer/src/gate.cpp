@@ -8,6 +8,7 @@ gateTask::~gateTask() {}
 bool gateTask::setActive(bool status) {
     if (status) {
 
+        nh_.setParam("/enable_pressure", true);
         depth_stabilise.setActive(true, "reference");
 
         ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
@@ -31,7 +32,7 @@ bool gateTask::setActive(bool status) {
 
         if (!th.isAchieved(0, 15, "sideward")) {
             ROS_INFO("Time limit exceeded for the sideward PID");
-            return false;
+            // return false;
         }
     
     	ROS_INFO("Gate Front completed successfully");

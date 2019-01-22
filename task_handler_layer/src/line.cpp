@@ -26,9 +26,9 @@ bool lineTask::setActive(bool value) {
         forward_PID_goal.target_distance = 0;
         forwardPIDClient.sendGoal(forward_PID_goal);
 
-        if (!th.isAchieved(0, 10, "forward")) {
+        if (!th.isAchieved(0, 25, "forward")) {
             ROS_INFO("NOT able to align to the center of the line");
-            return false;
+            // return false;
         }
 
         ROS_INFO("Waiting for anglePID server to start.");
@@ -41,7 +41,7 @@ bool lineTask::setActive(bool value) {
 
         if (!th.isAchieved(0, 2, "angle")) {
             ROS_INFO("Bot Unbale to align with the line");
-            return false;
+            // return false;
         }
     	nh_.setParam("/set_local_yaw", true);
 
