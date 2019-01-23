@@ -28,6 +28,8 @@ void navigationHandler::manouver () {
     nh.setParam("/use_local_yaw", true);
 
     depth_stabilise.setActive(true, "reference");
+    nh.setParam("/enable_pressure", true);
+    nh.setParam("/disable_imu", false);
 
     ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
     anglePIDClient.waitForServer();
@@ -37,20 +39,22 @@ void navigationHandler::manouver () {
     anglePIDClient.sendGoal(anglePIDGoal);
 
     if (!th.isAchieved(0, 2, "angle")) {
-        ROS_INFO("Time limit exceeded for angle, Navigation Handle");
-        // return;
-    }
-    else {
+        ROS_INFO("Time limit exceeded for angle, NV");
         ros::Duration(3).sleep();
+        // return;
     }
     anglePIDClient.cancelGoal();
 
     if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward, Navigation Handle");
+        ROS_INFO("Time limit exceeded for upward, NV");
         // return;
     }
 
-    move_straight.setThrust(50);
+    if (direction == 1) {
+        ROS_INFO("Else");
+        move_straight.setThrust(50); 
+    }
+    else { move_straight.setThrust(-50); }
     move_straight.setActive(true, "local_yaw");
 
     double then = ros::Time::now().toSec();
@@ -61,7 +65,8 @@ void navigationHandler::manouver () {
 
     bool temp = false;
 
-    ROS_INFO("Moving forward, NV");
+    if (direction == 1) { ROS_INFO("Moving forward, NV"); }
+    else { ROS_INFO("Moving backward, NV"); }
 
     while (ros::ok()) {
         now = ros::Time::now().toSec();
@@ -81,7 +86,6 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();    
     }
-
     move_straight.setActive(false, "local_yaw");
 
     then = ros::Time::now().toSec();
@@ -93,7 +97,8 @@ void navigationHandler::manouver () {
 
     ROS_INFO("Moving Right, NV");
 
-    move_straight.setThrust(50);
+    if (direction == 1) { move_straight.setThrust(50); }
+    else { move_straight.setThrust(-50); }
     move_straight.setActive(true, "local_yaw");
 
     while (ros::ok()) {
@@ -116,11 +121,11 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();
     }
-
     move_straight.setActive(false, "local_yaw");
     nh.setParam("/pwm_sway", 0);
 
-    move_straight.setThrust(35);
+    if (direction == 1) { move_straight.setThrust(35); }
+    else { move_straight.setThrust(-35); }
     move_straight.setActive(true, "local_yaw");
 
     nh.setParam("/pwm_sway", -50);
@@ -189,9 +194,10 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();
     }
-
     move_straight.setActive(false, "local_yaw");
-    move_straight.setThrust(-50);
+    
+    if (direction == 1) { move_straight.setThrust(-50); }
+    else { move_straight.setThrust(50); }
     move_straight.setActive(true, "local_yaw");
 
     then = ros::Time::now().toSec();
@@ -223,16 +229,20 @@ void navigationHandler::manouver () {
 
     move_straight.setActive(false, "local_yaw");
     depth_stabilise.setActive(false, "reference");
-    nh.setParam("/use_reference_yaw", false);
+    nh.setParam("/use_local_yaw", false);
 }
 
-bool navigationHandler::find (std::string object, double time_out) {
+bool navigationHandler::find (std::string object, double time_out, int _direction) {
+    direction = _direction;
     spin_thread = new boost::thread(boost::bind(&navigationHandler::manouver, this));
     nh.setParam("/current_task", object);
     std::cout << "NV, Finding Object: " << object << std::endl;
     ros::Duration(1).sleep();
     if (!th.isDetected(object, time_out)) {
         ROS_INFO("Not found");
+        mtx.lock();
+        stop_manouver = true;
+        mtx.unlock();
         return false;
     }
     mtx.lock();

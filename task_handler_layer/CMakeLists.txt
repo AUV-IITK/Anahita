@@ -154,7 +154,7 @@ target_link_libraries(moveDownward ${catkin_LIBRARIES})
 
 add_library(navigation_handler SHARED src/navigation_handler.cpp include/navigation_handler.h)
 add_dependencies(navigation_handler ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(navigation_handler moveDownward moveStraight moveSideward depthStabilise ${catkin_LIBRARIES})
+target_link_libraries(navigation_handler moveDownward moveStraight moveSideward depthStabilise task_handler ${catkin_LIBRARIES})
 
 add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
 add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

@@ -11,6 +11,7 @@ bool Torpedo::setActive(bool status) {
 
         nh_.setParam("/use_local_yaw", true);
         nh_.setParam("/use_reference_yaw", false);
+        nh_.setParam("/enable_pressure", false);
 
         ROS_INFO("Waiting for sidewardPID server to start, task torpedo.");
         sidewardPIDClient.waitForServer();
@@ -48,17 +49,19 @@ bool Torpedo::setActive(bool status) {
             ROS_INFO("Unable to achieve forward in time limit");
             nh_.setParam("/kill_signal", true);		
             // return false;	
-	    }
-
-        ROS_INFO("Killing the thrusters");
-	    nh_.setParam("/kill_signal", true);
-
-        forwardPIDClient.cancelGoal();
-	
+	    }	
         ROS_INFO("Firing torpedo");
-        ros::Duration(4).sleep();
+
+        ros::Duration(2).sleep();
 	
         // fire the torpedo
+        nh_.setParam("/torpedo", 1);
+        ros::Duration(1).sleep();
+        nh_.setParam("/torpedo", 0);
+
+        forwardPIDClient.cancelGoal();
+        ROS_INFO("Killing the thrusters");
+	    nh_.setParam("/kill_signal", true);
 
         ROS_INFO("ForwardPID Client sending goal again, task torpedo.");        
         forwardPIDgoal.target_distance = 25;

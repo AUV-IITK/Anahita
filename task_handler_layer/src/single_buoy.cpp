@@ -12,10 +12,10 @@ bool singleBuoy::setActive(bool status) {
 
         ros::Duration(1.5).sleep();
         nh_.setParam("/enable_pressure", false);
+
         ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
         sidewardPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal, task buoy.");
         sidewardPIDgoal.target_distance = 0;
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
 
@@ -24,7 +24,6 @@ bool singleBuoy::setActive(bool status) {
         ROS_INFO("Waiting for upwardPID server to start.");
         upwardPIDClient.waitForServer();
 
-        ROS_INFO("upwardPID server started, sending goal.");
         upwardPIDgoal.target_depth = 0; // for gazebo
         upwardPIDClient.sendGoal(upwardPIDgoal);
 
@@ -32,8 +31,6 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
-
-        ROS_INFO("anglePID server started, sending goal.");
 
         anglePIDGoal.target_angle = 0;
         anglePIDClient.sendGoal(anglePIDGoal);
@@ -46,14 +43,14 @@ bool singleBuoy::setActive(bool status) {
 
         nh_.setParam("/pwm_surge", 50);
 
+        while (ros::ok()) { if (goal_received) { break; } }
+
         while (ros::ok()) {
             if (forward_distance <= 125) { break; }
         }
 
         ROS_INFO("Waiting for forwardPID server to start.");
         forwardPIDClient.waitForServer();
-
-        ROS_INFO("forward distance received");
 
         forwardPIDgoal.target_distance = 50;
         forwardPIDClient.sendGoal(forwardPIDgoal);
@@ -96,32 +93,6 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("moving backward finished");
 
-        // if (th.isDetected("red_buoy", 7)) {
-
-    	    // ROS_INFO("detected the buoy after hitting");
-            // ROS_INFO("SidewardPID Client sending goal again, task buoy.");
-            // sidewardPIDgoal.target_distance = 0;
-            // sidewardPIDClient.sendGoal(sidewardPIDgoal);
-            
-            // ROS_INFO("UpwardPID Client sending goal again, task buoy.");
-            // upwardPIDgoal.target_depth = 0;
-            // upwardPIDClient.sendGoal(upwardPIDgoal);
-
-            //////////////////////////////////////////////////////
-
-            // ROS_INFO("ForwardPID Client sending goal again, task buoy.");        
-            // forwardPIDgoal.target_distance = 60;
-            // forwardPIDClient.sendGoal(forwardPIDgoal);
-
-            // if (!th.isAchieved(60, 15, "forward")) {
-            //     ROS_INFO("Unable to achieve forward goal");
-            //     return false;
-            // }
-            // forwardPIDClient.cancelGoal();
-        // }
-
-        // sidewardPIDClient.cancelGoal();
-
         if (!th.isAchieved(0, 2, "angle")) {
             ROS_INFO("Unable to achieve angle goal");
             return false;
@@ -138,10 +109,10 @@ bool singleBuoy::setActive(bool status) {
         nh_.setParam("/use_reference_yaw", false);
         nh_.setParam("/kill_signal", true);
     }
-
     return true;
 }
 
 void singleBuoy::callback (const std_msgs::Float32Ptr& _msg) {
     forward_distance = _msg->data;
+    goal_received = true;
 }

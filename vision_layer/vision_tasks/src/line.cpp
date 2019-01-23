@@ -87,8 +87,8 @@ void Line::spinThread() {
 
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
-	//f = boost::bind(&Line::callback, this, _1, _2);
-	//server.setCallback(f);
+	f = boost::bind(&Line::callback, this, _1, _2);
+	server.setCallback(f);
 
 	cv::Scalar line_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);

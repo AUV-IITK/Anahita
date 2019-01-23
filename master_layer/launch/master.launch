@@ -1,4 +1,5 @@
 <launch>
     <node pkg="master_layer" name="motion_server" type="motion_server" />
-    <node pkg="master_layer" name="master" type="master" output="screen" />
+    <!-- <node pkg="master_layer" name="master" type="master" output="screen" /> -->
+    <node pkg="master_layer" name="temp" type="temp" output="screen" />
 </launch>

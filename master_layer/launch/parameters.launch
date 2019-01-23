@@ -16,7 +16,7 @@
   <param name="/kill_signal" value="false" type="bool" />
 
   <param name="/reference_yaw" value="0" type="double" />
-  <param name="/reference_depth" value="30" type="double" />
+  <param name="/reference_depth" value="50" type="double" />
   <param name="/local_yaw" value="0" type="double" />
 
   <param name="/disable_imu" value="false" type="bool" />

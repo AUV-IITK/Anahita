@@ -24,7 +24,7 @@ anglePIDAction::~anglePIDAction(void)
 
 void anglePIDAction::goalCB()
 {
-    ROS_INFO("Inside goal callback");
+    // ROS_INFO("Inside goal callback");
     goal_ = as_.acceptNewGoal()->target_angle;
 
     goalReceived = true;
@@ -55,8 +55,8 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         bool use_reference_yaw = false;
         nh_.getParam("/use_reference_yaw", use_reference_yaw);
 
-	bool disable_imu = false;
-	nh_.getParam("/disable_imu", disable_imu);
+        bool disable_imu = false;
+        nh_.getParam("/disable_imu", disable_imu);
         
         if (use_reference_yaw) {
             double reference_angle = 0;
@@ -70,10 +70,10 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
             goal_ = goal_ + local_angle;
             ROS_INFO("Local Yaw Used");
         }
-	else if (disable_imu) {
-	    goal_ = goal_;
-	    ROS_INFO("Line Angle USed");	
-	}
+        else if (disable_imu) {
+            goal_ = goal_;
+            ROS_INFO("Line Angle USed");	
+        }
         else {
             goal_ = goal_ + current_angle_;
             ROS_INFO("Current Yaw Used");

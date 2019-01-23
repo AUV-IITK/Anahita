@@ -45,6 +45,8 @@ private:
     taskHandler th;
     double forward_distance = 0;
 
+    bool goal_received = false;
+
     std::mutex mtx;
 };
 #endif // SINGLE_BUOY_H

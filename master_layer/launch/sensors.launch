@@ -1,6 +1,5 @@
 <launch>
     <include file="$(find master_layer)/launch/parameters.launch" />
-    <include file="$(find hardware_camera)/launch/camera_logitech.launch" />
 
     <node pkg="hardware_imu" name="px4" type="px4" output="screen"/>
     <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" output="screen"/>

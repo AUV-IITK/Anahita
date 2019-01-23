@@ -12,10 +12,8 @@ void depthStabilise::setActive(bool status, std::string type) {
             nh.setParam("/use_reference_depth", true);
         }
         spin_thread = new boost::thread(boost::bind(&depthStabilise::spinThread, this));
-        move_straight.setActive(true, "current");
     }
     else {
-        move_straight.setActive(false, "current");
  
         nh.setParam("/enable_pressure", false);
         nh.setParam("/use_reference_depth", false);

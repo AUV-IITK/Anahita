@@ -11,6 +11,7 @@ bool lineTask::setActive(bool value) {
         nh_.setParam("/use_local_yaw", false);
         nh_.setParam("/use_reference_yaw", false);
         nh_.setParam("/disable_imu", true);
+        nh_.setParam("/enable_pressure", true);
 
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();

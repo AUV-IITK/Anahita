@@ -23,8 +23,6 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "vision_node");    
     ros::NodeHandle nh;
 
-    system("rosparam delete /vision_node");
-
     Buoy buoy;
     Gate gate;
     Torpedo torpedo;
@@ -41,6 +39,9 @@ int main(int argc, char *argv[])
     while (ros::ok()) {
         nh.getParam("/current_task", current_task);
         if (current_task != previous_task) {
+
+            system("rosparam delete /vision_node");
+
             if (current_task == "red_buoy") {
                 buoy.switchColor(0);
                 if (!buoy.task_on)
@@ -104,12 +105,12 @@ int main(int argc, char *argv[])
             if (previous_task == "line") {
                 line.TaskHandling(false);
             }
-            // if (current_task == "octagon") {
-            //     octagon.bottomTaskHandling(true);
-            // }
-            // if (previous_task == "octagon") {
-            //     octagon.bottomTaskHandling(false);
-            // }
+            if (current_task == "octagon") {
+                octagon.bottomTaskHandling(true);
+            }
+            if (previous_task == "octagon") {
+                octagon.bottomTaskHandling(false);
+            }
             previous_task = current_task;
         }
         loop_rate.sleep();

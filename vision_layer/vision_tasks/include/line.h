@@ -40,9 +40,9 @@ protected:
 	
 	std::string camera_frame_;
 
-    int low_h_ = 11;
-	int high_h_ = 38;
-	int low_s_ = 166;
+    int low_h_ = 0;
+	int high_h_ = 80;
+	int low_s_ = 0;
 	int high_s_ = 255;
 	int low_v_ = 0;
 	int high_v_ = 255;

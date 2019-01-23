@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
     hyperion_msgs::Thrust pwm;
 
     while(ros::ok()) {
-
         nh.getParam("/pwm_surge", pwm_surge);
         nh.getParam("/pwm_heave", pwm_heave);
         nh.getParam("/pwm_sway", pwm_sway);

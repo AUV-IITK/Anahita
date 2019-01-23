@@ -33,7 +33,7 @@ public:
 
     void stabilise (std::string);
     void manouver ();
-    bool find (std::string, double);
+    bool find (std::string, double, int);
     bool isStable ();
     void findNextTask ();
     void analyze ();
@@ -47,6 +47,7 @@ private:
 
     bool stop_manouver = false;
     std::mutex mtx;
+    int direction = 1;
 
     boost::thread* spin_thread;
 
