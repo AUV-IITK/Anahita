@@ -157,22 +157,22 @@ target_link_libraries(master
   ${catkin_LIBRARIES}
 )
 
-add_executable(temp src/temp.cpp)
-add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(temp 
-  singleBuoy 
-  gate
-  line
-  moveSideward 
-  moveStraight 
-  task_handler 
-  torpedo 
-  moveDownward 
-  marker_dropper
-  octagon
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
+# add_executable(temp src/temp.cpp)
+# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(temp 
+#   singleBuoy 
+#   gate
+#   line
+#   moveSideward 
+#   moveStraight 
+#   task_handler 
+#   torpedo 
+#   moveDownward 
+#   marker_dropper
+#   octagon
+#   navigation_handler
+#   ${catkin_LIBRARIES}
+# )
 
 # add_executable(master2 src/master2.cpp)
 # add_dependencies(master2 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
