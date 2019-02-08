@@ -1,4 +1,4 @@
-#include <dvl.h>
+#include <dvl_connection.h>
 
 namespace hardware_dvl {
 
@@ -6,8 +6,9 @@ namespace hardware_dvl {
       nh_(nh),
       socket_()
       {
-        std::string hostname = "192.168.1.240";
-        socket_.Connect(hostname, 9002);
+        ROS_INFO("Created struct");
+        std::string hostname = "192.168.1.101";
+        socket_.Connect(hostname, 1033);
 
         dvl_twist_publisher_ = nh_->advertise<geometry_msgs::TwistStamped>("/provider_dvl/dvl_twist", 1000);
         dvl_fluid_pressure_publisher_ = nh_->advertise<sensor_msgs::FluidPressure>("/provider_dvl/dvl_pressure", 1000);
@@ -17,9 +18,12 @@ namespace hardware_dvl {
 
   void DVLNode::Spin() {
     ros::Rate loop_rate(15);  // 15 hz
+    ROS_INFO("Inside SPIN");
+
 
     while (ros::ok()) {
-      ros::spinOnce();
+      ROS_INFO("Inside ROS_OK");
+
 
       socket_.Receive();
 
@@ -33,8 +37,11 @@ namespace hardware_dvl {
           FillFluidPressureMessage(timestamp_);
         }
       }
+ ros::spinOnce();
       loop_rate.sleep();
+    
     }
+
   }
 
   void DVLNode::FillTwistMessage(ros::Time timestamp) {

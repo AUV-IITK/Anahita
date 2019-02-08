@@ -50,7 +50,7 @@ include_directories(
 add_library(dvl_library SHARED src/driver/dvl_ethernet.cpp include/dvl_data.h include/dvl_ethernet.h include/dvl.h)
 target_link_libraries(dvl_library ${catkin_LIBRARIES})
 
-add_executable(dvl_node src/hardware_dvl/dvl.cpp)
+add_executable(dvl_node src/hardware_dvl/dvl_node.cpp src/hardware_dvl/dvl_connection.cpp)
 target_link_libraries(dvl_node dvl_library ${catkin_LIBRARIES})
 # add_dependencies(dvl_node dvl_generate_messages_cpp)
 

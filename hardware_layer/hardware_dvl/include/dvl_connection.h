@@ -1,5 +1,5 @@
-#ifndef DVL_NODE_H
-#define DVL_NODE_H
+#ifndef DVL_CONNECTION_H
+#define DVL_CONNECTION_H
 
 #include <string>
 #include <ros/node_handle.h>
