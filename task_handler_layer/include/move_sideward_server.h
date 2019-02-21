@@ -21,14 +21,13 @@ protected:
     boost::thread* spin_thread;
     std::mutex mtx;
 
-    int pwm = 0;
-
 public:
 
-    moveSideward(int);
+    moveSideward();
     ~moveSideward();
 
-    void setActive(bool, std::string);
+    void activate (int, std::string);
+    void deActivate ();
     void setThrust(int);
     void spinThread();
 };

@@ -1,79 +1,18 @@
 #include <marker_dropper.h>
 
 MarkerDropper::MarkerDropper(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                                th(25), move_straight(0), anglePIDClient("turnPID") 
-{
-    forward_sub_ = nh.subscribe("/anahita/x_coordinate", 1, &MarkerDropper::forwardCB, this);
-}
+                                th(25), anglePIDClient("turnPID") {}
 MarkerDropper::~MarkerDropper() {}
 
 bool MarkerDropper::setActive(bool status) {
 
     if (status) {
 
-        // nh.setParam("/pwm_surge", 50);
-        // nh.setParam("/use_reference_yaw", false);
-        // nh.setParam("/use_lcoal_yaw", false);
-
-        // ROS_INFO("Waiting for sidewardPID server to start.");
-        // sidewardPIDClient.waitForServer();
-
-        // ROS_INFO("sidewardPID server started, sending goal.");
-
-        // sidewardPIDGoal.target_distance = 0;
-        // sidewardPIDClient.sendGoal(sidewardPIDGoal);
-
-        // anglePIDClient.waitForServer();
-
-        // anglePIDGoal.target_angle = 0;
-        // anglePIDClient.sendGoal(anglePIDGoal);
-
-        // while (ros::ok()) {
-        //     // mtx.lock();
-        //     bool temp = forwardGoalReceived;
-        //     // mtx.unlock();
-        //     if (temp) { break; }
-        // }
-
-        // while (ros::ok()) {
-        //     // mtx.lock();
-        //     double data = forward_distance_;
-        //     // mtx.unlock();
-        //     if (data <= 200) { break; }
-        // }
-        // sidewardPIDClient.cancelGoal();
-
-        // nh.setParam("/current_task", "line");
-        // ROS_INFO("Current task: Line");
-
-        // if (!th.isDetected("line", 20)) {
-        //     ROS_INFO("Line Not detected");
-        //     // move_straight.setActive(false);
-        //     return false;
-        // }
-        // anglePIDClient.cancelGoal();
-
-        // lineTask line;
-
-        // if (!line.setActive(true)) {
-        //     ROS_INFO("Unable to perform line");
-        //     line.setActive(false);
-        //     return false;
-        // }
-        // line.setActive(false);
-
-        // ROS_INFO("Aligned to the line")
-
-        // nh.setParam("/set_local_yaw", true);
-
-        ///////////////////////////////////////////////////
-
         nh.setParam("/current_task", "marker_dropper_bottom");
         ROS_INFO("Current task: Marker Dropper Bottom");
 
-        move_straight.setThrust(50);
-        move_straight.setActive(true, "local");
-        depth_stabilise.setActive(true, "reference");
+        move_straight.activate (50, "local");
+        depth_stabilise.activate ("reference");
 
         nh.setParam("/pwm_sway", 50);
 
@@ -81,12 +20,11 @@ bool MarkerDropper::setActive(bool status) {
 
         if (!th.isDetected("marker_dropper_bottom", 20)) {
             ROS_INFO("Unable to detect Marker Dropper");
-            // move_straight.setActive(false, "local");
             // return false;
         }
         nh.setParam("/pwm_sway", 0);
 
-        move_straight.setActive(false, "local");
+        move_straight.deActivate ();
         ROS_INFO("Marker Dropper Detected");
 
         ROS_INFO("Waiting for forwardPID server to start.");
@@ -122,7 +60,7 @@ bool MarkerDropper::setActive(bool status) {
         ros::Duration(2).sleep();
 
         ROS_INFO("Marker Dropper Finished");
-        depth_stabilise.setActive(false, "reference");
+        depth_stabilise.deActivate ();
 
         ROS_INFO("Torpedo Finished");
         
@@ -138,11 +76,4 @@ bool MarkerDropper::setActive(bool status) {
         ROS_INFO("Closing Marker Dropper");
     }
     return true;
-}
-
-void MarkerDropper::forwardCB (const std_msgs::Float32ConstPtr &_msg) {
-    // mtx.lock();
-    forward_distance_ = _msg->data;
-    forwardGoalReceived = true;
-    // mtx.unlock();
 }

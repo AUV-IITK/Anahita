@@ -21,14 +21,13 @@ protected:
 
     boost::thread* spin_thread;
 
-    int pwm = 0;
-
 public:
 
-    moveDownward(int);
+    moveDownward();
     ~moveDownward();
 
-    void setActive(bool, std::string);
+    void activate (int, std::string);
+    void deActivate ();
     void setThrust(int);
     void spinThread();
 };
