@@ -47,7 +47,7 @@ include_directories(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_library(dvl_library SHARED src/driver/dvl_ethernet.cpp include/dvl_data.h include/dvl_ethernet.h include/dvl.h)
+add_library(dvl_library SHARED src/driver/dvl_ethernet.cpp include/dvl_data.h include/dvl_ethernet.h)
 target_link_libraries(dvl_library ${catkin_LIBRARIES})
 
 add_executable(dvl_node src/hardware_dvl/dvl_node.cpp src/hardware_dvl/dvl_connection.cpp)

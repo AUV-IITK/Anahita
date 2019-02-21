@@ -1,11 +1,11 @@
 #include <ros/ros.h>
-#include <hyperion_msgs/Thrust.h>
+#include <anahita_msgs/Thrust.h>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "pwm_publisher");
     ros::NodeHandle nh;
 
-    ros::Publisher pwmPublisher = nh.advertise<hyperion_msgs::Thrust>("/pwm", 1);
+    ros::Publisher pwmPublisher = nh.advertise<anahita_msgs::Thrust>("/pwm", 1);
 
     int pwm_sway;
     int pwm_surge;
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
     ros::Rate r(20);
 
-    hyperion_msgs::Thrust pwm;
+    anahita_msgs::Thrust pwm;
 
     while(ros::ok()) {
         nh.getParam("/pwm_surge", pwm_surge);

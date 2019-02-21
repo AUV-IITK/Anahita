@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>hyperion_msgs</name>
+  <name>anahita_msgs</name>
   <version>0.0.0</version>
-  <description>The hyperion_msgs package provides custom message types commonly used with Autonomous Underwater Vehicles</description>
+  <description>The anahita_msgs package provides custom message types commonly used with Autonomous Underwater Vehicles</description>
 
   <maintainer email="mayankm.iitk@gmail.com">Mayank Mittal</maintainer>
 

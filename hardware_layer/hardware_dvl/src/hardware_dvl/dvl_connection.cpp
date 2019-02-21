@@ -24,7 +24,6 @@ namespace hardware_dvl {
     while (ros::ok()) {
       ROS_INFO("Inside ROS_OK");
 
-
       socket_.Receive();
 
       dvl_data_ = *(DVLformat21_t*)(socket_.GetRawData());
@@ -37,7 +36,7 @@ namespace hardware_dvl {
           FillFluidPressureMessage(timestamp_);
         }
       }
- ros::spinOnce();
+      ros::spinOnce();
       loop_rate.sleep();
     
     }

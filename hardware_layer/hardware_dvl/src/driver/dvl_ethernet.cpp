@@ -2,6 +2,8 @@
 
 DVLEthernet::DVLEthernet() {}
 DVLEthernet::~DVLEthernet() {}
+std::string dataToSend = "CS\n";
+uint32_t dataLength = htonl(dataToSend.size()); // Ensure network byte order 
 
 void DVLEthernet::Connect(std::string address, int port)
 {
@@ -23,9 +25,13 @@ void DVLEthernet::Connect(std::string address, int port)
     }
 
     ROS_INFO("Connected\n");
+    send(socket_,dataToSend.c_str(),dataToSend.size(),MSG_CONFIRM); // Send the string 
+
 }   
 
 void DVLEthernet::Receive() {
+
+
     if (recv(socket_, data_, 2048, 0) < 0)
     {
         ROS_INFO("Recieve failed from the DVL");
