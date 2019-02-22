@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  hyperion_msgs
+  anahita_msgs
   roscpp
   rospy
   std_msgs
@@ -71,7 +71,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs hyperion_msgs
+  actionlib_msgs std_msgs anahita_msgs
 )
 
 ################################################
@@ -106,7 +106,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer hyperion_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs
 #  DEPENDS system_lib
 )
 
@@ -140,60 +140,22 @@ target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 add_executable(pressure_publisher src/pressure_publisher.cpp)
 target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
 
-add_executable(master src/master.cpp)
-add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master 
-  singleBuoy 
+add_executable(master_s src/master_s.cpp)
+add_dependencies(master_s master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master_s 
   gate
-  line
   moveSideward 
   moveStraight 
   task_handler 
-  torpedo 
   moveDownward 
   marker_dropper
-  octagon
   navigation_handler
   ${catkin_LIBRARIES}
 )
 
-# add_executable(master2 src/master2.cpp)
-# add_dependencies(master2 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master2 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
-
-# add_executable(master3 src/master3.cpp)
-# add_dependencies(master3 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master3 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
-
-# add_executable(master4 src/master4.cpp)
-# add_dependencies(master4 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master4 
+# add_executable(master src/master.cpp)
+# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(master 
 #   singleBuoy 
 #   gate
 #   line

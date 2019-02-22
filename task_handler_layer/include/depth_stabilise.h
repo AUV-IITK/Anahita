@@ -35,6 +35,7 @@ public:
     depthStabilise();
     ~depthStabilise();
 
-    void setActive(bool, std::string);
+    void activate (std::string);
+    void deActivate ();
     void spinThread();
 };

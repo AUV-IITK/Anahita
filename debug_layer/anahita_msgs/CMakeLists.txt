@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hyperion_msgs)
+project(anahita_msgs)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -58,7 +58,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-   #LIBRARIES hyperion_msgs
+   #LIBRARIES anahita_msgs
    CATKIN_DEPENDS geometry_msgs message_generation message_runtime sensor_msgs std_msgs
   #  geographic_msgs
 #  DEPENDS system_lib

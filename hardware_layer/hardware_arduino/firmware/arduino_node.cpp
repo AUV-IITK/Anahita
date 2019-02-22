@@ -6,9 +6,9 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
-// #include <hyperion_msgs/Depth.h>
-// #include <hyperion_msgs/Pressure.h>
-#include <hyperion_msgs/Thrust.h>
+// #include <anahita_msgs/Depth.h>
+// #include <anahita_msgs/Pressure.h>
+#include <anahita_msgs/Thrust.h>
 
 #include <MS5837.h>
 
@@ -46,7 +46,7 @@ Servo servoSouthWestUp;
 Servo servoSouthEastUp;
 Servo servoMarkerDropper;
 
-void PWMCb(const hyperion_msgs::Thrust& msg_);
+void PWMCb(const anahita_msgs::Thrust& msg_);
 void TEast(const int data);
 void TWest(const int data);
 void TNorth(const int data);
@@ -70,7 +70,7 @@ ros::NodeHandle nh;
 MS5837 pressure_sensor;
 
 // declare subscribers
-ros::Subscriber<hyperion_msgs::Thrust> PWM_Sub("/pwm", &PWMCb);
+ros::Subscriber<anahita_msgs::Thrust> PWM_Sub("/pwm", &PWMCb);
 
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
@@ -353,7 +353,7 @@ void TSWUp(const int data)
     servoSouthWestUp.writeMicroseconds(ESC_Zero);
 }
 
-void PWMCb(const hyperion_msgs::Thrust& msg_)
+void PWMCb(const anahita_msgs::Thrust& msg_)
 {
     // nh.loginfo("Inside PWM Callback");
     forward_right = msg_.forward_right;

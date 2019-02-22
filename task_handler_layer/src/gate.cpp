@@ -9,7 +9,7 @@ bool gateTask::setActive(bool status) {
     if (status) {
 
         nh_.setParam("/enable_pressure", true);
-        depth_stabilise.setActive(true, "reference");
+        depth_stabilise.activate ("reference");
 
         ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
         sidewardPIDClient.waitForServer();
@@ -41,7 +41,7 @@ bool gateTask::setActive(bool status) {
     else {
         sidewardPIDClient.cancelGoal();
     	anglePIDClient.cancelGoal();
-        depth_stabilise.setActive(false, "reference");
+        depth_stabilise.deActivate ();
         nh_.setParam("/kill_signal", true);
     }
 }

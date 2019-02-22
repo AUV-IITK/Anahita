@@ -17,14 +17,11 @@
 #include <string>
 #include <mutex>
 
-#include <line.h>
-
 class MarkerDropper {
 public:
     MarkerDropper ();
     ~MarkerDropper ();
     bool setActive (bool);
-    void forwardCB (const std_msgs::Float32ConstPtr &_msg);
 
 private:
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
@@ -38,10 +35,7 @@ private:
     taskHandler th;
     ros::NodeHandle nh;
     ros::Subscriber forward_sub_;
-    std::mutex mtx;
     moveStraight move_straight;
     depthStabilise depth_stabilise;
 
-    bool forwardGoalReceived = false;
-    double forward_distance_ = 0;
 };
