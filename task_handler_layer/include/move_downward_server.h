@@ -6,34 +6,29 @@
 #include <motion_layer/anglePIDAction.h>
 #include <actionlib/client/terminal_state.h>
 #include <std_msgs/Float32.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
 #include <boost/thread.hpp>
 #include <string>
+#include <mutex>
 
 class moveDownward {
 
 protected:
 
-    ros::NodeHandle nh;
+    ros::NodeHandle nh_;
+
     actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;    
     motion_layer::anglePIDGoal angle_PID_goal;
-    ros::Subscriber sub_;
-    double angle;
-    bool goalReceived;
-    bool close_loop = false;
+
+    boost::thread* spin_thread;
 
 public:
 
-    moveDownward(int);
+    moveDownward();
     ~moveDownward();
 
-    boost::thread* spin_thread;
-    boost::thread* spin_thread_;
-    void setActive(bool);
+    void activate (int, std::string);
+    void deActivate ();
     void setThrust(int);
-    void imuAngleCB(const std_msgs::Float32Ptr &_msg);
     void spinThread();
-    void spinThread_();
 };
 #endif // MOVE_DOWNWARD_SERVER_H

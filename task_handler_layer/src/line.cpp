@@ -1,14 +1,18 @@
 #include <line.h>
 
 lineTask::lineTask(): sidewardPIDClient("sidewardPID"), anglePIDClient("turnPID"), 
-                    forwardPIDClient("forwardPID"), th(15) {
-    sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &lineTask::angleCB, this);
-}
+                    forwardPIDClient("forwardPID"), th(30) {}
 
 lineTask::~lineTask() {}
 
 bool lineTask::setActive(bool value) {
     if (value) {
+
+        nh_.setParam("/use_local_yaw", false);
+        nh_.setParam("/use_reference_yaw", false);
+        nh_.setParam("/disable_imu", true);
+        nh_.setParam("/enable_pressure", true);
+
         ROS_INFO("Waiting for sidewardPID server to start.");
         sidewardPIDClient.waitForServer();
 
@@ -23,33 +27,34 @@ bool lineTask::setActive(bool value) {
         forward_PID_goal.target_distance = 0;
         forwardPIDClient.sendGoal(forward_PID_goal);
 
-        if (!th.isAchieved(0, 10, "forward")) {
+        if (!th.isAchieved(0, 25, "forward")) {
             ROS_INFO("NOT able to align to the center of the line");
-            return false;
+            // return false;
         }
-
-	    // th.isAchieved(0, 10, "forward");
 
         ROS_INFO("Waiting for anglePID server to start.");
         anglePIDClient.waitForServer();
 
-        while (ros::ok() && !angleReceived) { continue; }
-
         ROS_INFO("anglePID server started, sending goal.");
-        angle_PID_goal.target_angle = -angle_;
+        
+        angle_PID_goal.target_angle = 0;
         anglePIDClient.sendGoal(angle_PID_goal);
 
-        th.isAchieved(-angle_, 2, "angle");
+        if (!th.isAchieved(0, 2, "angle")) {
+            ROS_INFO("Bot Unbale to align with the line");
+            // return false;
+        }
+    	nh_.setParam("/set_local_yaw", true);
+
+        ROS_INFO("Line Task Finished");
     }
     else {
         anglePIDClient.cancelGoal();
         sidewardPIDClient.cancelGoal();
         forwardPIDClient.cancelGoal();
+        
+        nh_.setParam("/disable_imu", false);
+        nh_.setParam("/kill_signal", true);
     }
     return true;
-}
-
-void lineTask::angleCB(const std_msgs::Float32ConstPtr& _msg) {
-    angle_ = _msg->data;
-    angleReceived = true;
 }

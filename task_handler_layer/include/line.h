@@ -14,6 +14,7 @@
 
 #include <boost/thread.hpp>
 #include <string>
+#include <mutex>
 
 #include <task_handler.h>
 
@@ -22,7 +23,6 @@ public:
     lineTask ();
     ~lineTask ();
     bool setActive (bool);
-    void angleCB (const std_msgs::Float32ConstPtr&);
 
 private:
     actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
@@ -38,7 +38,6 @@ private:
 
     taskHandler th;
 
-    double angle_ = 0;
-    bool angleReceived = false;
+    std::mutex mtx;
 };
 #endif // LINE_H

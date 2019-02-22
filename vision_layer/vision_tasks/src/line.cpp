@@ -1,16 +1,25 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
+<<<<<<< HEAD
 	this->low_h_ = 12;
 	this->high_h_ = 40;
 	this->low_s_ = 183;
 	this->high_s_ = 255;
 	this->low_v_ = 3;
 	this->high_v_ = 255;
+=======
+	this->low_h_ = 0;
+	this->high_h_ = 81;
+	this->low_s_ = 3;
+	this->high_s_ = 255;
+	this->low_v_ = 0;
+	this->high_v_ = 183;
+>>>>>>> AUV/master
 	this->opening_mat_point_ = 1;
-	this->opening_iter_ = 0;
-	this->closing_mat_point_ = 2;
-	this->closing_iter_ = 3;
+	this->opening_iter_ = 3;
+	this->closing_mat_point_ = 1;
+	this->closing_iter_ = 5;
 	this->camera_frame_ = "auv-iitk";
 	// image_transport::ImageTransport it(nh);
 	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
@@ -52,7 +61,7 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
-		ROS_INFO("Inside retreving callback");
+		// ROS_INFO("Inside retreving callback");
 		image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
@@ -83,7 +92,7 @@ void Line::TaskHandling(bool status)
 
 void Line::spinThread() {
 
-	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig>::CallbackType f;
@@ -105,7 +114,7 @@ void Line::spinThread() {
 	cv::Mat image_marked;
 	std::vector<double> readings(5);
 	int good_values_num = 0;
-	cv::VideoCapture cap(0);
+	// cv::VideoCapture cap(0);
 	double theta, readings_avg;
 
 	std_msgs::Bool detection_bool;
@@ -115,7 +124,7 @@ void Line::spinThread() {
 		if (task_done) {
 			break;
 		}
-		cap >> image_;
+		// cap >> image_;
 		if (!image_.empty())
 		{
 			image_.copyTo(image_marked);
@@ -167,7 +176,7 @@ void Line::spinThread() {
 					{
 						readings_avg = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
 						readings[0] = readings[1]; readings[1] = readings[2]; readings[2] = readings[3]; readings[3] = readings[4];
-						if(abs(readings_avg - theta) < 25)
+						if(abs(readings_avg - theta) < 170)
 						{
 							readings[4] = theta;
 						}
@@ -183,8 +192,10 @@ void Line::spinThread() {
 					z_coordinate.data = (readings[0] + readings[1] + readings[2] + readings[3] + readings[4])/5;
 
 					int non_zero = countNonZero(image_thresholded);
+					
+					std::cout << "non zero: " << non_zero << std::endl;
 
-					if (non_zero > (3072 * 0.20) && good_values_num>0)
+					if (non_zero > (7000) && good_values_num>0)
 					{
 						good_values_num++;
 						detection_bool.data=true;
@@ -196,6 +207,7 @@ void Line::spinThread() {
 						good_values_num = 0;
 						ROS_INFO("Detection switch for line: 0");
 					}
+					z_coordinate.data = -z_coordinate.data;
 					ROS_INFO("Line (x, y, theta) = (%.2f, %.2f, %.2f)", y_coordinate.data, x_coordinate.data, z_coordinate.data);
 					cv::circle(image_marked, cv::Point(bounding_rectangle.center.x, bounding_rectangle.center.y), 1, line_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
@@ -206,9 +218,14 @@ void Line::spinThread() {
 					}
 				}
 			}
+			
 			x_coordinates_pub.publish(y_coordinate);
 			y_coordinates_pub.publish(x_coordinate);
-			z_coordinates_pub.publish(z_coordinate);
+			bool temp = false;
+			nh.getParam("/disable_imu", temp);
+			if (temp) {
+				z_coordinates_pub.publish(z_coordinate);			
+			}
 			detection_pub.publish(detection_bool);
 			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());

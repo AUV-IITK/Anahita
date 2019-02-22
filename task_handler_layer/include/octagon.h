@@ -16,7 +16,7 @@ class Octagon {
 public:
     Octagon ();
     ~Octagon ();
-    void setActive (bool);
+    bool setActive (bool);
     void spinThread ();
 
 private:

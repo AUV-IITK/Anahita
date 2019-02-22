@@ -1,0 +1,15 @@
+Header header
+
+DeviceInfo device_info
+
+AcquisitionConfiguration acquisition_conf
+
+OutputConfiguration output_conf
+
+Status status
+
+CellReadings cell_readings
+
+BottomTrackingConfiguration bottom_tracking_conf
+
+BottomTracking bottom_tracking

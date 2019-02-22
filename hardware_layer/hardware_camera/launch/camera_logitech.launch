@@ -9,7 +9,7 @@
   <arg name="bottom_camera_info_url"  default=""/>
 
   <!-- front camera -->
-  <node name="front_camera" pkg="usb_cam" type="usb_cam_node" output="screen">
+  <node name="front_camera" pkg="usb_cam" type="usb_cam_node">
     <param name="video_device"      value="/dev/front_cam" />
     <param name="image_width"       value="$(arg image_width)" />
     <param name="image_height"      value="$(arg image_height)" />
@@ -22,7 +22,7 @@
   </node>
 
   <!-- bottom camera -->
-  <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node" output="screen">
+  <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node">
     <param name="video_device"    value="/dev/bottom_cam" />
     <param name="image_width"     value="$(arg image_width)" />
     <param name="image_height"    value="$(arg image_height)" />

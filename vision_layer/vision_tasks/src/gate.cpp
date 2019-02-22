@@ -7,13 +7,13 @@ Gate::Gate() : it(nh) {
     this->front_balanced_bilateral_iter_ = 4;
     this->front_denoise_h_ = 10.0;
     this->front_low_h_ = 0;
-    this->front_high_h_ = 17;
-    this->front_low_s_ = 206;
+    this->front_high_h_ = 12;
+    this->front_low_s_ = 115;
     this->front_high_s_ = 255;
-    this->front_low_v_ = 30;
+    this->front_low_v_ = 225;
     this->front_high_v_ = 255;
     this->front_closing_mat_point_ = 1;
-    this->front_closing_iter_ = 1;
+    this->front_closing_iter_ = 2;
     this->front_canny_threshold_low_ = 0;
     this->front_canny_threshold_high_ = 1000;
     this->front_canny_kernel_size_ = 3;
@@ -29,14 +29,14 @@ Gate::Gate() : it(nh) {
     this->bottom_clahe_bilateral_iter_ = 8;
     this->bottom_balanced_bilateral_iter_ = 4;
     this->bottom_denoise_h_ = 10.0;
-    this->bottom_low_h_ = 10;
-    this->bottom_low_s_ = 0;
-    this->bottom_low_v_ = 0;
-    this->bottom_high_h_ = 90;
-    this->bottom_high_s_ = 255;
+    this->bottom_low_h_ = 0;
+    this->bottom_low_s_ =9;
+    this->bottom_low_v_ = 115;
+    this->bottom_high_h_ = 255;
+    this->bottom_high_s_ = 115;
     this->bottom_high_v_ = 255;
     this->bottom_closing_mat_point_ = 1;
-    this->bottom_closing_iter_ = 1;
+    this->bottom_closing_iter_ = 4;
 
     this->camera_frame_ = "auv-iitk";
 
@@ -56,7 +56,7 @@ Gate::Gate() : it(nh) {
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
     
-	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000000);
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/detected", 1000000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 
@@ -146,16 +146,21 @@ void Gate::bottomTaskHandling(bool status) {
 
 void Gate::spinThreadBottom()
 {
-    this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+    // this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+    this->bottom_image_sub = it.subscribe("/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this); // for gazebo only
 
+
+    system("rosparam delete /vision_node");
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateBottomRangeConfig>::CallbackType f_bottom;
-	f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
-	server.setCallback(f_bottom);
+	//f_bottom = boost::bind(&Gate::bottomCallback, this, _1, _2);
+	//server.setCallback(f_bottom);
 
     cv::Scalar pipe_center_color(255, 255, 255);
     cv::Scalar image_center_color(0, 0, 0);
     cv::Scalar bounding_rectangle_color(255, 0, 0);
+
+
 
     cv::Mat blue_filtered;
     cv::Mat image_hsv;
@@ -192,7 +197,8 @@ void Gate::spinThreadBottom()
 				pipe_point_message.point.x = (image_bottom.size().height) / 2 - bounding_rectangle.center.y;
 				pipe_point_message.point.y = bounding_rectangle.center.x - (image_bottom.size().width) / 2;
 				pipe_point_message.point.z = 0.0;
-				task_done_message.data = pipe_point_message.point.x < 0;
+				ROS_INFO("Contour Area of bottom: %f", cv::contourArea(contours[0]));
+				task_done_message.data = (pipe_point_message.point.x < 0) && (cv::contourArea(contours[0])>9000);
 				bounding_rectangle.points(vertices2f);
 				for (int i = 0; i < 4; ++i)
 				{
@@ -201,12 +207,13 @@ void Gate::spinThreadBottom()
 				cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
 				cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
+				
 				}
 			}
 			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-			coordinates_pub_bottom.publish(pipe_point_message);
-			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
+			// coordinates_pub_bottom.publish(pipe_point_message);
+			// ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
 			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
@@ -233,12 +240,13 @@ void Gate::frontTaskHandling(bool status) {
 
 void Gate::spinThreadFront()
 {
+	// this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
 	this->front_image_sub = it.subscribe("/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::gateFrontRangeConfig>::CallbackType f_front;
-	f_front = boost::bind(&Gate::frontCallback, this, _1, _2);
-	server.setCallback(f_front);
+	//f_front = boost::bind(&Gate::frontCallback, this, _1, _2);
+	//server.setCallback(f_front);
 
 	cv::Scalar gate_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -308,13 +316,14 @@ void Gate::spinThreadFront()
 							index = 1;
 						}
 					}
+					ROS_INFO("Max Contour Area = %f", contourArea(contours[0]));
 					bounding_rectangle = cv::boundingRect(cv::Mat(contours[index]));
 					double x_length = bounding_rectangle.br().x - bounding_rectangle.tl().x;
 					double y_length = bounding_rectangle.br().y - bounding_rectangle.tl().y;
 					double x_centre = (bounding_rectangle.br().x + bounding_rectangle.tl().x)/2;
 					double y_centre = (bounding_rectangle.br().y + bounding_rectangle.tl().y)/2;
 					double distance_for;
-					if(y_length<x_length/7 && y_length>0)
+					if(y_length<x_length/5 && y_length>0)
 					{
 						ROS_INFO("We are observing a fucking bottom rod");
 						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
@@ -324,27 +333,27 @@ void Gate::spinThreadFront()
 					else if(x_length<y_length/7 && x_length>0)
 					{
 						ROS_INFO("This time its a fucking vertical rod");
-						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 + y_length/2;;
+						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 - y_length/2;;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
 						distance_for = y_length;
+						sprintf(str,"fucking_vertical"); putText(image_marked, str, cv::Point2f(100,100), 0, 2,  cv::Scalar(0,0,255,255));
 					} 
 					else
 					{	
+						distance_for = x_length;
 						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre;
+						sprintf(str,"whole"); putText(image_marked, str, cv::Point2f(100,100), 0, 2,  cv::Scalar(0,0,255,255));
 					}
 					x_coordinate.data = pow(sqrt(distance_for)/ 7526.5, -.92678);
 
-					ROS_INFO("x_length = %f, y_length = %f", x_length, y_length);
 					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 				
 					cv::circle(image_marked, cv::Point(y_coordinate.data + image_front.size().width / 2, image_front.size().height / 2 - z_coordinate.data), 1, gate_center_color, 8, 0);
 					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
 					cv::rectangle(image_marked, bounding_rectangle.tl(), bounding_rectangle.br(), cv::Scalar(100, 100, 200), 2, CV_AA);
-					//sprintf(str,"",t); putText(image_marked, str, Point2f(100,100), FONT_HERSHEY_PLAIN, 2,  Scalar(0,0,255,255));
 
-
-					if(distance_for>80 && abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
+					if(distance_for>80 && contourArea(contours[0]) > 1500 &&  abs(y_coordinate.data) < 220 && abs(z_coordinate.data) < 300) 
 						detection_bool.data = true;
 					else
 						detection_bool.data = false;
@@ -460,8 +469,12 @@ void Gate::spinThreadFront()
 			ROS_INFO("Detection switch is %d", detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
+
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
 			z_coordinates_pub.publish(z_coordinate);
-		
+			}
 			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
 			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());

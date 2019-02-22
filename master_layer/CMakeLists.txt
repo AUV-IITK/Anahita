@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  hyperion_msgs
+  anahita_msgs
   roscpp
   rospy
   std_msgs
@@ -71,7 +71,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs hyperion_msgs
+  actionlib_msgs std_msgs anahita_msgs
 )
 
 ################################################
@@ -106,7 +106,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer hyperion_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,22 +137,38 @@ include_directories(
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
-add_executable(master src/master.cpp)
-add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master 
-  singleBuoy 
+add_executable(pressure_publisher src/pressure_publisher.cpp)
+target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
+
+add_executable(master_s src/master_s.cpp)
+add_dependencies(master_s master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master_s 
   gate
-  line
   moveSideward 
   moveStraight 
-  moveForward 
   task_handler 
-  torpedo 
   moveDownward 
   marker_dropper
-  octagon
+  navigation_handler
   ${catkin_LIBRARIES}
 )
+
+# add_executable(master src/master.cpp)
+# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(master 
+#   singleBuoy 
+#   gate
+#   line
+#   moveSideward 
+#   moveStraight 
+#   task_handler 
+#   torpedo 
+#   moveDownward 
+#   marker_dropper
+#   octagon
+#   navigation_handler
+#   ${catkin_LIBRARIES}
+# )
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
@@ -164,6 +180,9 @@ target_link_libraries(motion_server
   pitchPIDServer 
   ${catkin_LIBRARIES}
 )
+
+# add_executable(temp src/temp.cpp)
+# target_link_libraries(temp ${catkin_LIBRARIES})
 
 # add_executable(temp src/temp.cpp)
 # add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})

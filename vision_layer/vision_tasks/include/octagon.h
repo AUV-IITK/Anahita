@@ -13,6 +13,8 @@
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/image_encodings.h>
 #include <bits/stdc++.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <stdlib.h>
 #include <string>
 #include <boost/thread.hpp> 
@@ -28,11 +30,24 @@ class Octagon
 {
 protected:
 	ros::NodeHandle nh;
-    image_transport::Publisher blue_filtered_pub;
-	image_transport::Publisher thresholded_pub;
-	image_transport::Publisher marked_pub;
-	ros::Publisher coordinates_pub;
-	image_transport::Subscriber image_raw_sub;
+
+    image_transport::Publisher bottom_blue_filtered_pub;
+	image_transport::Publisher bottom_thresholded_pub;
+	image_transport::Publisher bottom_thresholded_blue_pub;    
+	image_transport::Publisher bottom_marked_pub;
+	
+	image_transport::Publisher front_blue_filtered_pub;
+	image_transport::Publisher front_thresholded_pub;
+	image_transport::Publisher front_marked_pub;
+
+	image_transport::Subscriber front_image_raw_sub;
+	image_transport::Subscriber bottom_image_raw_sub;
+  	ros::Publisher detection_pub;
+
+    ros::Publisher x_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
+	
 
 	std::string camera_frame_;
 
@@ -86,8 +101,10 @@ protected:
 
 public:
     Octagon();
-	image_transport::ImageTransport it();
-	cv::Mat image_;
+    ~Octagon();
+	image_transport::ImageTransport it;
+	cv::Mat image_front;
+    cv::Mat image_bottom;
     boost::thread* spin_thread_bottom; 
     boost::thread* spin_thread_front; 
 
@@ -96,6 +113,11 @@ public:
     void spinThreadFront();
 	void bottomTaskHandling(bool status);
 	void frontTaskHandling(bool status);
+
+
+    std_msgs::Float32 x_coordinate;
+	std_msgs::Float32 y_coordinate;
+	std_msgs::Float32 z_coordinate;
 };
 #endif // OCTAGON_TASK_H
 

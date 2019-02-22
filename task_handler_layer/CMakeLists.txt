@@ -103,7 +103,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES singleBuoy line gate moveForward moveSideward moveStraight
+  # LIBRARIES singleBuoy line gate moveSideward moveStraight moveDownward depthStabilise
   CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs motion_layer message_generation
   # DEPENDS system_lib
 )
@@ -136,45 +136,49 @@ include_directories(
 add_library(task_handler SHARED src/task_handler.cpp include/task_handler.h)
 target_link_libraries(task_handler ${catkin_LIBRARIES})
 
-add_library(moveForward SHARED src/move_forward_server.cpp include/move_forward_server.h)
-add_dependencies(moveForward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(moveForward ${catkin_LIBRARIES})
-
 add_library(moveSideward SHARED src/move_sideward_server.cpp include/move_sideward_server.h)
 add_dependencies(moveSideward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveSideward ${catkin_LIBRARIES})
-
-add_library(moveDownward SHARED src/move_downward_server.cpp include/move_downward_server.h)
-add_dependencies(moveDownward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(moveDownward ${catkin_LIBRARIES})
 
 add_library(moveStraight SHARED src/straight_server.cpp include/straight_server.h)
 add_dependencies(moveStraight ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(moveStraight ${catkin_LIBRARIES})
 
-add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
-add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(singleBuoy task_handler ${catkin_LIBRARIES})
+add_library(depthStabilise SHARED src/depth_stabilise.cpp include/depth_stabilise.h)
+add_dependencies(depthStabilise ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(depthStabilise moveStraight ${catkin_LIBRARIES})
 
-add_library(line SHARED src/line.cpp include/line.h)
-add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(line moveStraight moveForward ${catkin_LIBRARIES})
+add_library(moveDownward SHARED src/move_downward_server.cpp include/move_downward_server.h)
+add_dependencies(moveDownward ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(moveDownward ${catkin_LIBRARIES})
+
+add_library(navigation_handler SHARED src/navigation_handler.cpp include/navigation_handler.h)
+add_dependencies(navigation_handler ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(navigation_handler moveDownward moveStraight moveSideward depthStabilise task_handler ${catkin_LIBRARIES})
+
+# add_library(singleBuoy SHARED src/single_buoy.cpp include/single_buoy.h)
+# add_dependencies(singleBuoy ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(singleBuoy task_handler ${catkin_LIBRARIES})
+
+# add_library(line SHARED src/line.cpp include/line.h)
+# add_dependencies(line ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(line moveStraight ${catkin_LIBRARIES})
 
 add_library(gate SHARED src/gate.cpp include/gate.h)
 add_dependencies(gate ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(gate ${catkin_LIBRARIES})
 
-add_library(torpedo SHARED src/torpedo.cpp include/torpedo.h)
-add_dependencies(torpedo ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(torpedo ${catkin_LIBRARIES})
+# add_library(torpedo SHARED src/torpedo.cpp include/torpedo.h)
+# add_dependencies(torpedo ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(torpedo ${catkin_LIBRARIES})
 
 add_library(marker_dropper SHARED src/marker_dropper.cpp include/marker_dropper.h)
 add_dependencies(marker_dropper ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marker_dropper ${catkin_LIBRARIES})
 
-add_library(octagon SHARED src/octagon.cpp include/octagon.h)
-add_dependencies(octagon ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(octagon ${catkin_LIBRARIES})
+# add_library(octagon SHARED src/octagon.cpp include/octagon.h)
+# add_dependencies(octagon ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(octagon ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

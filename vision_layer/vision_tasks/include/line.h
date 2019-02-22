@@ -41,15 +41,15 @@ protected:
 	std::string camera_frame_;
 
     int low_h_ = 0;
-	int high_h_ = 25;
-	int low_s_ = 206;
+	int high_h_ = 80;
+	int low_s_ = 0;
 	int high_s_ = 255;
-	int low_v_ = 81;
+	int low_v_ = 0;
 	int high_v_ = 255;
-	int opening_mat_point_;
-	int opening_iter_;
-	int closing_mat_point_;
-	int closing_iter_;
+	int opening_mat_point_=1;
+	int opening_iter_=3;
+	int closing_mat_point_=1;
+	int closing_iter_=0;
 
 	bool task_done = false;
 	
