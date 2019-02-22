@@ -47,9 +47,9 @@ int main(int argc, char** argv) {
     
     gateTask gate_task;
 
-    moveSideward move_sideward(0);
-    moveStraight move_straight(0);
-    moveDownward move_downward(0);
+    moveSideward move_sideward;
+    moveStraight move_straight;
+    moveDownward move_downward;
     depthStabilise depth_stabilise;
 
     actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");
