@@ -20,10 +20,10 @@
 #include <boost/thread.hpp> 
 
 #include <vision_tasks/buoyRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
+#include <filter.h>
+#include <contour.h>
+#include <morph.h>
+#include <threshold.h>
 
 #define SHELLSCRIPT_DUMP_RED_BUOY "\
 #/bin/bash \n\

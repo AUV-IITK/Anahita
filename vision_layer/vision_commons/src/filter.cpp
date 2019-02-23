@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ros/ros.h"
-#include "vision_commons/filter.h"
+#include "filter.h"
 
 cv::Mat vision_commons::Filter::clahe(cv::Mat &image, double clahe_clip, int clahe_grid_size)
 {
