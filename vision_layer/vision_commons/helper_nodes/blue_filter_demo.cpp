@@ -14,10 +14,10 @@
 #include <string>
 
 #include <vision_commons/blueFilterDemoRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
+#include <filter.h>
+#include <contour.h>
+#include <morph.h>
+#include <threshold.h>
 
 double clahe_clip_ = 4.0;
 int clahe_grid_size_ = 8;

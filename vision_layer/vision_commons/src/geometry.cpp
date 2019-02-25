@@ -7,7 +7,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
-#include "vision_commons/geometry.h"
+#include "geometry.h"
 
 double vision_commons::Geometry::distance(cv::Point &p1, cv::Point &p2)
 {

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
-#include "vision_commons/contour.h"
+#include "contour.h"
 
 std::vector<std::vector<cv::Point> > vision_commons::Contour::getBestX(cv::Mat& raw, int x)
 {
