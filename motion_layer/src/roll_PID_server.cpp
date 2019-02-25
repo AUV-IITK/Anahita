@@ -10,7 +10,7 @@ rollPIDAction::rollPIDAction(std::string name) :
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/roll", 1, &rollPIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/roll", 1, &rollPIDAction::callBack, this);
 
     roll.setPID(2.0, 0, 0.65, 1);
 

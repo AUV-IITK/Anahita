@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     imu_pitch_pub = nh.advertise<std_msgs::Float32>(imu_pitch_pub_topic, 1000);
 
     //initializing subscribers
-    ros::Subscriber imu_data_sub = nh.subscribe<sensor_msgs::Imu>("/rexrov/imu", 1000, &imu_data_callback);
+    ros::Subscriber imu_data_sub = nh.subscribe<sensor_msgs::Imu>("/anahita/imu", 1000, &imu_data_callback);
 
     ros::Rate loop_rate(200);
 

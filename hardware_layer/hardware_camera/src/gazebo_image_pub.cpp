@@ -43,8 +43,8 @@ int main (int argc, char** argv) {
     ros::NodeHandle nh;
     image_transport::ImageTransport it (nh);
 
-    image_transport::Subscriber front_sub = it.subscribe("/rezrov/bottomCamera/image", 1, &bottomCB);
-    image_transport::Subscriber bottom_sub = it.subscribe("/rezrov/frontCamera/image", 1, &bottomCB);
+    image_transport::Subscriber front_sub = it.subscribe("/anahita/anahita/camerafront/camera_image", 1, &frontCB);
+    image_transport::Subscriber bottom_sub = it.subscribe("/anahita/anahita/camerabottom/camera_image", 1, &bottomCB);
 
     image_transport::Publisher front_pub = it.advertise("/anahita/front_camera/image_raw", 1);
     image_transport::Publisher bottom_pub = it.advertise("/anahita/bottom_camera/image_raw", 1);

@@ -10,7 +10,7 @@ anglePIDAction::anglePIDAction(std::string name) :
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/yaw", 1, &anglePIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/yaw", 1, &anglePIDAction::callBack, this);
 
     angle.setPID(-3.5, 0, -0.2, 1);
 
