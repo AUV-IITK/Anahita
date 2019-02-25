@@ -11,10 +11,10 @@ bool gateTask::setActive(bool status) {
         nh_.setParam("/enable_pressure", true);
         depth_stabilise.activate ("reference");
 
-        ROS_INFO("Waiting for sidewardPID server to start, Gate Task.");
+        ROS_INFO("Waiting for sidewardPID server to start, Gate Task");
         sidewardPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal, Gate Task.");
+        ROS_INFO("sidewardPID server started, sending goal, Gate Task");
         sidewardPIDgoal.target_distance = 0;
         sidewardPIDClient.sendGoal(sidewardPIDgoal);
 
