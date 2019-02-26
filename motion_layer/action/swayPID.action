@@ -1,0 +1,8 @@
+#goal definition
+float32 target_sway
+---
+#result definition
+float32 final_sway
+---
+#feedback
+float32 current_sway

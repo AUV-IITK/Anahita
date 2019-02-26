@@ -1,7 +1,7 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : th(20), anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
-                                        forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
+navigationHandler::navigationHandler () : th(20), yawPIDClient("yawPID"), heavePIDClient("heavePID"), 
+                                        surgePIDClient("surgePID"), swayPIDClient("swayPID") {}
 
 navigationHandler::~navigationHandler () {}
 
@@ -30,18 +30,18 @@ void navigationHandler::manouver () {
     nh.setParam("/disable_imu", false);
 
     ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
-    anglePIDClient.waitForServer();
+    yawPIDClient.waitForServer();
 
     ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
+    yawPIDGoal.target_yaw = 0;
+    yawPIDClient.sendGoal(yawPIDGoal);
 
     if (!th.isAchieved(0, 2, "angle")) {
         ROS_INFO("Time limit exceeded for angle, NV");
         ros::Duration(3).sleep();
         // return;
     }
-    anglePIDClient.cancelGoal();
+    yawPIDClient.cancelGoal();
 
     if (!th.isAchieved(0, 10, "upward")) {
         ROS_INFO("Time limit exceeded for upward, NV");
@@ -381,7 +381,7 @@ bool navigationHandler::scan (std::string object) {
     nh.setParam("/pwm_yaw", 25);
     
     if (th.isDetected(object, 20)) {
-        anglePIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
         nh.setParam("/kill_signal", true);
         return true;
     }
@@ -398,11 +398,11 @@ bool navigationHandler::dive (std::string target) {
     nh.setParam("/use_referene_yaw", true);
 
     ROS_INFO("Waiting for upwardPID server to start.");
-    upwardPIDClient.waitForServer();
+    heavePIDClient.waitForServer();
 
     ROS_INFO("upwardPID server started, sending goal.");
-    upwardPIDGoal.target_depth = 40;
-    upwardPIDClient.sendGoal(upwardPIDGoal);
+    heavePIDGoal.target_heave = 40;
+    heavePIDClient.sendGoal(heavePIDGoal);
 
     if (scan(target)) { 
         nh.setParam("/use_reference_yaw", false);

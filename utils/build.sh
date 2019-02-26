@@ -8,4 +8,5 @@ catkin_make --pkg task_handler_layer
 catkin_make --pkg hardware_imu
 catkin_make --pkg hardware_dvl
 catkin_make --pkg hardware_camera
+catkin_make --pkg pid_calibration
 catkin_make --pkg master_layer

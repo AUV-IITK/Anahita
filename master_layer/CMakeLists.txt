@@ -176,10 +176,10 @@ target_link_libraries(gazebo_publisher ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
-  sidewardPIDServer 
-  upwardPIDServer 
-  anglePIDServer 
-  forwardPIDServer 
+  swayPIDServer 
+  heavePIDServer 
+  yawPIDServer 
+  surgePIDServer 
   rollPIDServer 
   pitchPIDServer 
   ${catkin_LIBRARIES}

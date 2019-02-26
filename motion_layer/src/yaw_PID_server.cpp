@@ -1,36 +1,36 @@
-#include <angle_PID_server.h>
+#include <yaw_PID_server.h>
 
-anglePIDAction::anglePIDAction(std::string name) :
+yawPIDAction::yawPIDAction(std::string name) :
     as_(nh_, name, false),
-    action_name_(name), angle("ANGLE")
+    action_name_(name), yaw("YAW")
 {
     // register the goal and feeback callbacks
-    as_.registerGoalCallback(boost::bind(&anglePIDAction::goalCB, this));
-    as_.registerPreemptCallback(boost::bind(&anglePIDAction::preemptCB, this));
+    as_.registerGoalCallback(boost::bind(&yawPIDAction::goalCB, this));
+    as_.registerPreemptCallback(boost::bind(&yawPIDAction::preemptCB, this));
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/anahita/imu/yaw", 1, &anglePIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/yaw", 1, &yawPIDAction::callBack, this);
 
-    angle.setPID(-3.5, 0, -0.2, 1);
+    yaw.setPID(-3.5, 0, -0.2, 1);
 
     as_.start();
-    ROS_INFO("angle_PID_server Initialised");
+    ROS_INFO("yaw_PID_server Initialised");
 }
 
-anglePIDAction::~anglePIDAction(void)
+yawPIDAction::~yawPIDAction(void)
 {
 }
 
-void anglePIDAction::goalCB()
+void yawPIDAction::goalCB()
 {
     // ROS_INFO("Inside goal callback");
-    goal_ = as_.acceptNewGoal()->target_angle;
+    goal_ = as_.acceptNewGoal()->target_yaw;
 
     goalReceived = true;
 }
 
-void anglePIDAction::preemptCB()
+void yawPIDAction::preemptCB()
 {
     ROS_INFO("%s: Preempted", action_name_.c_str());
 
@@ -38,14 +38,14 @@ void anglePIDAction::preemptCB()
     as_.setPreempted();
 }
 
-void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
+void yawPIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
     if (!as_.isActive()) {
         return;
     }
 
-    current_angle_ = msg->data;
+    current_yaw_ = msg->data;
 
     if (goalReceived) {
         
@@ -75,11 +75,11 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
             ROS_INFO("Line Angle USed");	
         }
         else {
-            goal_ = goal_ + current_angle_;
+            goal_ = goal_ + current_yaw_;
             ROS_INFO("Current Yaw Used");
         }
         
-        angle.setReference(goal_);
+        yaw.setReference(goal_);
 
         // publish info to the console for the user
         ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);
@@ -87,16 +87,10 @@ void anglePIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         goalReceived = false;
     }
 
-    angle.errorToPWM(msg->data);
+    yaw.errorToPWM(msg->data);
 
-    feedback_.current_angle = msg->data;
+    feedback_.current_yaw = msg->data;
     as_.publishFeedback(feedback_);
 
-    if (msg->data <= goal_ + 1 && msg->data >= goal_ - 1) {
-        // ROS_INFO("%s: Succeeded", action_name_.c_str());
-        // set the action state to succeeded
-        // as_.setSucceeded(result_);
-    }
-
-    nh_.setParam("/pwm_yaw", angle.getPWM());
+    nh_.setParam("/pwm_yaw", yaw.getPWM());
 }

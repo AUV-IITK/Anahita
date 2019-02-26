@@ -22,25 +22,25 @@ double band = 0;
 ErrorDescriptor yaw_ ("YAW");
 ErrorDescriptor roll_ ("ROLL");
 ErrorDescriptor pitch_ ("PITCH");
-ErrorDescriptor x_coord ("X_COORD");
-ErrorDescriptor y_coord ("Y_COORD");
-ErrorDescriptor z_coord ("Z_COORD");
+ErrorDescriptor surge ("SURGE");
+ErrorDescriptor sway ("SWAY");
+ErrorDescriptor heave ("HEAVE");
 
 std::string action = "yaw";
 
 void xCB (const std_msgs::Float32 msg) {
     x = msg.data;
-    x_coord.errorToPWM (x);
+    surge.errorToPWM (x);
 }
 
 void yCB (const std_msgs::Float32 msg) {
     y = msg.data;
-    y_coord.errorToPWM (y);
+    sway.errorToPWM (y);
 }
 
 void zCB (const std_msgs::Float32 msg) {
     z = msg.data;
-    z_coord.errorToPWM (z);
+    heave.errorToPWM (z);
 }
 
 void rollCB (const std_msgs::Float32 msg) {
@@ -63,15 +63,16 @@ void setTarget (double target) {
     if (action == "yaw") { yaw_.setReference (target); }
     if (action == "roll") { roll_.setReference (target); }
     if (action == "pitch") { pitch_.setReference (target); }
-    if (action == "surge") { x_coord.setReference (target); }
-    if (action == "heave") { z_coord.setReference (target); }
-    if (action == "sway") { y_coord.setReference (target); }
+    if (action == "surge") { surge.setReference (target); }
+    if (action == "heave") { heave.setReference (target); }
+    if (action == "sway") { sway.setReference (target); }
 }
 
 void callback (pid_calibration::pidConfig &config, uint32_t level) {
     target = config.target;
     if (config.send_goal) {
         setTarget (target);
+        ROS_INFO("Got a target request: %f", target);
         config.send_goal = false;
     }
     p = config.p;
@@ -79,12 +80,14 @@ void callback (pid_calibration::pidConfig &config, uint32_t level) {
     d = config.d;
     band = config.band;
 
+    ROS_INFO ("PID reconfigure request, P I D: %f %f %f", p, i, d);
+
     if (action == "yaw") { yaw_.setPID (p, i, d, band); }
     if (action == "roll") { roll_.setPID (p, i, d, band); }
     if (action == "pitch") { pitch_.setPID (p, i, d, band); }
-    if (action == "surge") { x_coord.setPID (p, i, d, band); }
-    if (action == "heave") { y_coord.setPID (p, i, d, band); }
-    if (action == "sway") { z_coord.setPID (p, i, d, band); }
+    if (action == "surge") { surge.setPID (p, i, d, band); }
+    if (action == "heave") { sway.setPID (p, i, d, band); }
+    if (action == "sway") { heave.setPID (p, i, d, band); }
 }
 
 int main (int argc, char** argv) {
@@ -115,9 +118,9 @@ int main (int argc, char** argv) {
 
     while (ros::ok()) {
 
-        if (action == "sway") { pwm_sway = y_coord.getPWM (); }
-        if (action == "surge") { pwm_surge = x_coord.getPWM (); }
-        if (action == "heave") { pwm_heave = z_coord.getPWM (); }
+        if (action == "sway") { pwm_sway = sway.getPWM (); }
+        if (action == "surge") { pwm_surge = surge.getPWM (); }
+        if (action == "heave") { pwm_heave = heave.getPWM (); }
         if (action == "roll") { pwm_roll = roll_.getPWM (); }
         if (action == "pitch") { pwm_pitch = pitch_.getPWM (); }
         if (action == "yaw") { pwm_yaw = yaw_.getPWM (); }

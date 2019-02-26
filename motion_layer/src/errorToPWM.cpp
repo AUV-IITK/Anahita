@@ -7,44 +7,44 @@ ErrorDescriptor::ErrorDescriptor(std::string _name): p_(0), i_(0), d_(0),
     band_(1), seed_(0), error_(0), reference_value_(0), previous_value_(0), 
     pwm_(0), previous_time_stamp_(0), current_time_stamp_(0)
 {   
-    this->name_ = _name;
-    std::cout << this->name_ << " type ErrorDecriptor is constructed" << std::endl;
+    name_ = _name;
+    std::cout << name_ << " type ErrorDecriptor is constructed" << std::endl;
 }
 
 ErrorDescriptor::~ErrorDescriptor() {}
 
 void ErrorDescriptor::setPID(float new_p, float new_i, float new_d, float new_band) {
-    this->p_ = new_p;
-    this->i_ = new_i;
-    this->d_ = new_d;
-    this->band_ = new_band;
-    ROS_INFO("PID set to P: %f, I: %f, D: %f, BAND: %f", this->p_, this->i_, this->d_, this->band_);
+    p_ = new_p;
+    i_ = new_i;
+    d_ = new_d;
+    band_ = new_band;
+    ROS_INFO("PID set to P: %f, I: %f, D: %f, BAND: %f", p_, i_, d_, band_);
 }
 
 void ErrorDescriptor::setReference(double _value) {
-    this->reference_value_ = _value;
-    // this->current_value_ = _value;
+    reference_value_ = _value;
+    // current_value_ = _value;
 
-    if (this->name_ == "ANGLE") {
-        if (this->reference_value_ >= 180) {
-            this->reference_value_ = this->reference_value_ - 360;
+    if (name_ == "YAW" || name_ == "PITCH" || name_ == "ROLL") {
+        if (reference_value_ >= 180) {
+            reference_value_ = reference_value_ - 360;
         }
-        else if (this->reference_value_ <= -180) {
-            this->reference_value_ = this->reference_value_ + 360;
+        else if (reference_value_ <= -180) {
+            reference_value_ = reference_value_ + 360;
         }
     }
 
-    std::cout << this->name_ << ", Reference set to: " << reference_value_ << std::endl;
+    std::cout << name_ << ", Reference set to: " << reference_value_ << std::endl;
 }
 
 void ErrorDescriptor::setType(std::string _name) {
-    this->name_ = _name;
+    name_ = _name;
 }
 
 void ErrorDescriptor::errorToPWM(double _current_value) {
 
-    this->previous_value_ = this->current_value_;
-    this->current_value_ = _current_value;
+    previous_value_ = current_value_;
+    current_value_ = _current_value;
 
     previous_time_stamp_ = current_time_stamp_;
     current_time_stamp_ = ros::Time::now().toSec();
@@ -54,30 +54,30 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
 
     // dt = current_time_stamp_ - previous_time_stamp_;
     
-    if (this->name_ == "ANGLE") { dt = 0.02; }
+    if (name_ == "YAW") { dt = 0.02; }
     else { dt = 0.05; }
 
-    this->error_ = this->current_value_ - this->reference_value_;
+    error_ = current_value_ - reference_value_;
 
-    if (this->name_ == "ANGLE") {
-        if (this->error_ < 0) 
-            this->error_value_ = this->error_ + 360;
+    if (name_ == "YAW") {
+        if (error_ < 0) 
+            error_value_ = error_ + 360;
         else
-            this->error_value_ = this->error_ - 360;
+            error_value_ = error_ - 360;
 
-        if (abs(this->error_value_) < abs(this->error_))
-            this->error_ = this->error_value_;
+        if (abs(error_value_) < abs(error_))
+            error_ = error_value_;
     }
 
-    // std::cout << this->name_ << " ERROR: " << this->error_ << std::endl;
-    integral += (this->error_ * dt);
-    derivative = (this->current_value_ - this->previous_value_) / dt;
+    // std::cout << name_ << " ERROR: " << error_ << std::endl;
+    integral += (error_ * dt);
+    derivative = (current_value_ - previous_value_) / dt;
     
-    double output = (this->p_ * this->error_) + (this->i_ * integral) + std::abs(this->d_ * derivative);
+    double output = (p_ * error_) + (i_ * integral) + std::abs(d_ * derivative);
 
     turningOutputPWMMapping(output);
 
-    if (this->error_ < this->band_ && this->error_ > -this->band_) { this->pwm_ = 0; }
+    if (error_ < band_ && error_ > -band_) { pwm_ = 0; }
 }
 
 void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM values within a limit
@@ -94,9 +94,9 @@ void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM value
         output_pwm = 200;
     if (output_pwm < -200)
         output_pwm = -200;
-    this->pwm_ = output_pwm;
+    pwm_ = output_pwm;
 }
 
-int ErrorDescriptor::getPWM() { return this->pwm_; }
+int ErrorDescriptor::getPWM() { return pwm_; }
 
-double ErrorDescriptor::getCurrentValue() { return this->current_value_; }
+double ErrorDescriptor::getCurrentValue() { return current_value_; }

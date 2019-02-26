@@ -1,38 +1,38 @@
-#ifndef ANGLE_PID_SERVER_H
-#define ANGLE_PID_SERVER_H
+#ifndef YAW_PID_SERVER_H
+#define YAW_PID_SERVER_H
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <motion_layer/anglePIDAction.h>
+#include <motion_layer/yawPIDAction.h>
 #include <errorToPWM.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
 #include <string>
 
-class anglePIDAction
+class yawPIDAction
 {
 protected:
 
     ros::NodeHandle nh_;
-    actionlib::SimpleActionServer<motion_layer::anglePIDAction> as_; // NodeHandle instance must be created before this line. Otherwise strange error occurs.
+    actionlib::SimpleActionServer<motion_layer::yawPIDAction> as_; // NodeHandle instance must be created before this line. Otherwise strange error occurs.
     std::string action_name_;
     // create messages that are used to published feedback/result
-    motion_layer::anglePIDFeedback feedback_;
-    motion_layer::anglePIDResult result_;
+    motion_layer::yawPIDFeedback feedback_;
+    motion_layer::yawPIDResult result_;
     double goal_;
-    double current_angle_ = 0;
+    double current_yaw_ = 0;
     bool goalReceived = false;
     ros::Subscriber sub_;
-    ErrorDescriptor angle;
+    ErrorDescriptor yaw;
 
     boost::thread* spin_thread;
 
 public:
 
-    anglePIDAction(std::string);
-    ~anglePIDAction();
+    yawPIDAction(std::string);
+    ~yawPIDAction();
     void goalCB();
     void preemptCB();
     void callBack(const std_msgs::Float32ConstPtr&);
 };
-#endif // ANGLE_PID_SERVER_H
+#endif // YAW_PID_SERVER_H
