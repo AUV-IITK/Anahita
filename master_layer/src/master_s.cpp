@@ -10,12 +10,12 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
-#include <motion_layer/anglePIDAction.h>
+#include <motion_layer/yawPIDAction.h>
 #include <motion_layer/rollPIDAction.h>
 #include <motion_layer/pitchPIDAction.h>
-#include <motion_layer/forwardPIDAction.h>
-#include <motion_layer/sidewardPIDAction.h>
-#include <motion_layer/upwardPIDAction.h>
+#include <motion_layer/surgePIDAction.h>
+#include <motion_layer/swayPIDAction.h>
+#include <motion_layer/heavePIDAction.h>
 
 #include <std_msgs/String.h>
 #include <boost/thread.hpp>
@@ -52,15 +52,15 @@ int main(int argc, char** argv) {
     moveDownward move_downward;
     depthStabilise depth_stabilise;
 
-    actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient("forwardPID");
-    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient("upwardPID");
-    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient("sidewardPID");
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient("turnPID");
+    actionlib::SimpleActionClient<motion_layer::surgePIDAction> surgePIDClient("surgePID");
+    actionlib::SimpleActionClient<motion_layer::heavePIDAction> heavePIDClient("heavePID");
+    actionlib::SimpleActionClient<motion_layer::swayPIDAction> swayPIDClient("swayPID");
+    actionlib::SimpleActionClient<motion_layer::yawPIDAction> yawPIDClient("yawPID");
 
-    motion_layer::sidewardPIDGoal sidewardPIDGoal;
-    motion_layer::forwardPIDGoal forwardPIDGoal;
-    motion_layer::upwardPIDGoal upwardPIDGoal;
-    motion_layer::anglePIDGoal anglePIDGoal;
+    motion_layer::swayPIDGoal swayPIDGoal;
+    motion_layer::surgePIDGoal surgePIDGoal;
+    motion_layer::heavePIDGoal heavePIDGoal;
+    motion_layer::yawPIDGoal yawPIDGoal;
 
     /////////////////////////////////////////////
 

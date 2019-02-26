@@ -30,8 +30,8 @@ bool gateTask::setActive(bool status) {
 
         /////////////////////////////////////////////////////
 
-        if (!th.isAchieved(0, 15, "sideward")) {
-            ROS_INFO("Time limit exceeded for the sideward PID");
+        if (!th.isAchieved(0, 15, "sway")) {
+            ROS_INFO("Time limit exceeded for the sway PID");
         }
     
     	ROS_INFO("Gate Front completed successfully");

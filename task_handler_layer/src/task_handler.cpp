@@ -1,12 +1,12 @@
 #include <task_handler.h>
 
 taskHandler::taskHandler (double _timeout) {
-    topic_map_["upward"] = "/anahita/z_coordinate";
-    topic_map_["sideward"] = "/anahita/y_coordinate";
-    topic_map_["forward"] = "/anahita/x_coordinate";
-    topic_map_["angle"] = "/mavros/imu/yaw";
-    topic_map_["pitch"] = "/mavros/imu/pitch";
-    topic_map_["roll"] = "/mavros/imu/roll";
+    topic_map_["heave"] = "/anahita/z_coordinate";
+    topic_map_["sway"] = "/anahita/y_coordinate";
+    topic_map_["surge"] = "/anahita/x_coordinate";
+    topic_map_["yaw"] = "/anahita/imu/yaw";
+    topic_map_["pitch"] = "/anahita/imu/pitch";
+    topic_map_["roll"] = "/anahita/imu/roll";
 
     task_map_["red_buoy"] = false;
     task_map_["green_buoy"] = false;
@@ -53,7 +53,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
     int count = 0;
     double then = ros::Time::now().toSec();
 
-    if (_topic == "angle") {
+    if (_topic == "yaw") {
 
         double temp = 0;
 
@@ -67,14 +67,14 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
         nh_.getParam("/disable_imu", disable_imu);
 
         if (use_reference_yaw) {
-            double reference_angle = 0;
-            nh_.getParam("/reference_yaw", reference_angle);
-            temp = reference_angle + _target;
+            double reference_yaw = 0;
+            nh_.getParam("/reference_yaw", reference_yaw);
+            temp = reference_yaw + _target;
         }
         else if (use_local_yaw) {
-            double local_angle = 0;
-            nh_.getParam("/local_yaw", local_angle);
-            temp = local_angle + _target;
+            double local_yaw = 0;
+            nh_.getParam("/local_yaw", local_yaw);
+            temp = local_yaw + _target;
         }
         else if (disable_imu) {
             temp = _target;	
@@ -102,7 +102,7 @@ bool taskHandler::isAchieved (double _target, double _band, std::string _topic) 
 
     }
 
-    if (_topic == "upward") {
+    if (_topic == "heave") {
         bool use_reference_depth = false;
         bool enable_pressure = false;
 

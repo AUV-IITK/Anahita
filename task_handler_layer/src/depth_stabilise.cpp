@@ -24,10 +24,10 @@ void depthStabilise::deActivate () {
 
 void depthStabilise::spinThread() {
 
-    ROS_INFO("Waiting for upwardPID server to start, depth stabilise");
+    ROS_INFO("Waiting for heavePID server to start, depth stabilise");
     heavePIDClient.waitForServer();
 
-    ROS_INFO("upwardPID server started, sending goal.");
+    ROS_INFO("heavePID server started, sending goal.");
     heave_PID_goal.target_heave = 0;
     heavePIDClient.sendGoal(heave_PID_goal);        
 }

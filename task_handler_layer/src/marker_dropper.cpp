@@ -1,6 +1,6 @@
 #include <marker_dropper.h>
 
-MarkerDropper::MarkerDropper(): surgePIDClient("forwardPID"), swayPIDClient("swayPID"), 
+MarkerDropper::MarkerDropper(): surgePIDClient("surgePID"), swayPIDClient("swayPID"), 
                                 th(25), yawPIDClient("yawPID") {}
 MarkerDropper::~MarkerDropper() {}
 
@@ -27,10 +27,10 @@ bool MarkerDropper::setActive(bool status) {
         move_straight.deActivate ();
         ROS_INFO("Marker Dropper Detected");
 
-        ROS_INFO("Waiting for forwardPID server to start.");
+        ROS_INFO("Waiting for surgePID server to start.");
         surgePIDClient.waitForServer();
 
-        ROS_INFO("forwardPID server started, sending goal.");
+        ROS_INFO("surgePID server started, sending goal.");
         surgePIDgoal.target_surge = 0;
         surgePIDClient.sendGoal(surgePIDgoal);
 
@@ -44,7 +44,7 @@ bool MarkerDropper::setActive(bool status) {
         ////////////////////////////////////////////////////
 
         if (!th.isAchieved(0, 15, "surge")) {
-            ROS_INFO("Marker Dropper, Forward not achieved");
+            ROS_INFO("Marker Dropper, surge not achieved");
             // return false;
         }
         if (!th.isAchieved(0, 15, "sway")) {

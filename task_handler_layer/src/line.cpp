@@ -13,21 +13,21 @@ bool lineTask::setActive(bool value) {
         nh_.setParam("/disable_imu", true);
         nh_.setParam("/enable_pressure", true);
 
-        ROS_INFO("Waiting for sidewardPID server to start.");
+        ROS_INFO("Waiting for swayPID server to start.");
         swayPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal.");
+        ROS_INFO("swayPID server started, sending goal.");
         sway_PID_goal.target_sway = 0;
         swayPIDClient.sendGoal(sway_PID_goal);
 
-        ROS_INFO("Waiting for forwardPID server to start.");
+        ROS_INFO("Waiting for surgePID server to start.");
         surgePIDClient.waitForServer();
 
-        ROS_INFO("forwardPID server started, sending goal.");
+        ROS_INFO("surgePID server started, sending goal.");
         surge_PID_goal.target_surge = 0;
         surgePIDClient.sendGoal(surge_PID_goal);
 
-        if (!th.isAchieved(0, 25, "forward")) {
+        if (!th.isAchieved(0, 25, "surge")) {
             ROS_INFO("NOT able to align to the center of the line");
             // return false;
         }

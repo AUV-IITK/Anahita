@@ -38,7 +38,6 @@ public:
     ~gateTask();
 
     bool setActive(bool);
-    void forwardCB (const std_msgs::Float32ConstPtr &_msg);
 };
 
 #endif // GATE_H

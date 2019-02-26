@@ -21,7 +21,7 @@ bool singleBuoy::setActive(bool status) {
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for upwardPID server to start.");
+        ROS_INFO("Waiting for heavePID server to start.");
         heavePIDClient.waitForServer();
 
         heavePIDgoal.target_heave = 0; // for gazebo
@@ -29,7 +29,7 @@ bool singleBuoy::setActive(bool status) {
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for anglePID server to start.");
+        ROS_INFO("Waiting for yawPID server to start.");
         yawPIDClient.waitForServer();
 
         yawPIDGoal.target_yaw = 0;
@@ -49,14 +49,14 @@ bool singleBuoy::setActive(bool status) {
             if (forward_distance <= 125) { break; }
         }
 
-        ROS_INFO("Waiting for forwardPID server to start.");
+        ROS_INFO("Waiting for surgePID server to start.");
         surgePIDClient.waitForServer();
 
         surgePIDgoal.target_surge = 50;
         surgePIDClient.sendGoal(surgePIDgoal);
 
-        if (!th.isAchieved(50, 10, "forward")) {
-            ROS_INFO("Unable to achieve forward goal");
+        if (!th.isAchieved(50, 10, "surge")) {
+            ROS_INFO("Unable to achieve surge goal");
         }
 
         ROS_INFO("forward distance equal 50");
@@ -93,8 +93,8 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("moving backward finished");
 
-        if (!th.isAchieved(0, 2, "angle")) {
-            ROS_INFO("Unable to achieve angle goal");
+        if (!th.isAchieved(0, 2, "yaw")) {
+            ROS_INFO("Unable to achieve yaw goal");
             return false;
         }
 

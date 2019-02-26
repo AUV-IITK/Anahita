@@ -157,23 +157,6 @@ target_link_libraries(master_s
 add_executable(gazebo_publisher src/gazebo_publisher.cpp)
 target_link_libraries(gazebo_publisher ${catkin_LIBRARIES})
 
-# add_executable(master src/master.cpp)
-# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
-
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
   swayPIDServer 

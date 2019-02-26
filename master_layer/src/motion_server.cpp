@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 
     ros::Time::init();
     
-    surgePIDAction forward_motion("surgePID");
+    surgePIDAction surge_motion("surgePID");
     swayPIDAction sway_motion("swayPID");
     heavePIDAction heave_motion("heavePID");
     yawPIDAction turn_motion("yawPID");

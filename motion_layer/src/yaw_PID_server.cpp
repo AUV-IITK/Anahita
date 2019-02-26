@@ -59,20 +59,20 @@ void yawPIDAction::callBack(const std_msgs::Float32::ConstPtr& msg)
         nh_.getParam("/disable_imu", disable_imu);
         
         if (use_reference_yaw) {
-            double reference_angle = 0;
-            nh_.getParam("/reference_yaw", reference_angle);
-            goal_ = goal_ + reference_angle;
+            double reference_yaw = 0;
+            nh_.getParam("/reference_yaw", reference_yaw);
+            goal_ = goal_ + reference_yaw;
             ROS_INFO("Reference Yaw used");
         }
         else if (use_local_yaw) {
-            double local_angle = 0;
-            nh_.getParam("/local_yaw", local_angle);
-            goal_ = goal_ + local_angle;
+            double local_yaw = 0;
+            nh_.getParam("/local_yaw", local_yaw);
+            goal_ = goal_ + local_yaw;
             ROS_INFO("Local Yaw Used");
         }
         else if (disable_imu) {
             goal_ = goal_;
-            ROS_INFO("Line Angle USed");	
+            ROS_INFO("Line yaw USed");	
         }
         else {
             goal_ = goal_ + current_yaw_;

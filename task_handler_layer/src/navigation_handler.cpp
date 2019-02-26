@@ -12,8 +12,8 @@ void navigationHandler::stabilise (std::string type) {
     
     ros::Duration(7).sleep();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave");
         return;
     }
 
@@ -29,22 +29,22 @@ void navigationHandler::manouver () {
     nh.setParam("/enable_pressure", true);
     nh.setParam("/disable_imu", false);
 
-    ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
+    ROS_INFO("Waiting for yawPID server to start, Navigation Handle");
     yawPIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal");
+    ROS_INFO("yawPID server started, sending goal");
     yawPIDGoal.target_yaw = 0;
     yawPIDClient.sendGoal(yawPIDGoal);
 
-    if (!th.isAchieved(0, 2, "angle")) {
-        ROS_INFO("Time limit exceeded for angle, NV");
+    if (!th.isAchieved(0, 2, "yaw")) {
+        ROS_INFO("Time limit exceeded for yaw, NV");
         ros::Duration(3).sleep();
         // return;
     }
     yawPIDClient.cancelGoal();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward, NV");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave, NV");
         // return;
     }
 
@@ -397,10 +397,10 @@ bool navigationHandler::dive (std::string target) {
     nh.setParam("/enable_pressure", true);
     nh.setParam("/use_referene_yaw", true);
 
-    ROS_INFO("Waiting for upwardPID server to start.");
+    ROS_INFO("Waiting for heavePID server to start.");
     heavePIDClient.waitForServer();
 
-    ROS_INFO("upwardPID server started, sending goal.");
+    ROS_INFO("heavePID server started, sending goal.");
     heavePIDGoal.target_heave = 40;
     heavePIDClient.sendGoal(heavePIDGoal);
 
