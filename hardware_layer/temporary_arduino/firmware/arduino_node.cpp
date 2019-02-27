@@ -37,7 +37,6 @@ Servo servoSouthWestUp;
 Servo servoSouthEastUp;
 Servo servoMarkerDropper;
 
-void PWMCb(const anahita_msgs::Thrust& msg_);
 void TEast(const int data);
 void TWest(const int data);
 void TNorth(const int data);
@@ -48,11 +47,12 @@ void TSEUp(const int data);
 void TSWUp(const int data);
 void MDCb(const int msg);
 void SOVCb(const int msg);
+void read_pressure_data();
 
 int ESC_Zero = 1500;
 int deadZone = 25;
 int torpedo_count = 0;
-ros::NodeHandle nh;
+double depth_reading;
 
 // define rate at which sensor data should be published (in Hz)
 #define PRESSURE_PUBLISH_RATE 10
@@ -60,21 +60,8 @@ ros::NodeHandle nh;
 // pressure sensor
 MS5837 pressure_sensor;
 
-// declare subscribers
-ros::Subscriber<anahita_msgs::Thrust> PWM_Sub("/pwm", &PWMCb);
-
 // function declration to puboish pressure sensor data
 void publish_pressure_data();
-
-// declaration of callback functions for all thrusters
-// declare publishers
-
-// ros::Subscriber<std_msgs::Int32> Marker_Dropper_Sub("/marker_dropper", &MDCb);
-
-// ros::Subscriber<std_msgs::Int32> SOV_Sub("/torpedo", &SOVCb);
-
-std_msgs::Float32 depth_msg;
-ros::Publisher ps_depth_pub("/pressure_sensor/depth", &depth_msg);
 
 int forward_right = 0;
 int forward_left = 0;
@@ -221,7 +208,7 @@ void actuatorLoop(){
     TNEUp(splitMessages[5].toInt());
     TNWUp(splitMessages[6].toInt());
     TSEUp(splitMessages[7].toInt());
-    TSWUp(splitMessages[8].toInt();
+    TSWUp(splitMessages[8].toInt());
     MDCb(splitMessages[9].toInt());
     SOVCb(splitMessages[10].toInt());
 
@@ -243,7 +230,7 @@ void sensorLoop(){
   read_pressure_data();
   Serial.print(0);
   Serial.print(',');
-  Serial.print(depth_msg);
+  Serial.print(depth_reading);
   Serial.print('\n');
 
   // Wait until done writing.
@@ -260,18 +247,16 @@ void read_pressure_data()
     /** Depth returned in meters (valid for operation in incompressible
     *  liquids only. Uses density that is set for fresh or seawater.
     */
-    depth_msg = -100*pressure_sensor.depth(); //convert to centimeters
+    depth_reading = -100*pressure_sensor.depth(); //convert to centimeters
 
 }
 
 void MDCb(const int msg)
 {
-  nh.loginfo("Inside marker dropper callback");
   int data = msg;
   int pos = 0;
   if(data == 1)
   {
-    nh.loginfo("First ball being dropped");
     for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
     {                                  // in steps of 1 degree 
       servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
@@ -280,7 +265,6 @@ void MDCb(const int msg)
   }
   if(data == 2)
   {
-    nh.loginfo("Second ball being dropped");
     for(pos = 170; pos>=1; pos-=1)     // goes from 180 degrees to 0 degrees 
     {                                
       servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
@@ -289,7 +273,6 @@ void MDCb(const int msg)
   }
  if(data == -1)
  { 
-   nh.loginfo("Can now load the inner ball");
    for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
     {                                  // in steps of 1 degree 
       servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
@@ -298,7 +281,6 @@ void MDCb(const int msg)
  }
  if(data == -2)
  {
-   nh.loginfo("Can now load the outer ball");
    for(pos = 0; pos < 170; pos += 1)  // goes from 0 degrees to 180 degrees 
     {                                  // in steps of 1 degree 
       servoMarkerDropper.write(pos);              // tell servo to go to position in variable 'pos' 
@@ -309,13 +291,11 @@ void MDCb(const int msg)
 
 void SOVCb(const int msg)
 {
-  nh.loginfo("Inside SOV callback");
   int data = msg;
   int pos = 0;
   if(data == 1)
   {
     torpedo_count = 1;
-    nh.loginfo("First Torpedo being shot");
     digitalWrite(TorpedoPin1, HIGH);
     delay(100);
     digitalWrite(TorpedoPin1, LOW);
@@ -402,21 +382,6 @@ void TSWUp(const int data)
     servoSouthWestUp.writeMicroseconds(ESC_Zero + data - deadZone);
   else
     servoSouthWestUp.writeMicroseconds(ESC_Zero);
-}
-
-void PWMCb(const anahita_msgs::Thrust& msg_)
-{
-    // nh.loginfo("Inside PWM Callback");
-    forward_right = msg_.forward_right;
-    forward_left = msg_.forward_left;
-    sideward_front = msg_.sideward_front;
-    sideward_back = msg_.sideward_back;
-    upward_north_east = msg_.upward_north_east;
-    upward_north_west = msg_.upward_north_west;
-    upward_south_east = msg_.upward_south_east;
-    upward_south_west = msg_.upward_south_west;
-    marker_dropper = msg_.marker_dropper;
-    torpedo = msg_.torpedo;
 }
 
 void split(String messages, String* splitMessages,  char delimiter){
