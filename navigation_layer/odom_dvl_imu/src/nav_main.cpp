@@ -2,7 +2,7 @@
 
 namespace navigation
 {
-    NavigationNode::NavigationNode(const ros::NodeHandlePtr) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
+    NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
     	dvlTwistSubscriber_ = nh_->subscribe("/dvl/dvl_twist", 100,DvlData::DvlTwistCallback, &dvlData_);
 
@@ -43,14 +43,14 @@ namespace navigation
             }
         }
 
-        bool NavigationNode::SetDepthOffsetCallback(NavigationNode::SetDepthOffset::Request &request,NavigationNode::SetDepthOffset::Response &response)
+        bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
         {
-                zOffset_ = dvlData_.GetPositionZFromPressure();
+                zOffset_ =this.GetPositionZFromPressure();
                 imuData_.SetNewDataReady();
                 return true;
-            }
+        }
 
-	bool NavigationNode::SetWorldXYOffsetCallback(NavigationNode::SetWorldXYOffset::Request &request,NavigationNode::SetWorldXYOffset::Response &response)
+	bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
 	{
 		position_.x() = 0.0f;
 		position_.y() = 0.0f;

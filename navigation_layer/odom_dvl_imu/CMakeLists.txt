@@ -1,67 +1,72 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(odom_dvl_imu)
-add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roslint
-  message_generation
-  message_runtime
-  roscpp
-  rospy
-  std_msgs
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+endif (NOT CMAKE_BUILD_TYPE)
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -O3 -s")
+
+set(SRC_DIR "src")
+set(INCLUDE_DIR "include")
+
+
+# C A T K I N   C O N F I G U R A T I O N
+
+find_package(PkgConfig)
+
+find_package(
+    catkin REQUIRED COMPONENTS
+    roscpp
+    std_msgs
+    message_generation
+    geometry_msgs
+    sensor_msgs
+    tf
 )
 
 add_service_files(
-  DIRECTORY srv
-  FILES
-  SetDepthOffset.srv
-  SetWorldXYOffset.srv
+        DIRECTORY srv
+        FILES
+        SetDepthOffset.srv
+        SetWorldXYOffset.srv
 )
 
+# Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs   # Or other packages containing msgs
+  std_msgs geometry_msgs sensor_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  # LIBRARIES 
-  CATKIN_DEPENDS message_generation message_runtime roscpp rospy std_msgs
-  DEPENDS system_lib
+    INCLUDE_DIRS ${SRC_DIR}
+    LIBRARIES
+    CATKIN_DEPENDS roscpp message_runtime std_msgs
 )
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
+file(GLOB_RECURSE FILES
+        "${SRC_DIR}/*.cpp"
+        "${SRC_DIR}/*.h"
+        "${INCLUDE_DIR}/*.h"
+)
+
+list(REMOVE_ITEM FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_DIR}/nav_node.cpp)
 
 # Include all the directories where source can be found.
 include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include/
+        ${catkin_INCLUDE_DIRS}
+        ${SRC_DIR}
+        ${INCLUDE_DIR}
 )
 
-###########
-## Build ##
-###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-add_library(nav_library SHARED src/dvl_data.cpp src/ekf.cpp src/imu_data.cpp src/nav_main.cpp src/nav_node.cpp include/dvl_data.h include/ekf.h include/imu_data.h include/nav_main.h include/navigation_device.h)
-target_link_libraries(nav_library ${catkin_LIBRARIES})
-
-add_executable(nav_node src/dvl_data.cpp src/ekf.cpp src/imu_data.cpp src/nav_main.cpp src/nav_node.cpp include/dvl_data.h include/ekf.h include/imu_data.h include/nav_main.h include/navigation_device.h)
-target_link_libraries(nav_node nav_library ${catkin_LIBRARIES})
-
-
+add_executable(${PROJECT_NAME}_node ${SRC_DIR}/nav_node.cpp ${FILES})
+target_link_libraries(${PROJECT_NAME}_node
+                      ${catkin_LIBRARIES}
+                      ${BFL_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
 
