@@ -42,12 +42,14 @@ def process_message(line):
         rospy.logwarn("Short read, received part of a message: {}".format(inputBuffer.decode()))
         serial_connection.close()
         serial_connection.open()
+        return
 
     # Occasionally, we get rotten bytes which couldn't decode
     except UnicodeDecodeError:
         rospy.logwarn("Received weird bits, ignoring: {}".format(inputBuffer))
         serial_connection.close()
         serial_connection.open()
+        return
 
 if __name__ == '__main__':
     
@@ -78,8 +80,11 @@ if __name__ == '__main__':
     publish_time = ros_next(publisher_rate_hz)
 
     while not rospy.is_shutdown():
+
         # Read before writing
+        rospy.loginfo("Inside the spin loop")
         try:
+            print("Going to listen")
             inputBuffer = serial_connection.readline()
             print("input coming: " + str(inputBuffer) + "lol")
         except: 
@@ -114,6 +119,7 @@ if __name__ == '__main__':
         
             for header, value in pairs:
                 depth_publisher.publish(value)
-        
-        rospy.spin()
+
+    rospy.spin()
+
     serial_connection.close()
