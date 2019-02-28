@@ -22,6 +22,7 @@ def ros_next(rate_hz):
 
 def callback(data):
     current_values = [data.sideward_front, data.sideward_back, data.forward_right, data.forward_left, data.upward_north_east, data.upward_north_west, data.upward_south_east, data.upward_south_west, data.marker_dropper, data.torpedo]
+    print(current_values[2])
     rospy.loginfo("Listening to a new message")
 
 
@@ -38,13 +39,13 @@ def process_message(line):
         return pairs
 
     except IndexError:
-        rospy.logwarn("Short read, received part of a message: {}".format(buf.decode()))
+        rospy.logwarn("Short read, received part of a message: {}".format(inputBuffer.decode()))
         serial_connection.close()
         serial_connection.open()
 
     # Occasionally, we get rotten bytes which couldn't decode
     except UnicodeDecodeError:
-        rospy.logwarn("Received weird bits, ignoring: {}".format(buf))
+        rospy.logwarn("Received weird bits, ignoring: {}".format(inputBuffer))
         serial_connection.close()
         serial_connection.open()
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     VALID_SENSOR_VARIABLES = ["pressure_sensor"]
 
-    serial_port_id = rospy.get_param("~serial_port_id", "/dev/ttyACM0")
+    serial_port_id = rospy.get_param("~serial_port_id", "/dev/arduino")
     publisher_rate_hz = rospy.get_param("~publisher_rate_hz", 1)
     baud_rate = rospy.get_param("~baud_rate", 115200)
 
@@ -78,7 +79,11 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
         # Read before writing
-        inputBuffer = serial_connection.readline()
+        try:
+            inputBuffer = serial_connection.readline()
+            print("input coming: " + str(inputBuffer) + "lol")
+        except: 
+            rospy.logerr("Failed, could not read the serial connection")
 
         # Generate the message for the current state
         # status, thrusters one after another
@@ -95,6 +100,7 @@ if __name__ == '__main__':
                 current_values[8],
                 current_values[9],    
             ).encode('utf-8')
+            print(message)
             serial_connection.write(message)
             serial_connection.flush()
 
@@ -108,5 +114,6 @@ if __name__ == '__main__':
         
             for header, value in pairs:
                 depth_publisher.publish(value)
-
+        
+        rospy.spin()
     serial_connection.close()

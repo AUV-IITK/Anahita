@@ -1,21 +1,12 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
-<<<<<<< HEAD
 	this->low_h_ = 12;
 	this->high_h_ = 40;
 	this->low_s_ = 183;
 	this->high_s_ = 255;
 	this->low_v_ = 3;
 	this->high_v_ = 255;
-=======
-	this->low_h_ = 0;
-	this->high_h_ = 81;
-	this->low_s_ = 3;
-	this->high_s_ = 255;
-	this->low_v_ = 0;
-	this->high_v_ = 183;
->>>>>>> AUV/master
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 3;
 	this->closing_mat_point_ = 1;
