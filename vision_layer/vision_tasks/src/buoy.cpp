@@ -114,7 +114,7 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
-		// image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	    image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -178,7 +178,7 @@ void Buoy::spinThread(){
 
 	while (ros::ok())
 	{	
-		image_ = cv::imread("/home/ironman/G0010612.JPG", CV_LOAD_IMAGE_COLOR);
+	//	image_ = cv::imread("/home/ironman/G0010612.JPG", CV_LOAD_IMAGE_COLOR);
 		if (close_task) {
 			break;
 		}

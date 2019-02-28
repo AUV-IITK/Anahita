@@ -39,9 +39,9 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   // initializing publishers
-  std::string imu_yaw_pub_topic = "/sparton/imu/yaw";
-  std::string imu_roll_pub_topic = "/sparton/imu/roll";
-  std::string imu_pitch_pub_topic = "/sparton/imu/pitch";
+  std::string imu_yaw_pub_topic = "/anahita/imu/yaw";
+  std::string imu_roll_pub_topic = "/anahita/imu/roll";
+  std::string imu_pitch_pub_topic = "/anahita/imu/pitch";
   std::cout << "Sparton has been setup" << std::endl;   
 
   imu_yaw_pub = nh.advertise<std_msgs::Float64>(imu_yaw_pub_topic, 1000);

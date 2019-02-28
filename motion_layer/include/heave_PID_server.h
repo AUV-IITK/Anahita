@@ -1,41 +1,41 @@
-#ifndef UPWARD_PID_SERVER_H
-#define UPWARD_PID_SERVER_H
+#ifndef HEAVE_PID_SERVER_H
+#define HEAVE_PID_SERVER_H
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <motion_layer/upwardPIDAction.h>
+#include <motion_layer/heavePIDAction.h>
 #include <errorToPWM.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <string>
 
-class upwardPIDAction
+class heavePIDAction
 {
 protected:
 
     ros::NodeHandle nh_;
-    actionlib::SimpleActionServer<motion_layer::upwardPIDAction> as_; // NodeHandle instance must be created before this line. 
+    actionlib::SimpleActionServer<motion_layer::heavePIDAction> as_; // NodeHandle instance must be created before this line. 
                                                                          // Otherwise strange error occurs.
     std::string action_name_;
     // create messages that are used to published feedback/result
-    motion_layer::upwardPIDFeedback feedback_;
-    motion_layer::upwardPIDResult result_;
+    motion_layer::heavePIDFeedback feedback_;
+    motion_layer::heavePIDResult result_;
     double goal_;
 
-    double current_depth_ = 0;
+    double current_heave_ = 0;
     bool goalReceived = false;
 
     ros::Subscriber sub_;
-    ErrorDescriptor z_coord;
+    ErrorDescriptor heave;
 
 public:
 
-    upwardPIDAction(std::string);
-    ~upwardPIDAction();
+    heavePIDAction(std::string);
+    ~heavePIDAction();
     void goalCB();
     void preemptCB();
-    void depthCB(const std_msgs::Float32ConstPtr&);
+    void callback(const std_msgs::Float32ConstPtr&);
 
 };
 #endif 

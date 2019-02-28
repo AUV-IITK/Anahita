@@ -2,9 +2,9 @@
 
 #include <ros/ros.h>
 
-#include <motion_layer/forwardPIDAction.h>
-#include <motion_layer/sidewardPIDAction.h>
-#include <motion_layer/anglePIDAction.h>
+#include <motion_layer/surgePIDAction.h>
+#include <motion_layer/swayPIDAction.h>
+#include <motion_layer/yawPIDAction.h>
 
 #include <straight_server.h>
 #include <depth_stabilise.h>
@@ -24,17 +24,17 @@ public:
     bool setActive (bool);
 
 private:
-    actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
+    actionlib::SimpleActionClient<motion_layer::surgePIDAction> surgePIDClient;
+    actionlib::SimpleActionClient<motion_layer::swayPIDAction> swayPIDClient;
+    actionlib::SimpleActionClient<motion_layer::yawPIDAction> yawPIDClient;
 
-    motion_layer::anglePIDGoal anglePIDGoal;    
-    motion_layer::sidewardPIDGoal sidewardPIDGoal;
-    motion_layer::forwardPIDGoal forwardPIDgoal;
+    motion_layer::yawPIDGoal yawPIDGoal;    
+    motion_layer::swayPIDGoal swayPIDGoal;
+    motion_layer::surgePIDGoal surgePIDgoal;
 
     taskHandler th;
     ros::NodeHandle nh;
-    ros::Subscriber forward_sub_;
+    ros::Subscriber surge_sub_;
     moveStraight move_straight;
     depthStabilise depth_stabilise;
 

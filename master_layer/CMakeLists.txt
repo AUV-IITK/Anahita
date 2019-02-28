@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -71,7 +72,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs anahita_msgs
+  actionlib_msgs std_msgs anahita_msgs geometry_msgs
 )
 
 ################################################
@@ -106,7 +107,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
@@ -153,29 +154,15 @@ target_link_libraries(master_s
   ${catkin_LIBRARIES}
 )
 
-# add_executable(master src/master.cpp)
-# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(gazebo_publisher src/gazebo_publisher.cpp)
+target_link_libraries(gazebo_publisher ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
-  sidewardPIDServer 
-  upwardPIDServer 
-  anglePIDServer 
-  forwardPIDServer 
+  swayPIDServer 
+  heavePIDServer 
+  yawPIDServer 
+  surgePIDServer 
   rollPIDServer 
   pitchPIDServer 
   ${catkin_LIBRARIES}

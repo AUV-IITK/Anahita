@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+  <head>
+    <meta http-equiv="content-type" content="text/html" charset = "UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> ROS GUI </title>
+    
+    
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bootstrap-theme.min.css">
+    <script src="js/eventemitter2.min.js"></script>
+    <script src="js/roslib.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script> -->
+    <script src="js/bootstrap.min.js"></script>
+    </head>
+
+  <body data-spy="scroll" data-target=".navbar" data-offset="50">
+
+	<nav class = "navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+      <div class = "navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+
+      </button>
+      <a class="navbar-brand" href="#">ROS GUI</a>
+      </div>
+    <div>
+      <div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="nav navbar-nav">
+          <li><a href="#section1">Section 1</a></li>
+          <li><a href="#section2">Section 2</a></li>
+          <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Section 4 <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#section41">Section 4-1</a></li>
+              <li><a href="#section42">Section 4-2</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+<br>
+<br>
+<br>
+
+<form id="ip_input">
+  Enter name: <input type="text" id="ip_submit">
+  <input type="submit">
+</form> 
+
+<table align="center" class=".table">
+<tr>
+	<th width="170" align="center"></th>
+	<th width="135" align="center">Forward Left</th>
+	<th width="135" align="center">Forward Right</th>
+	<th width="135" align="center">Sway North</th>
+	<th width="135" align="center">Sway South</th>
+	<th width="135" align="center">Upward NE</th>
+	<th width="135" align="center">Upward NW</th>
+	<th width="135" align="center">Upward SE</th>
+	<th width="135" align="center">Upward SW</th>
+</tr>
+	
+<tr>
+  <td>Present PWM</td>
+  <td id="pwm.fl">0</td>
+  <td id="pwm.fr">0</td>
+  <td id="pwm.ns">0</td>
+  <td id="pwm.ss">0</td>
+  <td id="pwm.une">0</td>
+  <td id="pwm.unw">0</td>
+  <td id="pwm.use">0</td>
+  <td id="pwm.usw">0</td>
+</tr>
+</table>
+
+<table align="center" class=".table">
+<tr>
+	<th width="170" align="center"></th>
+	<th width="135" align="center">Yaw</th>
+	<th width="135" align="center">Roll</th>
+	<th width="135" align="center">Pitch</th>
+	<th width="135" align="center">x_coordinate</th>
+	<th width="135" align="center">y_coordinate</th>
+	<th width="135" align="center">z_coordinate</th>
+	<th width="135" align="center">Depth</th>
+</tr>
+	
+<tr>
+  <td>Present PWM</td>
+  <td id="yaw">0</td>
+  <td id="roll">0</td>
+  <td id="pitch">0</td>
+  <td id="x_coordinate">0</td>
+  <td id="y_coordinate">0</td>
+  <td id="z_coordinate">0</td>
+  <td id="depth">0</td>
+</tr>
+</table>
+
+<form id="pwm_sway">
+  PWM_SWAY: <input type="text" id="pwm_sway_submit">
+  <input type="submit">
+</form> 
+<form id="pwm_surge">
+  PWM_SURGE: <input type="text" id="pwm_surge_submit">
+  <input type="submit">
+</form> 
+<form id="pwm_heave">
+  PWM_HEAVE: <input type="text" id="pwm_heave_submit">
+  <input type="submit">
+</form> 
+<form id="pwm_pitch">
+  PWM_PITCH: <input type="text" id="pwm_pitch_submit">
+  <input type="submit">
+</form> 
+<form id="pwm_roll">
+  PWM_ROLL: <input type="text" id="pwm_roll_submit">
+  <input type="submit">
+</form> 
+<form id="pwm_turn">
+  PWM_TURN: <input type="text" id="pwm_turn_submit">
+  <input type="submit">
+</form> 
+
+
+<div style="margin-top: 100px;margin-left: 100px;">
+  <button style="width: 40px;height:40px;" id="forward"> <i class="arrow up"></i></button>
+  </div>
+  </br>
+
+  <div id="INFO"></div>
+  
+  <button style="width: 60px;height:40px;margin-left:45px; " id="left"> <i class="arrow left"></i></button>
+   
+  <button  style="width: 60px;height:40px;margin-left: 20px;" id="right"> <i class="arrow right"></i></button>
+  
+  </br>
+  <button  style="width: 40px;height:40px;margin-left:100px;margin-top:20px;margin-bottom:20px;" id="reverse"> <i class="arrow down"></i></button>
+  </br>
+  
+  <button  style="width: 60px;height:40px;border-radius:100%;margin-left: 45px;" id="turn_cw"> &#8635;</button>
+  <button  style="width: 60px;height:40px;border-radius:100%;margin-left: 20px;" id="turn_acw"> &#8634;</button>
+  <br>
+    <button style="background-color: :#008CBA; text-align:center;" id="kill">Kill Signal</button>
+  </br>
+
+    <button style="background-color: :#008CBA; text-align:center;" id="heave_down">Heave Up</button>
+    <button style="background-color: :#008CBA; text-align:center;" id="heave_up">Heave Down</button>
+
+</table>
+</div>
+
+<img src="http://0.0.0.0:8889/stream?topic=/varun/sensors/front_camera/image_raw">
+
+
+<script src="js/script.js"></script>
+
+  </body>
+</html>

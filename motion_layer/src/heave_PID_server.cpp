@@ -1,46 +1,46 @@
-#include <upward_PID_server.h>
+#include <heave_PID_server.h>
 
-upwardPIDAction::upwardPIDAction(std::string name) :
+heavePIDAction::heavePIDAction(std::string name) :
     as_(nh_, name, false),
-    action_name_(name), z_coord("Z_COORD")
+    action_name_(name), heave("HEAVE")
 {
-    //register the goal and feeback callbacks
-    as_.registerGoalCallback(boost::bind(&upwardPIDAction::goalCB, this));
+    // register the goal and feeback callbacks
+    as_.registerGoalCallback(boost::bind(&heavePIDAction::goalCB, this));
    
     goal_ = 0;
 
-    //subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &upwardPIDAction::depthCB, this);
-    z_coord.setPID(-1.5, 0, 0, 4);
+    // subscribe to the data topic of interest
+    sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &heavePIDAction::callback, this);
+    heave.setPID(-1.5, 0, 0, 4);
 
     as_.start();
-    ROS_INFO("upward_PID_server Initiated");
+    ROS_INFO("heave_PID_server Initiated");
 }
 
-upwardPIDAction::~upwardPIDAction(void)
+heavePIDAction::~heavePIDAction(void)
 {
 }
 
-void upwardPIDAction::goalCB()
+void heavePIDAction::goalCB()
 {
-    goal_ = as_.acceptNewGoal()->target_depth;
+    goal_ = as_.acceptNewGoal()->target_heave;
     goalReceived = true;
 }
 
-void upwardPIDAction::preemptCB()
+void heavePIDAction::preemptCB()
 {
     ROS_INFO("%s: Preempted", action_name_.c_str());
     // set the action state to preempted
     as_.setPreempted();
 }
 
-void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
+void heavePIDAction::callback(const std_msgs::Float32ConstPtr& msg)
 {
     // make sure that the action hasn't been canceled
     if (!as_.isActive())
         return;
 
-    current_depth_ = msg->data;
+    current_heave_ = msg->data;
 
     if (goalReceived) {
         bool enable_pressure = false;
@@ -59,12 +59,12 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
                 ROS_INFO("Reference Depth used");
             }
             else {
-                goal_ = goal_ + current_depth_;
+                goal_ = goal_ + current_heave_;
                 ROS_INFO("Current Depth used");
             }
         }
 
-        z_coord.setReference(goal_);
+        heave.setReference(goal_);
 
         // publish info to the console for the user
         ROS_INFO("%s: Executing, got a target of %f", action_name_.c_str(), goal_);
@@ -72,17 +72,11 @@ void upwardPIDAction::depthCB(const std_msgs::Float32ConstPtr& msg)
         goalReceived = false;
     }
     
-    z_coord.errorToPWM(msg->data);
+    heave.errorToPWM(msg->data);
 
-    feedback_.current_depth = msg->data;
+    feedback_.current_heave = msg->data;
     as_.publishFeedback(feedback_);
 
-    // if (msg->data <= goal_ + 10 && msg->data >= goal_ - 10) {
-    //     ROS_INFO("%s: Succeeded", action_name_.c_str());
-    //     set the action state to succeeded
-    //     as_.setSucceeded(result_);
-    // }
-
-    nh_.setParam("/pwm_heave", z_coord.getPWM());
+    nh_.setParam("/pwm_heave", heave.getPWM());
 }
 

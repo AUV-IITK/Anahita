@@ -1,7 +1,7 @@
 #include <torpedo.h>
 
-Torpedo::Torpedo(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(120) {}
+Torpedo::Torpedo(): surgePIDClient("surgePID"), swayPIDClient("swayPID"), 
+                        yawPIDClient("yawPID"), heavePIDClient("heavePID"), th(120) {}
 
 Torpedo::~Torpedo() {}
 
@@ -13,40 +13,40 @@ bool Torpedo::setActive(bool status) {
         nh_.setParam("/use_reference_yaw", false);
         nh_.setParam("/enable_pressure", false);
 
-        ROS_INFO("Waiting for sidewardPID server to start, task torpedo.");
-        sidewardPIDClient.waitForServer();
+        ROS_INFO("Waiting for swayPID server to start, task torpedo.");
+        swayPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal, task torpedo.");
-        sidewardPIDgoal.target_distance = 0;
-        sidewardPIDClient.sendGoal(sidewardPIDgoal);
-
-        ///////////////////////////////////////////////////
-
-        ROS_INFO("Waiting for upwardPID server to start, task torpedo.");
-        upwardPIDClient.waitForServer();
-
-        ROS_INFO("upwardPID server started, sending goal, task torpedo.");
-        upwardPIDgoal.target_depth = 0; // for gazebo
-        upwardPIDClient.sendGoal(upwardPIDgoal);
+        ROS_INFO("swayPID server started, sending goal, task torpedo.");
+        swayPIDgoal.target_sway = 0;
+        swayPIDClient.sendGoal(swayPIDgoal);
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for anglePID server to start, task torpedo.");
-        anglePIDClient.waitForServer();
+        ROS_INFO("Waiting for heavePID server to start, task torpedo.");
+        heavePIDClient.waitForServer();
 
-        ROS_INFO("anglePID server started, sending goal, task torpedo.");
+        ROS_INFO("heavePID server started, sending goal, task torpedo.");
+        heavePIDgoal.target_heave = 0; // for gazebo
+        heavePIDClient.sendGoal(heavePIDgoal);
 
-        anglePIDGoal.target_angle = 0;
-        anglePIDClient.sendGoal(anglePIDGoal);
+        ///////////////////////////////////////////////////
+
+        ROS_INFO("Waiting for yawPID server to start, task torpedo.");
+        yawPIDClient.waitForServer();
+
+        ROS_INFO("yawPID server started, sending goal, task torpedo.");
+
+        yawPIDGoal.target_yaw = 0;
+        yawPIDClient.sendGoal(yawPIDGoal);
 
         /////////////////////////////////////////////////////
 
-        ROS_INFO("ForwardPID Client sending goal, task torpedo.");        
-        forwardPIDgoal.target_distance = 12;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        ROS_INFO("surgePID Client sending goal, task torpedo.");        
+        surgePIDgoal.target_surge = 12;
+        surgePIDClient.sendGoal(surgePIDgoal);
 
-        if (!th.isAchieved(12, 2, "forward")) {
-            ROS_INFO("Unable to achieve forward in time limit");
+        if (!th.isAchieved(12, 2, "surge")) {
+            ROS_INFO("Unable to achieve surge in time limit");
             nh_.setParam("/kill_signal", true);		
             // return false;	
 	    }	
@@ -59,16 +59,16 @@ bool Torpedo::setActive(bool status) {
         ros::Duration(1).sleep();
         nh_.setParam("/torpedo", 0);
 
-        forwardPIDClient.cancelGoal();
+        surgePIDClient.cancelGoal();
         ROS_INFO("Killing the thrusters");
 	    nh_.setParam("/kill_signal", true);
 
-        ROS_INFO("ForwardPID Client sending goal again, task torpedo.");        
-        forwardPIDgoal.target_distance = 25;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        ROS_INFO("surgePID Client sending goal again, task torpedo.");        
+        surgePIDgoal.target_surge = 25;
+        surgePIDClient.sendGoal(surgePIDgoal);
 
-        if (!th.isAchieved(25, 4, "forward")) {
-            ROS_INFO("Unable to achieve forward in time limit");
+        if (!th.isAchieved(25, 4, "surge")) {
+            ROS_INFO("Unable to achieve surge in time limit");
             nh_.setParam("/kill_signal", true);
             // return false;	
 	    }
@@ -78,10 +78,10 @@ bool Torpedo::setActive(bool status) {
 
         nh_.setParam("/use_local_yaw", false);
         
-        forwardPIDClient.cancelGoal();
-        upwardPIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
-        anglePIDClient.cancelGoal();
+        surgePIDClient.cancelGoal();
+        heavePIDClient.cancelGoal();
+        swayPIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
         ROS_INFO("Closing Torpedo");
     }
 

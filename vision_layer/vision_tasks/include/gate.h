@@ -21,11 +21,11 @@
 
 #include <vision_tasks/gateFrontRangeConfig.h>
 #include <vision_tasks/gateBottomRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
-#include <vision_commons/geometry.h>
+#include <filter.h>
+#include <contour.h>
+#include <morph.h>
+#include <threshold.h>
+#include <geometry.h>
 
 class Gate
 {

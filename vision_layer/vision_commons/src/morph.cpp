@@ -2,7 +2,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <stdlib.h>
 #include <string>
-#include "vision_commons/morph.h"
+#include "morph.h"
 
 cv::Mat vision_commons::Morph::open(cv::Mat &raw, int element_size, int element_centerX, int element_centerY, int iterations)
 {
