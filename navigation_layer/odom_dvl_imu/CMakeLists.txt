@@ -65,8 +65,6 @@ include_directories(
 
 
 add_executable(${PROJECT_NAME}_node ${SRC_DIR}/nav_node.cpp ${FILES})
-target_link_libraries(${PROJECT_NAME}_node
-                      ${catkin_LIBRARIES}
-                      ${BFL_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencpp)
 

@@ -4,15 +4,15 @@ namespace navigation
 {
     NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
-    	dvlTwistSubscriber_ = nh_->subscribe("/dvl/dvl_twist", 100,DvlData::DvlTwistCallback, &dvlData_);
+    	dvlTwistSubscriber_ = nh_->subscribe("/dvl/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
 
 		dvlPressureSubscriber_ = nh_->subscribe("/dvl/dvl_pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
 
 		imuSubscriber_ = nh_->subscribe("/imu/imu_data", 100, &IMUData::IMUMsgCallback, &imuData_);
 
-		navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", &NavigationNode::SetDepthOffsetCallback, this);
+		//navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
 
-		navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", &NavigationNode::SetWorldXYOffsetCallback, this);
+		//navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
 
 		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/nav/odom", 100);
 		position_          = Eigen::Vector3d::Zero();
@@ -28,8 +28,8 @@ namespace navigation
             dvlTwistSubscriber_.shutdown();
             dvlPressureSubscriber_.shutdown();
             imuSubscriber_.shutdown();
-            navigationDepthOffsetServer_.shutdown();
-            navigationXYOffsetServer_.shutdown();
+            //navigationDepthOffsetServer_.shutdown();
+            //navigationXYOffsetServer_.shutdown();
         }
         
         void NavigationNode::Spin()
@@ -43,20 +43,20 @@ namespace navigation
             }
         }
 
-        bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
-        {
-                zOffset_ =this.GetPositionZFromPressure();
-                imuData_.SetNewDataReady();
-                return true;
-        }
+    //     bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
+    //     {
+    //             zOffset_ =this.GetPositionZFromPressure();
+    //             imuData_.SetNewDataReady();
+    //             return true;
+    //     }
 
-	bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
-	{
-		position_.x() = 0.0f;
-		position_.y() = 0.0f;
-		dvlData_.SetNewDataReady();
-		return true;
-	}
+	// bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
+	// {
+	// 	position_.x() = 0.0f;
+	// 	position_.y() = 0.0f;
+	// 	dvlData_.SetNewDataReady();
+	// 	return true;
+	// }
 
 	void NavigationNode::ProcessCartesianPose()
 	{
