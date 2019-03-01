@@ -9,14 +9,14 @@
 #include <string>
 #include <std_msgs/String.h>
 
-std::string current_task = "red_buoy";
+std::string current_task = "marker_dropper_bottom";
 std::string previous_task = "";
-
-// void taskCallback(const std_msgs::String::ConstPtr& msg)
-// {
-//     ROS_INFO("Task being chaned to: [%s]", msg->data.c_str());
-//     current_task = msg->data;
-// }
+    
+void taskCallback(const std_msgs::String::ConstPtr& msg)
+{
+    ROS_INFO("Task being changed to: [%s]", msg->data.c_str());
+    current_task = msg->data;
+}
 
 int main(int argc, char *argv[])
 {    

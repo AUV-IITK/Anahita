@@ -329,9 +329,8 @@ void Gate::spinThreadFront()
 						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2;
 						z_coordinate.data = ((float)image_front.size().height) / 2 - y_centre + x_length/3;
 						distance_for = x_length;
-						sprintf(str,"fucking_bottom"); putText(image_marked, str, cv::Point2f(100,100), 0, 2,  cv::Scalar(0,0,255,255));
 					}
-					else if(x_length<y_length/5 && x_length>0)
+					else if(x_length<y_length/7 && x_length>0)
 					{
 						ROS_INFO("This time its a fucking vertical rod");
 						y_coordinate.data = x_centre - ((float)image_front.size().width) / 2 - y_length/2;;
@@ -348,7 +347,6 @@ void Gate::spinThreadFront()
 					}
 					x_coordinate.data = pow(sqrt(distance_for)/ 7526.5, -.92678);
 
-					ROS_INFO("x_length = %f, y_length = %f", x_length, y_length);
 					ROS_INFO("Gate Center (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
 				
 					cv::circle(image_marked, cv::Point(y_coordinate.data + image_front.size().width / 2, image_front.size().height / 2 - z_coordinate.data), 1, gate_center_color, 8, 0);
