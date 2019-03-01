@@ -8,12 +8,10 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
   roscpp
   rospy
   std_msgs
   dynamic_reconfigure
-  motion_layer
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,7 +105,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES pid_calibration
-CATKIN_DEPENDS message_generation roscpp rospy std_msgs dynamic_reconfigure motion_layer
+CATKIN_DEPENDS roscpp rospy std_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
@@ -118,14 +116,13 @@ CATKIN_DEPENDS message_generation roscpp rospy std_msgs dynamic_reconfigure moti
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  ${motion_layer_INCLUDE_DIRS}
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/pid_calibration.cpp
-# )
+add_library(error SHARED src/errorToPWM.cpp include/pid_calibration/errorToPWM.h)
+target_link_libraries(error ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -136,7 +133,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(pid_calibrate src/pid_calibrate.cpp)
-target_link_libraries(pid_calibrate errorToPWM ${catkin_LIBRARIES})
+target_link_libraries(pid_calibrate error ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

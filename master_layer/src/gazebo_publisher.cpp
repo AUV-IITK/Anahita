@@ -8,7 +8,7 @@ int main (int argc, char** argv) {
     ros::Time::init();
     ros::NodeHandle nh;
 
-    ros::Publisher pub = nh.advertise<geometry_msgs::Wrench>("/rexrov/thruster_manager/input", 1);
+    ros::Publisher pub = nh.advertise<geometry_msgs::Wrench>("/anahita/thruster_manager/input", 1);
 
     ros::Rate loop_rate(20);
     geometry_msgs::Wrench wrench;
@@ -35,10 +35,10 @@ int main (int argc, char** argv) {
     double thrust_1 = 0;
     double thrust_2 = 0;
     double thrust_3 = 0;
-    double thrust_4 = 0;
-    double thrust_5 = 0;
-    double thrust_6 = 0;
-    double thrust_7 = 0;
+    double thrust_4 = 0; // south-west
+    double thrust_5 = 0; // north-west
+    double thrust_6 = 0; // north-east
+    double thrust_7 = 0; // south-east
 
     double force_x = 0;
     double force_y = 0;
@@ -80,10 +80,10 @@ int main (int argc, char** argv) {
         thrust_3 = -pwm_sway - pwm_yaw;
         thrust_2 = -pwm_sway + pwm_yaw;
 
-        thrust_6 = -pwm_heave - pwm_roll - pwm_pitch;
+        thrust_6 = -pwm_heave - pwm_roll + pwm_pitch;
         thrust_5 = -pwm_heave + pwm_roll + pwm_pitch;
 
-        thrust_7 = -pwm_heave - pwm_roll + pwm_pitch;
+        thrust_7 = -pwm_heave - pwm_roll - pwm_pitch;
         thrust_4 = -pwm_heave + pwm_roll - pwm_pitch;
 
         force_x = thrust_0 + thrust_1;

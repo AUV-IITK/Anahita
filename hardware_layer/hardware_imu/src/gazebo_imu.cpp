@@ -44,13 +44,13 @@ void imu_data_callback(sensor_msgs::Imu msg)
 int main(int argc, char **argv)
 {
     // initiliazing ROS node
-    ros::init(argc, argv, "px4");
+    ros::init(argc, argv, "gazebo_publisher");
     ros::NodeHandle nh;
 
     // initializing publishers
-    std::string imu_yaw_pub_topic = "/mavros/imu/yaw";
-    std::string imu_roll_pub_topic = "/mavros/imu/pitch";
-    std::string imu_pitch_pub_topic = "/mavros/imu/roll";
+    std::string imu_yaw_pub_topic = "/anahita/imu/yaw";
+    std::string imu_roll_pub_topic = "/anahita/imu/pitch";
+    std::string imu_pitch_pub_topic = "/anahita/imu/roll";
     std::cout << "Gazebo IMU setup" << std::endl;
 
     imu_yaw_pub = nh.advertise<std_msgs::Float32>(imu_yaw_pub_topic, 1000);

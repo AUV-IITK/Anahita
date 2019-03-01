@@ -3,8 +3,8 @@
 #include <std_msgs/Float32.h>
 #include <dynamic_reconfigure/server.h>
 #include <pid_calibration/pidConfig.h>
-#include <errorToPWM.h>
-
+#include <pid_calibration/errorToPWM.h>
+ 
 double x;
 double y;
 double z;
@@ -26,7 +26,7 @@ ErrorDescriptor surge ("SURGE");
 ErrorDescriptor sway ("SWAY");
 ErrorDescriptor heave ("HEAVE");
 
-std::string action = "yaw";
+std::string action = "roll";
 
 void xCB (const std_msgs::Float32 msg) {
     x = msg.data;
@@ -55,7 +55,7 @@ void pitchCB (const std_msgs::Float32 msg) {
 
 void yawCB (const std_msgs::Float32 msg) {
     yaw = msg.data;
-    yaw_.errorToPWM (yaw);
+    yaw_.errorToPWM(yaw);
 }
 
 void setTarget (double target) {
@@ -94,12 +94,12 @@ int main (int argc, char** argv) {
     ros::init (argc, argv, "pid_calibrate");
     ros::NodeHandle nh;
 
-    if (action == "surge") { ros::Subscriber x_sub = nh.subscribe<std_msgs::Float32>("/anahita/x_coordinate", 1, &xCB); }
-    if (action == "heave") { ros::Subscriber z_sub = nh.subscribe<std_msgs::Float32>("/anahita/z_coordinate", 1, &zCB); }
-    if (action == "sway") { ros::Subscriber y_sub = nh.subscribe<std_msgs::Float32>("/anahita/y_coordinate", 1, &yCB); }
-    if (action == "roll") { ros::Subscriber roll_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/pitch", 1, &rollCB); }
-    if (action == "pitch") { ros::Subscriber pitch_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/roll", 1, &pitchCB); }
-    if (action == "yaw") { ros::Subscriber yaw_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/yaw", 1, &yawCB); }
+    ros::Subscriber x_sub = nh.subscribe<std_msgs::Float32>("/anahita/x_coordinate", 1, &xCB);
+    ros::Subscriber z_sub = nh.subscribe<std_msgs::Float32>("/anahita/z_coordinate", 1, &zCB);
+    ros::Subscriber y_sub = nh.subscribe<std_msgs::Float32>("/anahita/y_coordinate", 1, &yCB);
+    ros::Subscriber roll_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/roll", 1, &rollCB);
+    ros::Subscriber pitch_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/pitch", 1, &pitchCB);
+    ros::Subscriber yaw_sub = nh.subscribe<std_msgs::Float32>("/anahita/imu/yaw", 1, &yawCB); 
     
     // register dynamic reconfig server.
     dynamic_reconfigure::Server<pid_calibration::pidConfig> server;
@@ -107,7 +107,7 @@ int main (int argc, char** argv) {
     f = boost::bind(&callback, _1, _2);
     server.setCallback(f);
 
-    ros::Rate loop_rate (20);
+    ros::Rate loop_rate(50);
 
     int pwm_yaw = 0;
     int pwm_roll = 0;
@@ -122,7 +122,10 @@ int main (int argc, char** argv) {
         if (action == "surge") { pwm_surge = surge.getPWM (); }
         if (action == "heave") { pwm_heave = heave.getPWM (); }
         if (action == "roll") { pwm_roll = roll_.getPWM (); }
-        if (action == "pitch") { pwm_pitch = pitch_.getPWM (); }
+        if (action == "pitch") { 
+            pwm_pitch = pitch_.getPWM (); 
+            std::cout << "pwm_pitch: " << pwm_pitch << std::endl;
+        }
         if (action == "yaw") { pwm_yaw = yaw_.getPWM (); }
 
         nh.setParam ("/pwm_sway", pwm_sway);
@@ -132,11 +135,10 @@ int main (int argc, char** argv) {
         nh.setParam ("/pwm_yaw", pwm_yaw);
         nh.setParam ("/pwm_pitch", pwm_pitch);
 
-        loop_rate.sleep ();
-        ros::spinOnce ();
-    }
+        loop_rate.sleep();
 
-    ros::spin();
+        ros::spinOnce();
+    }
 
     return 0;
 }
