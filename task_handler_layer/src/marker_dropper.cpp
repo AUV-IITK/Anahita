@@ -1,7 +1,7 @@
 #include <marker_dropper.h>
 
-MarkerDropper::MarkerDropper(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                                th(25), anglePIDClient("turnPID") {}
+MarkerDropper::MarkerDropper(): surgePIDClient("surgePID"), swayPIDClient("swayPID"), 
+                                th(25), yawPIDClient("yawPID") {}
 MarkerDropper::~MarkerDropper() {}
 
 bool MarkerDropper::setActive(bool status) {
@@ -27,28 +27,28 @@ bool MarkerDropper::setActive(bool status) {
         move_straight.deActivate ();
         ROS_INFO("Marker Dropper Detected");
 
-        ROS_INFO("Waiting for forwardPID server to start.");
-        forwardPIDClient.waitForServer();
+        ROS_INFO("Waiting for surgePID server to start.");
+        surgePIDClient.waitForServer();
 
-        ROS_INFO("forwardPID server started, sending goal.");
-        forwardPIDgoal.target_distance = 0;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        ROS_INFO("surgePID server started, sending goal.");
+        surgePIDgoal.target_surge = 0;
+        surgePIDClient.sendGoal(surgePIDgoal);
 
-        ROS_INFO("Waiting for sidewardPID server to start.");
-        sidewardPIDClient.waitForServer();
+        ROS_INFO("Waiting for swayPID server to start.");
+        swayPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal.");
-        sidewardPIDGoal.target_distance = 0;
-        sidewardPIDClient.sendGoal(sidewardPIDGoal);
+        ROS_INFO("swayPID server started, sending goal.");
+        swayPIDGoal.target_sway = 0;
+        swayPIDClient.sendGoal(swayPIDGoal);
 
         ////////////////////////////////////////////////////
 
-        if (!th.isAchieved(0, 15, "forward")) {
-            ROS_INFO("Marker Dropper, Forward not achieved");
+        if (!th.isAchieved(0, 15, "surge")) {
+            ROS_INFO("Marker Dropper, surge not achieved");
             // return false;
         }
-        if (!th.isAchieved(0, 15, "sideward")) {
-            ROS_INFO("Marker Dropper, sideward not achieved");
+        if (!th.isAchieved(0, 15, "sway")) {
+            ROS_INFO("Marker Dropper, sway not achieved");
             // return false;
         }
 
@@ -66,9 +66,9 @@ bool MarkerDropper::setActive(bool status) {
         
     }
     else {
-        forwardPIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
-        anglePIDClient.cancelGoal();
+        surgePIDClient.cancelGoal();
+        swayPIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
 
         ROS_INFO("Killing the thrusters");
 	    nh.setParam("/kill_signal", true);

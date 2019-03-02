@@ -1,8 +1,0 @@
-#goal definition
-float32 target_depth
----
-#result definition
-float32 final_depth
----
-#feedback
-float32 current_depth

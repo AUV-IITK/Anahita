@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include <motion_layer/sidewardPIDAction.h>
-#include <motion_layer/anglePIDAction.h>
+#include <motion_layer/swayPIDAction.h>
+#include <motion_layer/yawPIDAction.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -22,11 +22,11 @@ class gateTask
 private:
     ros::NodeHandle nh_;
 
-    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
+    actionlib::SimpleActionClient<motion_layer::swayPIDAction> swayPIDClient;
+    actionlib::SimpleActionClient<motion_layer::yawPIDAction> yawPIDClient;
 
-    motion_layer::sidewardPIDGoal sidewardPIDgoal;
-    motion_layer::anglePIDGoal anglePIDGoal;
+    motion_layer::swayPIDGoal swayPIDgoal;
+    motion_layer::yawPIDGoal yawPIDGoal;
 
     taskHandler th;
     depthStabilise depth_stabilise;
@@ -38,7 +38,6 @@ public:
     ~gateTask();
 
     bool setActive(bool);
-    void forwardCB (const std_msgs::Float32ConstPtr &_msg);
 };
 
 #endif // GATE_H

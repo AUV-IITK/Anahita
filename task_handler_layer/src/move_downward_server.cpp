@@ -1,6 +1,6 @@
 #include <move_downward_server.h>
 
-moveDownward::moveDownward(): anglePIDClient("turnPID") {}
+moveDownward::moveDownward(): yawPIDClient("yawPID") {}
 
 moveDownward::~moveDownward() {}
 
@@ -16,17 +16,17 @@ void moveDownward::activate (int pwm, std::string type) {
 void moveDownward::deActivate () {
     nh_.setParam("/use_reference_yaw", false);
     nh_.setParam("/use_local_yaw", false);
-    anglePIDClient.cancelGoal();
+    yawPIDClient.cancelGoal();
     spin_thread->join();
     nh_.setParam("/kill_signal", true);
 }
 
 void moveDownward::spinThread() {
     ROS_INFO("Waiting for turnPID server to start.");
-    anglePIDClient.waitForServer();
+    yawPIDClient.waitForServer();
     ROS_INFO("turnPID server started, sending goal.");
-    angle_PID_goal.target_angle = 0;
-    anglePIDClient.sendGoal(angle_PID_goal);
+    yaw_PID_goal.target_yaw = 0;
+    yawPIDClient.sendGoal(yaw_PID_goal);
 }
 
 void moveDownward::setThrust(int _pwm) {

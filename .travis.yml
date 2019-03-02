@@ -106,6 +106,7 @@ script:
   - catkin_make --pkg task_handler_layer
   - catkin_make --pkg vision_commons
   - catkin_make --pkg vision_tasks
+  - catkin_make --pkg pid_calibration
   - catkin_make --pkg master_layer
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash

@@ -10,7 +10,7 @@ pitchPIDAction::pitchPIDAction(std::string name) :
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/pitch", 1, &pitchPIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/pitch", 1, &pitchPIDAction::callBack, this);
 
     pitch.setPID(2.0, 0, 0.65, 1);
 

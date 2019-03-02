@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="pid_calibration" name="pid_calibrate" type="pid_calibrate" output="screen"/>
+    <node pkg="master_layer" name="gazebo_publisher" type="gazebo_publisher" />
+    <node pkg="hardware_imu" name="gazebo_imu" type="gazebo_imu" />
+</launch>

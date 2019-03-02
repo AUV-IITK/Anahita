@@ -1,0 +1,8 @@
+#goal definition
+float32 target_yaw
+---
+#result definition
+float32 final_yaw
+---
+#feedback
+float32 current_yaw
