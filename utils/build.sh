@@ -2,6 +2,8 @@
 
 catkin_make --pkg anahita_msgs
 catkin_make --pkg vision_commons
+catkin_make --pkg vision_fusion
+catkin_make --pkg odom_dvl_imu
 catkin_make --pkg vision_tasks
 catkin_make --pkg motion_layer
 catkin_make --pkg task_handler_layer
