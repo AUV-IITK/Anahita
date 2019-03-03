@@ -1,34 +1,32 @@
 #include <torpedo.h>
+#include <base_class.h>
 
-Torpedo::Torpedo() : it(nh) {
+Torpedo::Torpedo(){
 	this->clahe_clip_ = 0.15;
 	this->clahe_grid_size_ = 3;
 	this->clahe_bilateral_iter_ = 2;
 	this->balanced_bilateral_iter_ = 4;
 	this->denoise_h_ = 5.6;
-	this->low_h_ = 30;
-	this->high_h_ = 84;
-	this->low_s_ = 17;
+	this->low_h_ = 53;
+	this->high_h_ = 86;
+	this->low_s_ = 128;
 	this->high_s_ = 255;
-	this->low_v_ = 0;
-	this->high_v_ = 255;
-	this->opening_mat_point_ = 1;
+	this->low_v_ = 104;
+	this->high_v_ = 202;
+	this->opening_mat_point_ = 2;
 	this->opening_iter_ = 1;
-	this->closing_mat_point_ = 1;
-	this->closing_iter_ = 1;
+	this->closing_mat_point_ = 2;
+	this->closing_iter_ = 3;
 	this->camera_frame_ = "auv-iitk";
 	// image_transport::ImageTransport it(nh);
-	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
-	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
-	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
-	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
-	this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
-	this->marked_pub = it.advertise("/torpedo_task/marked", 1);
-}
-
-Torpedo::~Torpedo() {
-	spin_thread->join();
+	// this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	// this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	// this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+	// this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	// this->blue_filtered_pub = it.advertise("/torpedo_task/blue_filtered", 1);
+	// this->thresholded_pub = it.advertise("/torpedo_task/thresholded", 1);
+	// this->marked_pub = it.advertise("/torpedo_task/marked", 1);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Torpedo::imageFrontCallback, this);
 }
 
 void Torpedo::switchColor(int color)
@@ -38,14 +36,14 @@ void Torpedo::switchColor(int color)
 	else
 	{
 		current_color = color;		
-		this->low_h_ = this->data_low_h[current_color];
-		this->high_h_ = this->data_high_h[current_color];
-		this->low_s_ = this->data_low_s[current_color];
-		this->high_s_ = this->data_high_s[current_color];
-		this->low_v_ = this->data_low_v[current_color];
-		this->high_v_ = this->data_high_v[current_color];
+		this->ront_low_h_ = this->data_low_h[current_color];
+		this->front_high_h_ = this->data_high_h[current_color];
+		this->front_low_s_ = this->data_low_s[current_color];
+		this->front_high_s_ = this->data_high_s[current_color];
+		this->front_low_v_ = this->data_low_v[current_color];
+		this->front_high_v_ = this->data_high_v[current_color];
 	}
-	std::cout << "Colour changed successfully to" << current_color << std::endl;
+	std::cout << "Colour changed successfully" << std::endl;
 }
 
 
@@ -78,7 +76,7 @@ void Torpedo::callback(vision_tasks::torpedoRangeConfig &config, double level)
 	this->closing_iter_ = config.closing_iter;
 };
 
-void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Torpedo::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
@@ -94,28 +92,21 @@ void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-void Torpedo::TaskHandling(bool status){
-	if(status)
-	{
-		ROS_INFO("Printing task handling start");
-		task_on = true;
-		spin_thread = new boost::thread(boost::bind(&Torpedo::spinThread, this)); 
-	}
-
-	else 
-	{
-		close_task = true;
-	        spin_thread->join();
-		task_on = false;
-		image_raw_sub.shutdown();
-		std::cout << "Task Handling function over" << std::endl;	
-	}
-}
+// void Torpedo::frontTaskHandling(bool status){
+// 	if(status)
+// 	{
+// 		spin_thread = new boost::thread(boost::bind(&Torpedo::spinThread, this)); 
+// 	}
+// 	else 
+// 	{
+// 		close_task = true;
+//         spin_thread->join();
+// 		std::cout << "Task Handling function over" << std::endl;	
+// 	}
+// }
 
 
 void Torpedo::spinThread(){
-
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Torpedo::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig>::CallbackType f;
@@ -131,10 +122,8 @@ void Torpedo::spinThread(){
 	cv::Mat image_hsv;
 	cv::Mat image_thresholded;
 	cv::Mat image_marked;
-
-	cv::VideoCapture cap(1);
 	std::vector<std::vector<cv::Point> > contours;
-	cv::Rect bounding_rectangle, bounding_rectangle1;
+	cv::Rect bounding_rectangle;
 	geometry_msgs::PointStamped torpedo_point_message;
 	torpedo_point_message.header.frame_id = camera_frame_.c_str();
 	ros::Rate loop_rate(25);
@@ -156,33 +145,50 @@ void Torpedo::spinThread(){
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point_ + 1, opening_mat_point_, opening_mat_point_, opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point_ + 1, closing_mat_point_, closing_mat_point_, closing_iter_);
 				contours = vision_commons::Contour::getBestX(image_thresholded, 4);
-				for(int i = contours.size()-1; i>=0; i--)
-				{
-					ROS_INFO("Contour Size of contour  %d = %f", i, contourArea(contours[i]));
-
-					if(contourArea(contours[i])<5000)
-					{
-						contours.erase(contours.begin()+i);
-					}
-				}
 				if (contours.size() != 0)
 				{
 					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
-					
-					if(contours.size()==2)
+					if (contours.size() == 2)
 					{
-						if(contourArea(contours[1])>3000)
-							detection_bool.data=true;
-						else
-							detection_bool.data=false;
+						bounding_rectangle = cv::boundingRect(cv::Mat(contours[1]));
 					}
-					else 
+					else if (contours.size() == 3)
 					{
-						if(contourArea(contours[0])>10000)
-							detection_bool.data=true;
+						cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[0]));
+						cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[1]));
+						cv::Rect bounding_rectangle3 = boundingRect(cv::Mat(contours[2]));
+						if (bounding_rectangle1.contains(bounding_rectangle2.br()) && bounding_rectangle2.contains(bounding_rectangle2.tl()))
+						{
+							bounding_rectangle = bounding_rectangle2;
+						}
+						else if ((bounding_rectangle2.contains(bounding_rectangle3.br()) && bounding_rectangle2.contains(bounding_rectangle3.tl())) || (bounding_rectangle1.contains(bounding_rectangle3.br()) && bounding_rectangle1.contains(bounding_rectangle3.tl())))
+						{
+							bounding_rectangle = bounding_rectangle3;
+						}
 						else
-							detection_bool.data=false;
+						{
+							if (bounding_rectangle3.br().y + bounding_rectangle3.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y)
+							{
+								bounding_rectangle = bounding_rectangle3;
+							}
+							else
+								bounding_rectangle = bounding_rectangle2;
+						}
 					}
+					else if (contours.size() == 4)
+					{
+						cv::Rect bounding_rectangle1 = boundingRect(cv::Mat(contours[2]));
+						cv::Rect bounding_rectangle2 = boundingRect(cv::Mat(contours[3]));
+						if (bounding_rectangle1.br().y + bounding_rectangle1.tl().y > bounding_rectangle2.br().y + bounding_rectangle2.tl().y)
+							bounding_rectangle = bounding_rectangle1;
+						else
+							bounding_rectangle = bounding_rectangle2;
+					}
+
+					if(contours.size()>0)
+						detection_bool.data=true;
+					else
+						detection_bool.data=false;
 
 					x_coordinate.data = pow((bounding_rectangle.br().x - bounding_rectangle.tl().x) / 7526.5, -.92678);
 					y_coordinate.data = (bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2 - (image_.size().width) / 2;
@@ -194,20 +200,15 @@ void Torpedo::spinThread(){
 						cv::drawContours(image_marked, contours, i, contour_color, 1, 8);
 				}
 			}
-			ROS_INFO("Detection switch is %d", detection_bool.data);
 			detection_pub.publish(detection_bool);
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
-
-			bool enable_pressure = false;
-			nh.getParam("/enable_pressure", enable_pressure);
-			if (!enable_pressure) {
 			z_coordinates_pub.publish(z_coordinate);
-			}
-			blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
-			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
+			
+			front_blue_filtered_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", blue_filtered).toImageMsg());
+			front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			ROS_INFO("Torpedo Centre Location (x, y, z) = (%.2f, %.2f, %.2f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
-			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
+			front_marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}
 		else
 			ROS_INFO("Image empty");

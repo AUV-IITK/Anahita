@@ -1,6 +1,7 @@
 #include <octagon.h>
+#include <base_class.h>
 
-Octagon::Octagon() : it(nh) {
+Octagon::Octagon(){
    	this->front_clahe_clip_ = 4.0;
     this->front_clahe_grid_size_ = 8;
     this->front_clahe_bilateral_iter_ = 8;
@@ -40,19 +41,14 @@ Octagon::Octagon() : it(nh) {
 
     this->camera_frame_ = "auv-iitk";
 
-	this->bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
-	this->bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
-	this->bottom_thresholded_blue_pub = it.advertise("/octagon_task/bottom/thresholded_blue", 1);
-	this->bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
-	
-	this->front_blue_filtered_pub = it.advertise("/octagon_task/front/blue_filtered", 1);
-	this->front_thresholded_pub = it.advertise("/octagon_task/front/thresholded", 1);
-	this->front_marked_pub = it.advertise("/octagon_task/front/marked", 1);
+	// image_transport::ImageTransport it(nh);
+	// image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
+	// image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
+	// image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
+	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
 
-	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
-	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
-	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
-	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
+
 
 }
 
@@ -129,9 +125,6 @@ void Octagon::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
 };
 
 void Octagon::spinThreadBottom() {
-
-	this->bottom_image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Octagon::imageBottomCallback, this);
-
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::octagonBottomRangeConfig>::CallbackType f;
 	f = boost::bind(&Octagon::bottomCallback, this, _1, _2);
@@ -155,8 +148,6 @@ void Octagon::spinThreadBottom() {
 	geometry_msgs::PointStamped bin_center_message;
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
-	std_msgs::Bool detection_bool;
-
 
 	while (ros::ok())
 	{
@@ -165,13 +156,13 @@ void Octagon::spinThreadBottom() {
 			break;
 		}
 
-		if (!image_bottom.empty())
+		if (!image_.empty())
 		{
-			image_bottom.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			image_.copyTo(image_marked);
+			//blue_filtered = vision_commons::Filter::blue_filter(image_, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
 			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
 			{
-				cv::cvtColor(image_bottom, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * bottom_opening_mat_point_ + 1, bottom_opening_mat_point_, bottom_opening_mat_point_, bottom_opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
@@ -186,18 +177,22 @@ void Octagon::spinThreadBottom() {
 						mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );			
 					}
 					bounding_rectangle = cv::boundingRect(cv::Mat(contours[0]));
-					if(contourArea(contours[0])>4000)
+					if (contours.size() >= 2)
 					{
-						detection_bool.data = true;
+						cv::Rect bounding_rectangle2 = cv::boundingRect(cv::Mat(contours[1]));
+						if ((bounding_rectangle2.br().y + bounding_rectangle2.tl().y) > (bounding_rectangle.br().y + bounding_rectangle.tl().y))
+						{
+							index = 1;
+							bounding_rectangle = bounding_rectangle2;
+						}
 					}
-					else
-						detection_bool.data = false;
 					bin_center_message.header.stamp = ros::Time();
-					z_coordinate.data = pow(radius[0] / 7526.5, -.92678);
-					y_coordinate.data = mc[0].x - ((float)image_bottom.size().width) / 2;
-					x_coordinate.data = ((float)image_bottom.size().height) / 2 - mc[0].y;
+					bin_center_message.point.x = pow(radius[0] / 7526.5, -.92678);
+					bin_center_message.point.y = mc[0].x - ((float)image_.size().width) / 2;
+					bin_center_message.point.z = ((float)image_.size().height) / 2 - mc[0].y;
+					ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, bin_center_color, 8, 0);
-					cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					cv::circle(image_marked, center[0], (int)radius[0], enclosing_circle_color, 2, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
 					{
@@ -205,14 +200,10 @@ void Octagon::spinThreadBottom() {
 					}
 				}
 			}
-			detection_pub.publish(detection_bool);
-			x_coordinates_pub.publish(x_coordinate);
-			y_coordinates_pub.publish(y_coordinate);
-			z_coordinates_pub.publish(z_coordinate);	
-			ROS_INFO("Center Location (x, y, z) = (%f, %f, %f)", x_coordinate.data, y_coordinate.data, z_coordinate.data);
-			bin_center_message.header.stamp = ros::Time();
-			ROS_INFO("Detection bool is %d", detection_bool.data);
+			// bottom_blue_filtered_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", blue_filtered).toImageMsg());
 			bottom_thresholded_pub.publish(cv_bridge::CvImage(bin_center_message.header, "mono8", image_thresholded).toImageMsg());
+			bottom_coordinates_pub.publish(bin_center_message);
+			ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 			bottom_marked_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
@@ -222,13 +213,20 @@ void Octagon::spinThreadBottom() {
 }
 
 void Octagon::spinThreadFront() {
-
-	this->front_image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageBottomCallback, this);
-
 	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::octagonFrontRangeConfig>::CallbackType f;
 	f = boost::bind(&Octagon::frontCallback, this, _1, _2);
 	server.setCallback(f);
+	
+	std::cout << "front task Handling function start" << std::endl;	
+
+	image_transport::ImageTransport it(nh);
+	image_transport::Publisher front_blue_filtered_pub = it.advertise("/octagon_task/front/blue_filtered", 1);
+	image_transport::Publisher front_thresholded_pub = it.advertise("/octagon_task/front/thresholded", 1);
+	image_transport::Publisher front_marked_pub = it.advertise("/octagon_task/front/marked", 1);
+	ros::Publisher front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/front_bin_coordinates", 1000);
+
+	image_transport::Subscriber image_raw_sub = it.subscribe("/bottom_camera/image_raw", 1, &Octagon::imageCallback, this);
 
 	cv::Scalar bin_center_color(255, 255, 255);
 	cv::Scalar image_center_color(0, 0, 0);
@@ -249,7 +247,8 @@ void Octagon::spinThreadFront() {
 	bin_center_message.header.frame_id = camera_frame_.c_str();
 	cv::RotatedRect min_ellipse;
 
-	std::cout << "front Task Handling function over" << std::endl;	
+		std::cout << "front Task Handling function over" << std::endl;	
+	
 
 	while (ros::ok())
 	{
@@ -258,13 +257,13 @@ void Octagon::spinThreadFront() {
 			break;
 		}
 
-		if (!image_front.empty())
+		if (!image_.empty())
 		{
-			image_front.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_front, front_clahe_clip_, front_clahe_grid_size_, front_clahe_bilateral_iter_, front_balanced_bilateral_iter_, front_denoise_h_);
+			image_.copyTo(image_marked);
+			//blue_filtered = vision_commons::Filter::blue_filter(image_, clahe_clip_, clahe_grid_size_, clahe_bilateral_iter_, balanced_bilateral_iter_, denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
 			{
-				cv::cvtColor(image_front, image_hsv, CV_BGR2HSV);
+				cv::cvtColor(image_, image_hsv, CV_BGR2HSV);
 				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_, front_high_h_, front_low_s_,front_high_s_, front_low_v_, front_high_v_);
 				image_thresholded = vision_commons::Morph::open(image_thresholded, 2 * front_opening_mat_point_ + 1, front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
 				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * front_closing_mat_point_ + 1, front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
@@ -290,11 +289,11 @@ void Octagon::spinThreadFront() {
 					}
 					bin_center_message.header.stamp = ros::Time();
 					bin_center_message.point.x = pow(radius[0] / 7526.5, -.92678);
-					bin_center_message.point.y = mc[0].x - ((float)image_front.size().width) / 2;
-					bin_center_message.point.z = ((float)image_front.size().height) / 2 - mc[0].y;
+					bin_center_message.point.y = mc[0].x - ((float)image_.size().width) / 2;
+					bin_center_message.point.z = ((float)image_.size().height) / 2 - mc[0].y;
 					ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 					cv::circle(image_marked, cv::Point((bounding_rectangle.br().x + bounding_rectangle.tl().x) / 2, (bounding_rectangle.br().y + bounding_rectangle.tl().y) / 2), 1, bin_center_color, 8, 0);
-					cv::circle(image_marked, cv::Point(image_front.size().width / 2, image_front.size().height / 2), 1, image_center_color, 8, 0);
+					cv::circle(image_marked, cv::Point(image_.size().width / 2, image_.size().height / 2), 1, image_center_color, 8, 0);
 					cv::circle(image_marked, center[0], (int)radius[0], enclosing_circle_color, 2, 8, 0);
 					for (int i = 0; i < contours.size(); i++)
 					{
@@ -302,9 +301,9 @@ void Octagon::spinThreadFront() {
 					}
 				}
 			}
-			//front_blue_filtered_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", blue_filtered).toImageMsg());
+			// front_blue_filtered_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", blue_filtered).toImageMsg());
 			front_thresholded_pub.publish(cv_bridge::CvImage(bin_center_message.header, "mono8", image_thresholded).toImageMsg());
-			
+			front_coordinates_pub.publish(bin_center_message);
 			ROS_INFO("Bin Center Location (x, y, z) = (%.2f, %.2f, %.2f)", bin_center_message.point.x, bin_center_message.point.y, bin_center_message.point.z);
 			front_marked_pub.publish(cv_bridge::CvImage(bin_center_message.header, "bgr8", image_marked).toImageMsg());
 		}
@@ -314,36 +313,30 @@ void Octagon::spinThreadFront() {
 	}	
 }
 
-void Octagon::bottomTaskHandling(bool status)
-{
-	if(status)
-	{
-		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
-	}
-	else 
-	{
-		task_done = true;
-        spin_thread_bottom->join();
-		bottom_image_raw_sub.shutdown();
-		std::cout << "Bottom Task Handling function over" << std::endl;	
-	}
-}
+// void Octagon::bottomTaskHandling(bool status)
+// {
+// 	if(status)
+// 	{
+// 		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
+// 	}
+// 	else 
+// 	{	
+// 		task_done = true;
+//         spin_thread_bottom->join();
+// 		std::cout << "Octagon, Bottom Task Handling function over" << std::endl;	
+// 	}
+// }
 
-void Octagon::frontTaskHandling(bool status){
-	if(status)
-	{
-		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
-	}
-	else 
-	{
-		task_done = true;
-        spin_thread_front->join();
-		front_image_raw_sub.shutdown();
-		std::cout << "Front Task Handling function over" << std::endl;	
-	}
-}
+// void Octagon::frontTaskHandling(bool status){
+// 	if(status)
+// 	{
+// 		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
+// 	}
+// 	else 
+// 	{
+// 		task_done = true;
+//         spin_thread_front->join();
+// 		std::cout << "Octagon, Front Task Handling function over" << std::endl;	
+// 	}
+// }
 
-Octagon::~Octagon() {
-	spin_thread_bottom->join();
-	spin_thread_front->join();
-}

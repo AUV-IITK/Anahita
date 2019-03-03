@@ -30,25 +30,6 @@
 class Base_class{
 
     protected:
-
-    	
-
-        /*double clahe_clip_;
-	    int clahe_grid_size_;
-	    int clahe_bilateral_iter_;
-    	int balanced_bilateral_iter_;
-	    double denoise_h_;
-        int low_h_;
-	    int high_h_;
-	    int low_s_;
-	    int high_s_;
-	    int low_v_;
-    	int high_v_;
-	    int opening_mat_point_;
-	    int opening_iter_;
-	    int closing_mat_point_;
-	    int closing_iter_;*/
-
         double front_clahe_clip_;
         int front_clahe_grid_size_ ;
         int front_clahe_bilateral_iter_;
@@ -90,7 +71,7 @@ class Base_class{
         int bottom_opening_iter_;    
         int bottom_opening_mat_point_;
 
-	    bool task_done = false;
+	bool task_done = false;
 
         //image_transport::Publisher thresholded_pub;
     	image_transport::Publisher marked_pub;
@@ -138,7 +119,7 @@ class Base_class{
         void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
         void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
         void frontCallback(vision_tasks::gateFrontRangeConfig &config, double level);
-	    void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);
+	void bottomCallback(vision_tasks::gateBottomRangeConfig &config, double level);
 //        cv::Point2i rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle);
     
     public:
@@ -146,13 +127,13 @@ class Base_class{
         ros::NodeHandle nh;
         image_transport::ImageTransport it();
         std_msgs::Float32 x_coordinate;
-	    std_msgs::Float32 y_coordinate;
-	    std_msgs::Float32 z_coordinate;
+	std_msgs::Float32 y_coordinate;
+        std_msgs::Float32 z_coordinate;
 
-//        cv::Mat image_;
+        cv::Mat image_;
         cv::Mat image_front;
         cv::Mat image_bottom;
-	    cv::Mat image_front_marked;
+	cv::Mat image_front_marked;
         cv::Mat image_bottom_marked;
 //change image_marked accordingly
 
@@ -160,10 +141,8 @@ class Base_class{
         void frontTaskHandling(bool status);
         void spinThreadFront();
         void spinThreadBottom();
-//        void TaskHandling(bool);
-	    void switchColor(int);
-//	    void spinThread();
-	    int current_color;
+        void switchColor(int);
+        int current_color;
 
 //        boost::thread* spin_thread;
         boost::thread* spin_thread_bottom; 
