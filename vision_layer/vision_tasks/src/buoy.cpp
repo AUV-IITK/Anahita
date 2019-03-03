@@ -144,7 +144,7 @@ void Buoy::TaskHandling (bool status) {
 
 void Buoy::spinThread(){
 
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;

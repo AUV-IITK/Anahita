@@ -10,9 +10,8 @@ namespace navigation
 
 		imuSubscriber_ = nh_->subscribe("/imu/imu_data", 100, &IMUData::IMUMsgCallback, &imuData_);
 
-		//navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
-
-		//navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
+		// navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
+		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
 
 		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/nav/odom", 100);
 		position_          = Eigen::Vector3d::Zero();
@@ -23,32 +22,32 @@ namespace navigation
 
 	}
 
-        NavigationNode::~NavigationNode()
-        {
-            dvlTwistSubscriber_.shutdown();
-            dvlPressureSubscriber_.shutdown();
-            imuSubscriber_.shutdown();
-            //navigationDepthOffsetServer_.shutdown();
-            //navigationXYOffsetServer_.shutdown();
-        }
-        
-        void NavigationNode::Spin()
-	    {
-		    ros::Rate loop_rate(15); // 100 hz
-            while(ros::ok())
-            {
-                ros::spinOnce();
-                ProcessCartesianPose();
-                loop_rate.sleep();
-            }
-        }
+	NavigationNode::~NavigationNode()
+	{
+		dvlTwistSubscriber_.shutdown();
+		dvlPressureSubscriber_.shutdown();
+		imuSubscriber_.shutdown();
+		// navigationDepthOffsetServer_.shutdown();
+		// navigationXYOffsetServer_.shutdown();
+	}
+	
+	void NavigationNode::Spin()
+	{
+		ros::Rate loop_rate(15); // 100 hz
+		while(ros::ok())
+		{
+			ros::spinOnce();
+			ProcessCartesianPose();
+			loop_rate.sleep();
+		}
+	}
 
-    //     bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
-    //     {
-    //             zOffset_ =this.GetPositionZFromPressure();
-    //             imuData_.SetNewDataReady();
-    //             return true;
-    //     }
+	// bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
+	// {
+	//         zOffset_ =this.GetPositionZFromPressure();
+	//         imuData_.SetNewDataReady();
+	//         return true;
+	// }
 
 	// bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
 	// {

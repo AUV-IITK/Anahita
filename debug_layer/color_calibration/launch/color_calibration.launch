@@ -1,0 +1,4 @@
+<launch>
+    <node name="color_calibrate" type="color_calibrate" pkg="color_calibration" respawn="true" />
+    <node name="fusion_node" type="fusion_node" pkg="vision_fusion" respawn="true" />
+</launch>

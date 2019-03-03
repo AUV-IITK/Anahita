@@ -1,0 +1,35 @@
+yaw:
+  p: -15
+  i: -6
+  d: -5
+  band: 1
+
+roll:
+  p: 20
+  i: 15
+  d: 0
+  band: 1
+
+pitch:
+  p: 20
+  i: 10
+  d: 0
+  band: 1
+
+heave:
+  p: -1.5
+  i: 0
+  d: 0
+  band: 4
+
+surge:
+  p: 3.75
+  i: 0
+  d: 0
+  band: 10
+
+sway:
+  p: 1.1
+  i: 0
+  d: 1
+  band: 15

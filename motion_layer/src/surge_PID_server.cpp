@@ -9,7 +9,14 @@ surgePIDAction::surgePIDAction(std::string name) :
     as_.registerPreemptCallback(boost::bind(&surgePIDAction::preemptCB, this));
     goal_ = 0;
 
-    surge.setPID(3.75, 0.0, 0.0, 3);
+    double p, i, d, band;
+
+    nh_.getParam("/surge/p", p);
+    nh_.getParam("/surge/i", i);
+    nh_.getParam("/surge/d", d);
+    nh_.getParam("/surge/band", band);
+
+    surge.setPID(p, i, d, band);
     
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &surgePIDAction::callback, this);
