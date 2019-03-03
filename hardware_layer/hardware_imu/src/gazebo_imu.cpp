@@ -44,7 +44,7 @@ void imu_data_callback(sensor_msgs::Imu msg)
 int main(int argc, char **argv)
 {
     // initiliazing ROS node
-    ros::init(argc, argv, "gazebo_publisher");
+    ros::init(argc, argv, "gazebo_imu");
     ros::NodeHandle nh;
 
     // initializing publishers

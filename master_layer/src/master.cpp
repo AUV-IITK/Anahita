@@ -64,12 +64,6 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////
 
-    // Random code to test
-
-    std::cout << "Ready to Go" << std::endl;
-
-    move_straight.activate(0, "current");
-
     /////////////////////////////////////////////
 
     spin_thread.join();

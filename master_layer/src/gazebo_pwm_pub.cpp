@@ -4,7 +4,7 @@
 
 int main (int argc, char** argv) {
 
-    ros::init (argc, argv, "gazebo_publisher");
+    ros::init (argc, argv, "gazebo_pwm_pub");
     ros::Time::init();
     ros::NodeHandle nh;
 
