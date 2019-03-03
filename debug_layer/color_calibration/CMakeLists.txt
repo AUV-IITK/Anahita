@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -90,10 +91,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/vision.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -107,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES color_calibration
-#  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs
+CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
@@ -135,7 +135,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/color_calibration_node.cpp)
+add_executable(color_calibrate src/color_calibrate.cpp)
+target_link_libraries(color_calibrate ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
