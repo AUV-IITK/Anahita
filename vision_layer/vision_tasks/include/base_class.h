@@ -42,7 +42,7 @@ class Base_class{
         int front_low_v_;
         int front_high_v_;
         int front_opening_mat_point_;	
-	    int front_opening_iter_ ;
+	int front_opening_iter_ ;
         int front_closing_mat_point_;
         int front_closing_iter_;
 /*        int front_canny_threshold_low_;
@@ -82,36 +82,36 @@ class Base_class{
 
       //image_transport::Publisher blue_filtered_pub;
     	image_transport::Publisher thresholded_pub;
-	    image_transport::Publisher marked_pub;
+	image_transport::Publisher marked_pub;
 	    //image_transport::Publisher blue_filtered_pub_front;
-	    image_transport::Publisher thresholded_pub_front; 
+	image_transport::Publisher thresholded_pub_front; 
 //	    image_transport::Publisher canny_pub_front;
 //	    image_transport::Publisher lines_pub_front;
-	    image_transport::Publisher marked_pub_front;
+	image_transport::Publisher marked_pub_front;
 //      image_transport::Publisher blue_filtered_pub_bottom;
 //        image_transport::Publisher thresholded_pub_bottom;
 //      image_transport::Publisher marked_pub_bottom;
         image_transport::Publisher bottom_blue_filtered_pub;
-	    image_transport::Publisher bottom_thresholded_pub;
-	    image_transport::Publisher bottom_marked_pub;
-	    ros::Publisher bottom_coordinates_pub;
+	image_transport::Publisher bottom_thresholded_pub;
+	image_transport::Publisher bottom_marked_pub;
+	ros::Publisher bottom_coordinates_pub;
 	
-	    image_transport::Publisher front_blue_filtered_pub;
-	    image_transport::Publisher front_thresholded_pub;
-	    image_transport::Publisher front_marked_pub;
-	    ros::Publisher front_coordinates_pub;
+	image_transport::Publisher front_blue_filtered_pub;
+	image_transport::Publisher front_thresholded_pub;
+	image_transport::Publisher front_marked_pub;
+	ros::Publisher front_coordinates_pub;
 
-	    image_transport::Subscriber front_image_raw_sub;
-	    image_transport::Subscriber bottom_image_raw_sub;
+	image_transport::Subscriber front_image_raw_sub;
+	image_transport::Subscriber bottom_image_raw_sub;
 
         ros::Publisher x_coordinates_pub;
-	    ros::Publisher y_coordinates_pub;
-	    ros::Publisher z_coordinates_pub;
+	ros::Publisher y_coordinates_pub;
+	ros::Publisher z_coordinates_pub;
         ros::Publisher coordinates_pub_bottom;
         ros::Publisher task_done_pub
-   	    ros::Publisher detection_pub;
-	    ros::Publisher coordinates_pub;
-	    ros::Publisher ang_pub;
+   	ros::Publisher detection_pub;
+	ros::Publisher coordinates_pub;
+        ros::Publisher ang_pub;
 
         std::string camera_frame_;
 
@@ -139,10 +139,6 @@ class Base_class{
 
         void bottomTaskHandling(bool status);
         void frontTaskHandling(bool status);
-        void spinThreadFront();
-        void spinThreadBottom();
-        void switchColor(int);
-        int current_color;
 
 //        boost::thread* spin_thread;
         boost::thread* spin_thread_bottom; 

@@ -9,15 +9,15 @@ Base_class::Base_class(){
 	this->front_blue_filtered_pub = it.advertise("/task/blue_filtered", 1);
 	this->front_thresholded_pub = it.advertise("/task/thresholded", 1);
 	this->front_marked_pub = it.advertise("/task/marked", 1);
-	this->bottom_blue_filtered_pub = it.advertise("/gate_task/bottom/blue_filtered", 1);
-    this->bottom_thresholded_pub = it.advertise("/gate_task/bottom/thresholded", 1);
-    this->bottom_marked_pub = it.advertise("/gate_task/bottom/marked", 1);
+	this->bottom_blue_filtered_pub = it.advertise("/task/bottom/blue_filtered", 1);
+    this->bottom_thresholded_pub = it.advertise("/task/bottom/thresholded", 1);
+    this->bottom_marked_pub = it.advertise("/task/bottom/marked", 1);
 
 	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
 	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
 	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
 
-	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/task/done", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 

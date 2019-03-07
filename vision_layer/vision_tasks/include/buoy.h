@@ -44,6 +44,10 @@ protected:
 
 public:
 	Buoy();
+	void spinThreadFront();
+    void spinThreadBottom();
+    void switchColor(int);
+    int current_color;
 
 };
 #endif // BUOY_TASK_H

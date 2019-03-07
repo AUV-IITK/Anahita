@@ -47,7 +47,7 @@ Octagon::Octagon(){
 	// image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
 	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
 
-	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
+	image_transport::Subscriber front_image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
 
 
 }

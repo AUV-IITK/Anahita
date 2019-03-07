@@ -45,15 +45,15 @@ protected:
     front_high_v_ = 255;
     front_closing_mat_point_ = 1;
     front_closing_iter_ = 1;
-    front_canny_threshold_low_ = 0;
-    front_canny_threshold_high_ = 1000;
-    front_canny_kernel_size_ = 3;
-    front_hough_threshold_ = 0;
-    front_hough_minline_ = 0;
-    front_hough_maxgap_ = 0;
-    front_hough_angle_tolerance_ = 0.0;
-    front_gate_distance_tolerance_ = 50.0;
-    front_gate_angle_tolerance_ = 0.0;
+    int front_canny_threshold_low_ = 0;
+    int front_canny_threshold_high_ = 1000;
+    int front_canny_kernel_size_ = 3;
+    int front_hough_threshold_ = 0;
+    int front_hough_minline_ = 0;
+    int front_hough_maxgap_ = 0;
+    double front_hough_angle_tolerance_ = 0.0;
+    double front_gate_distance_tolerance_ = 50.0;
+    double front_gate_angle_tolerance_ = 0.0;
 
     bottom_clahe_clip_ = 4.0;
     bottom_clahe_grid_size_ = 8;
@@ -69,8 +69,13 @@ protected:
     bottom_closing_mat_point_ = 1;
     bottom_closing_iter_ = 1;
 
+    ros::Publisher canny_pub_front;
+    ros::Publisher lines_pub_front;
+
 
 public:
     Gate();
+    void spinThreadFront();
+    void spinThreadBottom();
 };
 #endif // GATE_TASK_H

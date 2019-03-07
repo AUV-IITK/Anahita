@@ -71,8 +71,8 @@ protected:
     bottom_opening_iter_ = 1;    
     bottom_opening_mat_point_ = 1;
 
-	void frontCallback(vision_tasks::markerDropperFrontRangeConfig &config, double level);
-	void bottomCallback(vision_tasks::markerDropperBottomRangeConfig &config, double level);
+	// void frontCallback(vision_tasks::markerDropperFrontRangeConfig &config, double level);
+	// void bottomCallback(vision_tasks::markerDropperBottomRangeConfig &config, double level);
     
 public:
     MarkerDropper();
