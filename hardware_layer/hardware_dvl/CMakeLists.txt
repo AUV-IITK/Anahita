@@ -54,4 +54,5 @@ add_executable(dvl_node src/hardware_dvl/dvl_node.cpp src/hardware_dvl/dvl_conne
 target_link_libraries(dvl_node dvl_library ${catkin_LIBRARIES})
 # add_dependencies(dvl_node dvl_generate_messages_cpp)
 
-
+add_executable(gazebo_dvl_driver src/gazebo_dvl.cpp)
+target_link_libraries(gazebo_dvl_driver ${catkin_LIBRARIES})
