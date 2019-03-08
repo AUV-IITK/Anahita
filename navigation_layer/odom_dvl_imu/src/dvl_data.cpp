@@ -76,6 +76,6 @@ namespace navigation{
 
     double DvlData::GetPositionZFromPressure()
     {
-        return dvl_pressure_.fluid_pressure * BAR_TO_METER_OF_WATER;
+        return (101.325 - dvl_pressure_.fluid_pressure) / 9.80638;
     }
 }

@@ -8,6 +8,8 @@ geometry_msgs::TwistStamped dvl_data;
 void DVLCallback (const geometry_msgs::TwistWithCovarianceStamped msg) {
     dvl_data.header = msg.header;
     dvl_data.twist = msg.twist.twist;
+    dvl_data.twist.linear.x = msg.twist.twist.linear.z;
+    dvl_data.twist.linear.z = -msg.twist.twist.linear.x;
 }
 
 int main (int argc, char** argv) {

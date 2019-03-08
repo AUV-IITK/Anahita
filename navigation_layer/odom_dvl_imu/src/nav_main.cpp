@@ -4,16 +4,14 @@ namespace navigation
 {
     NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
-    	dvlTwistSubscriber_ = nh_->subscribe("/dvl/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
-
-		dvlPressureSubscriber_ = nh_->subscribe("/dvl/dvl_pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
-
-		imuSubscriber_ = nh_->subscribe("/imu/imu_data", 100, &IMUData::IMUMsgCallback, &imuData_);
+    	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl/data", 100, &DvlData::DvlTwistCallback, &dvlData_);
+		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
+		imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, &IMUData::IMUMsgCallback, &imuData_);
 
 		// navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
 		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
 
-		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/nav/odom", 100);
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/odometry", 100);
 		position_          = Eigen::Vector3d::Zero();
 	    incrementPosition_ = Eigen::Vector3d::Zero();
 	    velocity_          = Eigen::Vector3d::Zero();
