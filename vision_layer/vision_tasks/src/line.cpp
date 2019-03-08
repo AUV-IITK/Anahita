@@ -1,41 +1,40 @@
 #include <line.h>
-#include <base_class.h>
 
 Line::Line(){
-	this->front_low_h_ = 31;
-	this->front_high_h_ = 47;
-	this->front_low_s_ = 0;
-	this->front_high_s_ = 255;
-	this->front_low_v_ = 0;
-	this->front_high_v_ = 255;
-	this->front_opening_mat_point_ = 1;
-	this->front_opening_iter_ = 0;
-	this->front_closing_mat_point_ = 2;
-	this->front_closing_iter_ = 1;
+	this->low_h_ = 31;
+	this->high_h_ = 47;
+	this->low_s_ = 0;
+	this->high_s_ = 255;
+	this->low_v_ = 0;
+	this->high_v_ = 255;
+	this->opening_mat_point_ = 1;
+	this->opening_iter_ = 0;
+	this->closing_mat_point_ = 2;
+	this->closing_iter_ = 1;
 	this->camera_frame_ = "auv-iitk";
-	// image_transport::ImageTransport it(nh);
-	// this->front_thresholded_pub = it.advertise("/line_task/thresholded", 1);
-	// this->front_marked_pub = it.advertise("/line_task/marked", 1);
-	// this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	// this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
-	// this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
-	// this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
-	// this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
-	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
+	image_transport::ImageTransport it(nh);
+	this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
+	this->marked_pub = it.advertise("/line_task/marked", 1);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
+	this->coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
+	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
 
 void Line::callback(vision_tasks::lineRangeConfig &config, double level)
 {
-	Line::front_low_h_ = config.low_h;
-	Line::front_low_s_ = config.low_s;
-	Line::front_low_v_ = config.low_v;
-	Line::front_high_h_ = config.high_h;
-	Line::front_high_s_ = config.high_s;
-	Line::front_high_v_ = config.high_v;
-	Line::front_opening_mat_point_ = config.opening_mat_point;
-	Line::front_opening_iter_ = config.opening_iter;
-	Line::front_closing_mat_point_ = config.closing_mat_point;
-	Line::front_closing_iter_ = config.closing_iter;
+	Line::low_h_ = config.low_h;
+	Line::low_s_ = config.low_s;
+	Line::low_v_ = config.low_v;
+	Line::high_h_ = config.high_h;
+	Line::high_s_ = config.high_s;
+	Line::high_v_ = config.high_v;
+	Line::opening_mat_point_ = config.opening_mat_point;
+	Line::opening_iter_ = config.opening_iter;
+	Line::closing_mat_point_ = config.closing_mat_point;
+	Line::closing_iter_ = config.closing_iter;
 };
 
 double Line::computeMean(std::vector<double> &newAngles)
@@ -62,20 +61,20 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-// void Line::TaskHandling(bool status)
-// {  
-// 	if(status)
-// 	{
-// 		ROS_INFO("Task Handling");
-// 		spin_thread = new boost::thread(boost::bind(&Line::spinThread, this)); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread->join();
-// 		std::cout << "Line Task Handling function over" << std::endl;	
-// 	}
-// }
+void Line::TaskHandling(bool status)
+{  
+	if(status)
+	{
+		ROS_INFO("Task Handling");
+		spin_thread = new boost::thread(boost::bind(&Line::spinThread, this)); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread->join();
+		std::cout << "Line Task Handling function over" << std::endl;	
+	}
+}
 
 void Line::spinThread() {
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;
@@ -163,7 +162,7 @@ void Line::spinThread() {
 			y_coordinates_pub.publish(x_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
 			detection_pub.publish(detection_bool);
-			front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
+			thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg());
 			coordinates_pub.publish(line_point_message);
 			marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg());
 		}

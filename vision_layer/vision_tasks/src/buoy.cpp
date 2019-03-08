@@ -1,25 +1,32 @@
 #include <buoy.h>
-#include <base_class.h>
 
 Buoy::Buoy(){
-	this->front_clahe_clip_ = 0.15;
-	this->front_clahe_grid_size_ = 3;
-	this->front_clahe_bilateral_iter_ = 2;
-	this->front_balanced_bilateral_iter_ = 4;
-	this->front_denoise_h_ = 10.0;
-	this->front_low_h_ = 0;
-	this->front_high_h_ = 25;
-	this->front_low_s_ = 245;
-	this->front_high_s_ = 255;
-	this->front_low_v_ = 78;
-	this->front_high_v_ = 115;
-	this->front_opening_mat_point_ = 1;
-	this->front_opening_iter_ = 3;
-	this->front_closing_mat_point_ = 1;
-	this->front_closing_iter_ = 0;
+	this->clahe_clip_ = 0.15;
+	this->clahe_grid_size_ = 3;
+	this->clahe_bilateral_iter_ = 2;
+	this->balanced_bilateral_iter_ = 4;
+	this->denoise_h_ = 10.0;
+	this->low_h_ = 0;
+	this->high_h_ = 25;
+	this->low_s_ = 245;
+	this->high_s_ = 255;
+	this->low_v_ = 78;
+	this->high_v_ = 115;
+	this->opening_mat_point_ = 1;
+	this->opening_iter_ = 3;
+	this->closing_mat_point_ = 1;
+	this->closing_iter_ = 0;
 	this->camera_frame_ = "auv-iitk";
 	this->current_color = 0;
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageFrontCallback, this);
+	image_transport::ImageTransport it(nh);
+	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
+	this->thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
+	this->marked_pub = it.advertise("/buoy_task/marked", 1);
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
 void Buoy::switchColor(int color)
@@ -29,12 +36,12 @@ void Buoy::switchColor(int color)
 	else
 	{
 		current_color = color;		
-		this->front_low_h_ = this->data_low_h[current_color];
-		this->front_high_h_ = this->data_high_h[current_color];
-		this->front_low_s_ = this->data_low_s[current_color];
-		this->front_high_s_ = this->data_high_s[current_color];
-		this->front_low_v_ = this->data_low_v[current_color];
-		this->front_high_v_ = this->data_high_v[current_color];
+		this->low_h_ = this->data_low_h[current_color];
+		this->high_h_ = this->data_high_h[current_color];
+		this->low_s_ = this->data_low_s[current_color];
+		this->high_s_ = this->data_high_s[current_color];
+		this->low_v_ = this->data_low_v[current_color];
+		this->high_v_ = this->data_high_v[current_color];
 	}
 	std::cout << "Colour changed successfully" << std::endl;
 }
@@ -51,24 +58,24 @@ void Buoy::callback(vision_tasks::buoyRangeConfig &config, double level)
 		config.low_v = this->data_low_v[current_color];
 		config.high_v = this->data_high_v[current_color];
 	}
-	this->front_clahe_clip_ = config.clahe_clip;
-	this->front_clahe_grid_size_ = config.clahe_grid_size;
-	this->front_clahe_bilateral_iter_ = config.clahe_bilateral_iter;
-	this->front_balanced_bilateral_iter_ = config.balanced_bilateral_iter;
-	this->front_denoise_h_ = config.denoise_h;
-	this->front_low_h_ = config.low_h;
-	this->front_high_h_ = config.high_h;
-	this->front_low_s_ = config.low_s;
-	this->front_high_s_ = config.high_s;
-	this->front_low_v_ = config.low_v;
-	this->front_high_v_ = config.high_v;
-	this->front_opening_mat_point_ = config.opening_mat_point;
-	this->front_opening_iter_ = config.opening_iter;
-	this->front_closing_mat_point_ = config.closing_mat_point;
-	this->front_closing_iter_ = config.closing_iter;
+	this->clahe_clip_ = config.clahe_clip;
+	this->clahe_grid_size_ = config.clahe_grid_size;
+	this->clahe_bilateral_iter_ = config.clahe_bilateral_iter;
+	this->balanced_bilateral_iter_ = config.balanced_bilateral_iter;
+	this->denoise_h_ = config.denoise_h;
+	this->low_h_ = config.low_h;
+	this->high_h_ = config.high_h;
+	this->low_s_ = config.low_s;
+	this->high_s_ = config.high_s;
+	this->low_v_ = config.low_v;
+	this->high_v_ = config.high_v;
+	this->opening_mat_point_ = config.opening_mat_point;
+	this->opening_iter_ = config.opening_iter;
+	this->closing_mat_point_ = config.closing_mat_point;
+	this->closing_iter_ = config.closing_iter;
 }
 
-void Buoy::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
+void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
@@ -84,21 +91,21 @@ void Buoy::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-// void Buoy::frontTaskHandling (bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
-// 	}
-// 	else 
-// 	{
-// 		close_task = true;
-//         spin_thread->join();
-// 		std::cout << "Buoy Task Handling function over" << std::endl;	
-// 	}
-// }
+void Buoy::TaskHandling (bool status) {
+	if(status)
+	{
+		spin_thread = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
+	}
+	else 
+	{
+		close_task = true;
+        spin_thread->join();
+		std::cout << "Buoy Task Handling function over" << std::endl;	
+	}
+}
 
 
-void Buoy::spinThreadFront(){
+void Buoy::spinThread(){
 
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
@@ -194,11 +201,11 @@ void Buoy::spinThreadFront(){
 				}	
 			}
 			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			front_thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
+			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			z_coordinates_pub.publish(z_coordinate);
-			front_marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
+			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
 		{

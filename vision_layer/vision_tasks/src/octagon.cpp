@@ -1,5 +1,4 @@
 #include <octagon.h>
-#include <base_class.h>
 
 Octagon::Octagon(){
    	this->front_clahe_clip_ = 4.0;
@@ -41,13 +40,13 @@ Octagon::Octagon(){
 
     this->camera_frame_ = "auv-iitk";
 
-	// image_transport::ImageTransport it(nh);
-	// image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
-	// image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
-	// image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
+	image_transport::ImageTransport it(nh);
+	image_transport::Publisher bottom_blue_filtered_pub = it.advertise("/octagon_task/bottom/blue_filtered", 1);
+	image_transport::Publisher bottom_thresholded_pub = it.advertise("/octagon_task/bottom/thresholded", 1);
+	image_transport::Publisher bottom_marked_pub = it.advertise("/octagon_task/bottom/marked", 1);
 	ros::Publisher bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/octagon_task/bottom_bin_coordinates", 1000);
 
-	image_transport::Subscriber front_image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
+	image_transport::Subscriber image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Octagon::imageFrontCallback, this);
 
 
 }
@@ -313,30 +312,30 @@ void Octagon::spinThreadFront() {
 	}	
 }
 
-// void Octagon::bottomTaskHandling(bool status)
-// {
-// 	if(status)
-// 	{
-// 		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
-// 	}
-// 	else 
-// 	{	
-// 		task_done = true;
-//         spin_thread_bottom->join();
-// 		std::cout << "Octagon, Bottom Task Handling function over" << std::endl;	
-// 	}
-// }
+void Octagon::bottomTaskHandling(bool status)
+{
+	if(status)
+	{
+		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
+	}
+	else 
+	{	
+		task_done = true;
+        spin_thread_bottom->join();
+		std::cout << "Octagon, Bottom Task Handling function over" << std::endl;	
+	}
+}
 
-// void Octagon::frontTaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_front->join();
-// 		std::cout << "Octagon, Front Task Handling function over" << std::endl;	
-// 	}
-// }
+void Octagon::frontTaskHandling(bool status){
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_front->join();
+		std::cout << "Octagon, Front Task Handling function over" << std::endl;	
+	}
+}
 

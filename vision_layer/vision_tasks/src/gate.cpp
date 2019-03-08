@@ -1,5 +1,4 @@
 #include <gate.h>
-#include <base_class.h>
 
 Gate::Gate(){
     this->front_clahe_clip_ = 4.0;
@@ -41,10 +40,27 @@ Gate::Gate(){
 
     this->camera_frame_ = "auv-iitk";
 
+    image_transport::ImageTransport it(nh);
+
 	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+    // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
+
+	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
+	this->thresholded_pub_front = it.advertise("/gate_task/front/thresholded", 1);
 	this->canny_pub_front = it.advertise("/gate_task/front/canny", 1);
 	this->lines_pub_front = it.advertise("/gate_task/front/lines", 1);
-	
+	this->marked_pub_front = it.advertise("/gate_task/front/marked", 1);
+
+    this->blue_filtered_pub_bottom = it.advertise("/gate_task/bottom/blue_filtered", 1);
+    this->thresholded_pub_bottom = it.advertise("/gate_task/bottom/thresholded", 1);
+    this->marked_pub_bottom = it.advertise("/gate_task/bottom/marked", 1);
+
+	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+    
+	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 }
 
 cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, float angle)
@@ -127,18 +143,18 @@ void Gate::bottomCallback(vision_tasks::gateBottomRangeConfig &config, double le
     this->bottom_closing_iter_ = config.closing_iter;
 }
 
-// void Gate::bottomTaskHandling(bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread_bottom = new boost::thread(&Gate::spinThreadBottom, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_bottom->join();
-// 		std::cout << "Bottom Task Handling function over" << std::endl;	
-// 	}
-// }
+void Gate::bottomTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_bottom = new boost::thread(&Gate::spinThreadBottom, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_bottom->join();
+		std::cout << "Bottom Task Handling function over" << std::endl;	
+	}
+}
 
 void Gate::spinThreadBottom()
 {
@@ -197,13 +213,13 @@ void Gate::spinThreadBottom()
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
 				}
 			}
-			bottom_blue_filtered_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			bottom_thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
+			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
+			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
 			coordinates_pub_bottom.publish(pipe_point_message);
 			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
-			bottom_marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
+			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
         }
         else
             ROS_INFO("Image empty");
@@ -211,18 +227,18 @@ void Gate::spinThreadBottom()
     }
 }
 
-// void Gate::frontTaskHandling(bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&Gate::spinThreadFront, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_front->join();
-// 		std::cout << "Front Task Handling function over" << std::endl;	
-// 	}
-// }
+void Gate::frontTaskHandling(bool status) {
+	if(status)
+	{
+		spin_thread_front = new boost::thread(&Gate::spinThreadFront, this); 
+	}
+	else 
+	{
+		task_done = true;
+        spin_thread_front->join();
+		std::cout << "Front Task Handling function over" << std::endl;	
+	}
+}
 
 void Gate::spinThreadFront()
 {
@@ -390,10 +406,10 @@ void Gate::spinThreadFront()
 			z_coordinates_pub.publish(z_coordinate);
 		
 			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			front_thresholded_pub.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
-			front_canny_pub.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
-			front_lines_pub.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
-			front_marked_pub.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
+			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
+			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
+			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
+			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
 			ROS_INFO("Image empty");
