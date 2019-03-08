@@ -11,7 +11,15 @@ heavePIDAction::heavePIDAction(std::string name) :
 
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/z_coordinate", 1, &heavePIDAction::callback, this);
-    heave.setPID(-1.5, 0, 0, 4);
+    
+    double p, i, d, band;
+
+    nh_.getParam("/heave/p", p);
+    nh_.getParam("/heave/i", i);
+    nh_.getParam("/heave/d", d);
+    nh_.getParam("/heave/band", band);
+
+    heave.setPID(p, i, d, band);
 
     as_.start();
     ROS_INFO("heave_PID_server Initiated");

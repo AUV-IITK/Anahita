@@ -56,19 +56,17 @@ int main(int argc, char** argv) {
     actionlib::SimpleActionClient<motion_layer::heavePIDAction> heavePIDClient("heavePID");
     actionlib::SimpleActionClient<motion_layer::swayPIDAction> swayPIDClient("swayPID");
     actionlib::SimpleActionClient<motion_layer::yawPIDAction> yawPIDClient("yawPID");
+    actionlib::SimpleActionClient<motion_layer::rollPIDAction> rollPIDClient("rollPID");
+    actionlib::SimpleActionClient<motion_layer::pitchPIDAction> pitchPIDClient("pitchPID");
 
     motion_layer::swayPIDGoal swayPIDGoal;
     motion_layer::surgePIDGoal surgePIDGoal;
     motion_layer::heavePIDGoal heavePIDGoal;
     motion_layer::yawPIDGoal yawPIDGoal;
+    motion_layer::rollPIDGoal rollPIDGoal;
+    motion_layer::pitchPIDGoal pitchPIDGoal;
 
     /////////////////////////////////////////////
-
-    // Random code to test
-
-    std::cout << "Ready to Go" << std::endl;
-
-    move_straight.activate(0, "current");
 
     /////////////////////////////////////////////
 

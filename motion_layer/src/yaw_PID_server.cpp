@@ -12,7 +12,14 @@ yawPIDAction::yawPIDAction(std::string name) :
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/imu/yaw", 1, &yawPIDAction::callBack, this);
 
-    yaw.setPID(-3.5, 0, -0.2, 1);
+    double p, i, d, band;
+
+    nh_.getParam("/yaw/p", p);
+    nh_.getParam("/yaw/i", i);
+    nh_.getParam("/yaw/d", d);
+    nh_.getParam("/yaw/band", band);
+
+    yaw.setPID(p, i, d, band                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        );
 
     as_.start();
     ROS_INFO("yaw_PID_server Initialised");
