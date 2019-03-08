@@ -1,0 +1,9 @@
+<launch>
+    <node name="gazebo_imu" type="gazebo_imu" pkg="hardware_imu" />
+    <node name="gazebo_dvl" type="gazebo_dvl" pkg="hardware_dvl" />
+    <node name="gazebo_camera" type="gazebo_camera" pkg="hardware_camera" />
+    <node name="gazebo_pressure_pub" type="gazebo_pressure_pub" pkg="hardware_pressure" />
+    <node name="gazebo_pwm_pub" type="gazebo_pwm_pub" pkg="master_layer" />
+    <node name="motion_server" type="motion_server" pkg="master_layer" />
+    <node name="test_node" type="test_node" pkg="master_layer" />
+</launch>

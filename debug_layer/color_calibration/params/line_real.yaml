@@ -1,0 +1,13 @@
+vision:
+  line:
+    b_max: 182
+    b_min: 30
+    bilateral_iter: 2
+    closing_iter: 4
+    closing_mat_point: 1
+    g_max: 150
+    g_min: 0
+    opening_iter: 3
+    opening_mat_point: 3
+    r_max: 91
+    r_min: 54

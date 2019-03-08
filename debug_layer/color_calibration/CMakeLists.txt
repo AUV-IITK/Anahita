@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(master_layer)
+project(color_calibration)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -8,20 +8,18 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib
-  actionlib_msgs
-  message_generation
-  anahita_msgs
+  cv_bridge
+  image_transport
   roscpp
-  rospy
+  sensor_msgs
   std_msgs
-  geometry_msgs
+  message_generation
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-find_package(task_handler_layer REQUIRED)
-find_package(motion_layer REQUIRED)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -60,19 +58,22 @@ find_package(motion_layer REQUIRED)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  Dump.srv
+)
 
 ## Generate actions in the 'action' folder
-# add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs anahita_msgs geometry_msgs
+  sensor_msgs std_msgs
 )
 
 ################################################
@@ -90,10 +91,9 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/vision.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -106,8 +106,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
+#  LIBRARIES color_calibration
+CATKIN_DEPENDS cv_bridge image_transport sensor_msgs std_msgs dynamic_reconfigure message_runtime
 #  DEPENDS system_lib
 )
 
@@ -120,11 +120,15 @@ CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${task_handler_layer_INCLUDE_DIRS}
-  ${motion_layer_INCLUDE_DIRS}
 )
 
+link_directories(
+  ${catkin_LIBRARIES_DIRS}
+)
 ## Declare a C++ library
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/color_calibration.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -135,58 +139,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(pwm_publisher src/pwm_publisher.cpp)
-target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
-
-add_executable(master src/master.cpp)
-add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master 
-  gate
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
-
-add_executable(test_node src/test_node.cpp)
-add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_node
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
-
-add_executable(gazebo_pwm_pub src/gazebo_pwm_pub.cpp)
-target_link_libraries(gazebo_pwm_pub ${catkin_LIBRARIES})
-
-add_executable(motion_server src/motion_server.cpp)
-target_link_libraries(motion_server 
-  swayPIDServer 
-  heavePIDServer 
-  yawPIDServer 
-  surgePIDServer 
-  rollPIDServer 
-  pitchPIDServer 
-  ${catkin_LIBRARIES}
-)
-
-# add_executable(temp src/temp.cpp)
-# target_link_libraries(temp ${catkin_LIBRARIES})
-
-# add_executable(temp src/temp.cpp)
-# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(temp
-#   line
-#   task_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(color_calibrate src/color_calibrate.cpp)
+target_link_libraries(color_calibrate ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -243,7 +197,7 @@ target_link_libraries(motion_server
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_action_servers.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_color_calibration.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

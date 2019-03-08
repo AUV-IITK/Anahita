@@ -8,11 +8,18 @@ swayPIDAction::swayPIDAction(std::string name) :
     as_.registerGoalCallback(boost::bind(&swayPIDAction::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&swayPIDAction::preemptCB, this));
     goal_ = 0;
-
     
-    sway.setPID(1.1, 0, 1.0, 15);
     // subscribe to the data topic of interest
     sub_ = nh_.subscribe("/anahita/y_coordinate", 1, &swayPIDAction::callback, this);
+
+    double p, i, d, band;
+
+    nh_.getParam("/sway/p", p);
+    nh_.getParam("/sway/i", i);
+    nh_.getParam("/sway/d", d);
+    nh_.getParam("/sway/band", band);
+
+    sway.setPID(p, i, d, band);
 
     as_.start();
     ROS_INFO("sway_PID_server Initiated");

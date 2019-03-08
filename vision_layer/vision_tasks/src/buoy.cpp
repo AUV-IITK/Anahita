@@ -99,6 +99,8 @@ void Buoy::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 
 void Buoy::spinThreadFront(){
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+  }
 
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
