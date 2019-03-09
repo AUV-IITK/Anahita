@@ -11,7 +11,7 @@ namespace navigation
 		// navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
 		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
 
-		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/odometry", 100);
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
 		position_          = Eigen::Vector3d::Zero();
 	    incrementPosition_ = Eigen::Vector3d::Zero();
 	    velocity_          = Eigen::Vector3d::Zero();
@@ -85,20 +85,21 @@ namespace navigation
         odometry_msg.header.frame_id = "NED";
         odometry_msg.header.stamp = ros::Time::now();
 
-        FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
+        FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
         FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
         navigationOdomPublisher_.publish(odometry_msg);
     }
 
-	void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg)
+	void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, nav_msgs::Odometry &msg)
 	{
 		msg.pose.pose.position.x    = position.x();
 		msg.pose.pose.position.y    = position.y();
 		msg.pose.pose.position.z    = position.z();
-		msg.pose.pose.orientation.x = angle.x();
-		msg.pose.pose.orientation.y = angle.y();
-		msg.pose.pose.orientation.z = angle.z();
+		msg.pose.pose.orientation.x = quaternion.x();
+		msg.pose.pose.orientation.y = quaternion.y();
+		msg.pose.pose.orientation.z = quaternion.z();
+		msg.pose.pose.orientation.w = quaternion.w();
 	}
 
 	void NavigationNode::FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg)
