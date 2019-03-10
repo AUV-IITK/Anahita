@@ -42,9 +42,9 @@ namespace navigation
 
 	// bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
 	// {
-	//         zOffset_ =this.GetPositionZFromPressure();
-	//         imuData_.SetNewDataReady();
-	//         return true;
+	// 	zOffset_ =this.GetPositionZFromPressure();
+	// 	imuData_.SetNewDataReady();
+	// 	return true;
 	// }
 
 	// bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
@@ -82,7 +82,7 @@ namespace navigation
     void NavigationNode::PublishData()
     {
         nav_msgs::Odometry odometry_msg;
-        odometry_msg.header.frame_id = "NED";
+        odometry_msg.header.frame_id = "world_ned";
         odometry_msg.header.stamp = ros::Time::now();
 
         FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
