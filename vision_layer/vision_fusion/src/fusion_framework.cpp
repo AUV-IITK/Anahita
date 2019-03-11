@@ -172,20 +172,19 @@ void imageFusionCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "fusion_node");
-  ROS_INFO("Intialising fusion_node");
-
-  ros::NodeHandle nh;
- 	image_transport::ImageTransport it(nh);
-
-  image_transport::Subscriber image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, imageFusionCallback);
-  image_transport::Publisher image_final_pub = it.advertise("/anahita/front_camera/preprocessed", 1);
- 	ros::Rate loop_rate(25);
-
   color_correction::contrast_stretching contrast_strech;
   color_correction::gray_world gray_world_;
 
   Mat a, frame;
+  ros::init(argc, argv, "fusion_node");
+  ROS_INFO("Starrting");
+
+  ros::NodeHandle nh;
+ 	image_transport::ImageTransport it(nh);
+
+  image_transport::Subscriber image_raw_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageFusionCallback);
+  image_transport::Publisher image_final_pub = it.advertise("/front_camera/preprocessed", 1);
+ 	ros::Rate loop_rate(25);
 
   while(ros::ok())
   {
@@ -201,12 +200,12 @@ int main(int argc, char **argv)
       Mat cs = contrast_strech.run(a);
       Mat gw = gray_world_.run2(a, 6, 0);
 
-      // imshow("original_image", a);
-      // imshow("input_1", gw);
+     // imshow("original_image", a);
+      //imshow("input_1", gw);
 
       Mat c1 = generateEMasks(a);
 
-      {
+     {
         Mat global_weight_gw = globalContrast(gw);
         Mat global_weight_cs = globalContrast(cs);
         Mat saliency_weight_cs = saliency(cs);
@@ -224,65 +223,63 @@ int main(int argc, char **argv)
         Mat w1, w2;
 
         ////////////////////// global contrast ////////////////////////
-        // {
-        //   Mat result1;
-        //   cv::add(global_weight_cs, global_weight_gw, sum);
+       /* {
+          Mat result1;
+          cv::add(global_weight_cs, global_weight_gw, sum);
 
-        //   cv::divide(global_weight_cs, sum, w1);
-        //   cv::divide(global_weight_gw, sum, w2);
+          cv::divide(global_weight_cs, sum, w1);
+          cv::divide(global_weight_gw, sum, w2);
 
-        //   LaplacianBlending lBlend(cs, gw, w1, w2, 4);
-        //   result1 = lBlend.blend();
+          LaplacianBlending lBlend(cs, gw, w1, w2, 4);
+          result1 = lBlend.blend();
 
-        //   result1.convertTo(result1, CV_8U, 255.0, 0);
-        //   imshow("global contrast", result1);
-        // }
+          result1.convertTo(result1, CV_8U, 255.0, 0);
+          //imshow("global contrast", result1);
+        }
         
         ////////////////////// saliency ////////////////////////
-        // {
-        //   Mat result2;
-        //   cv::add(saliency_weight_cs, saliency_weight_gw, sum);
+        {
+          Mat result2;
+          cv::add(saliency_weight_cs, saliency_weight_gw, sum);
 
-        //   cv::divide(saliency_weight_cs, sum, w1);
-        //   cv::divide(saliency_weight_gw, sum, w2);
+          cv::divide(saliency_weight_cs, sum, w1);
+          cv::divide(saliency_weight_gw, sum, w2);
 
-        //   LaplacianBlending lBlend(cs, gw, w1, w2, 4);
-        //   result2 = lBlend.blend();
+          LaplacianBlending lBlend(cs, gw, w1, w2, 4);
+          result2 = lBlend.blend();
 
-        //   result2.convertTo(result2, CV_8U, 255.0, 0);
-        //   imshow("saliency", result2);
-        // }
-
+          result2.convertTo(result2, CV_8U, 255.0, 0);
+          //imshow("saliency", result2);
+        }
         ////////////////////// exposedness ////////////////////////    
-        // {
-        //   Mat result3;
-        //   cv::add(exposedness_weight_cs, exposedness_weight_gw, sum);
+        {
+          Mat result3;
+          cv::add(exposedness_weight_cs, exposedness_weight_gw, sum);
 
-        //   cv::divide(exposedness_weight_cs, sum, w1);
-        //   cv::divide(exposedness_weight_gw, sum, w2);
+          cv::divide(exposedness_weight_cs, sum, w1);
+       r   cv::divide(exposedness_weight_gw, sum, w2);
 
-        //   LaplacianBlending lBlend(cs, gw, w1, w2, 4);
-        //   result3=lBlend.blend();
+          LaplacianBlending lBlend(cs, gw, w1, w2, 4);
+          result3=lBlend.blend();
 
-        //   result3.convertTo(result3, CV_8U, 255.0, 0);
-        //   imshow("exposedness", result3);
-        // }
-        
+          result3.convertTo(result3, CV_8U, 255.0, 0);
+          //imshow("exposedness", result3);
+        }
         ////////////////////// local contrast ////////////////////////
-        // {
-        //   Mat result4;
-        //   cv::add(local_weight_cs, local_weight_gw, sum);
+        {
+          Mat result4;
+          cv::add(local_weight_cs, local_weight_gw, sum);
 
-        //   cv::divide(local_weight_cs, sum, w1);
-        //   cv::divide(local_weight_gw, sum, w2);
+          cv::divide(local_weight_cs, sum, w1);
+          cv::divide(local_weight_gw, sum, w2);
 
-        //   LaplacianBlending lBlend(cs, gw, w1, w2, 4);
-        //   result4 = lBlend.blend();
+          LaplacianBlending lBlend(cs, gw, w1, w2, 4);
+          result4 = lBlend.blend();
 
-        //   result4.convertTo(result4, CV_8U, 255.0, 0);
-        //   imshow("local contrast", result4);
-        // }
-        
+          result4.convertTo(result4, CV_8U, 255.0, 0);
+        //  imshow("local contrast", result4);
+        }
+        */
         cv::add(c1, global_weight_gw, sum);
         cv::add(sum, saliency_weight_cs, sum);
         cv::add(sum, saliency_weight_gw, sum);
@@ -327,10 +324,11 @@ int main(int argc, char **argv)
         cv::add(c1, local_weight_gw, c1);
         {
           c1.convertTo(c1, CV_8U, 255.0, 0);
-          // imshow("naive blend", c1);
+          //imshow("naive blend", c1);
         }
-        // cv::waitKey(0);
+        //cv::waitKey(0);
         image_final_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", c1).toImageMsg());
+
       }
     }
     else
