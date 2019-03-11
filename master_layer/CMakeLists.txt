@@ -177,6 +177,9 @@ target_link_libraries(motion_server
   ${catkin_LIBRARIES}
 )
 
+add_executable(local_vision_odom src/local_vision_odom.cpp)
+target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
+
 # add_executable(temp src/temp.cpp)
 # target_link_libraries(temp ${catkin_LIBRARIES})
 
