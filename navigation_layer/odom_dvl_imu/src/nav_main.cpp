@@ -80,15 +80,38 @@ namespace navigation
 
             dvlFilter_.Update(position_, poseEstimation_);
 
-            PublishData();
+			ros::Time currentTime = ros::Time::now();
+
+            PublishData(currentTime);
+			BroadcastTransform(poseEstimation_, quaternion_, currentTime);
 		}
 	}
 
-    void NavigationNode::PublishData()
+	void NavigationNode::BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time)
+	{
+		geometry_msgs::TransformStamped odom_trans;
+    	odom_trans.header.stamp = current_time;
+    	odom_trans.header.frame_id = "odom";
+    	odom_trans.child_frame_id = "base_link";
+
+    	odom_trans.transform.translation.x = position.x();
+    	odom_trans.transform.translation.y = position.y();
+    	odom_trans.transform.translation.z = position.z();
+    	odom_trans.transform.rotation.w = quaternion.w();
+		odom_trans.transform.rotation.x = quaternion.x();
+		odom_trans.transform.rotation.y = quaternion.y();
+		odom_trans.transform.rotation.z = quaternion.z();
+
+    	//send the transform
+    	odom_broadcaster.sendTransform(odom_trans);
+	}
+
+    void NavigationNode::PublishData(ros::Time &current_time)
     {
         nav_msgs::Odometry odometry_msg;
-        odometry_msg.header.frame_id = "/odom";
-        odometry_msg.header.stamp = ros::Time::now();
+        odometry_msg.header.frame_id = "odom";
+		odometry_msg.child_frame_id = "base_link";
+        odometry_msg.header.stamp = current_time;
 
         FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
 
@@ -117,7 +140,6 @@ namespace navigation
 		msg.twist.twist.angular.y = angular_velocity.y();
 		msg.twist.twist.angular.z = angular_velocity.z();
 		ROS_INFO("Twist Message being filled: Linear.x: %f, Linear.y: %f, Linear.z: %f, AngularVel.x: %f, AngularVel.y: %f, AngularVel.z: %f", linear_velocity.x(), linear_velocity.y(), linear_velocity.z(), angular_velocity.x(), angular_velocity.y(), angular_velocity.z());
-
 	}
 
 }
