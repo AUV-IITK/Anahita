@@ -10,9 +10,16 @@ rollPIDAction::rollPIDAction(std::string name) :
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/roll", 1, &rollPIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/roll", 1, &rollPIDAction::callBack, this);
 
-    roll.setPID(2.0, 0, 0.65, 1);
+    double p, i, d, band;
+
+    nh_.getParam("/roll/p", p);
+    nh_.getParam("/roll/i", i);
+    nh_.getParam("/roll/d", d);
+    nh_.getParam("/roll/band", band);
+
+    roll.setPID(p, i, d, band);
 
     as_.start();
     ROS_INFO("roll_PID_server Initialised");

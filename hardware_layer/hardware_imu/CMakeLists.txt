@@ -48,3 +48,6 @@ target_link_libraries(px4 ${catkin_LIBRARIES})
 
 add_executable(sparton src/sparton.cpp)
 target_link_libraries(sparton ${catkin_LIBRARIES})
+
+add_executable(gazebo_imu src/gazebo_imu.cpp)
+target_link_libraries(gazebo_imu ${catkin_LIBRARIES})

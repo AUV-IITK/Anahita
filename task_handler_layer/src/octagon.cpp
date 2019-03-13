@@ -1,6 +1,6 @@
 #include <octagon.h>
 
-Octagon::Octagon(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), th(15) {}
+Octagon::Octagon(): surgePIDClient("surgePID"), swayPIDClient("swayPID"), th(15) {}
 Octagon::~Octagon() {}
 
 bool Octagon::setActive(bool status) {
@@ -10,31 +10,31 @@ bool Octagon::setActive(bool status) {
         nh_.setParam("/use_local_yaw", true);
         nh_.setParam("/use_reference_yaw", false);
 
-        ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
-        sidewardPIDClient.waitForServer();
+        ROS_INFO("Waiting for swayPID server to start, task buoy.");
+        swayPIDClient.waitForServer();
 
-        ROS_INFO("sidewardPID server started, sending goal, task buoy.");
-        sidewardPIDgoal.target_distance = 0;
-        sidewardPIDClient.sendGoal(sidewardPIDgoal);
+        ROS_INFO("swayPID server started, sending goal, task buoy.");
+        swayPIDgoal.target_sway = 0;
+        swayPIDClient.sendGoal(swayPIDgoal);
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for forwardPID server to start.");
-        forwardPIDClient.waitForServer();
+        ROS_INFO("Waiting for surgePID server to start.");
+        surgePIDClient.waitForServer();
 
-        ROS_INFO("forwardPID server started, sending goal.");
-        forwardPIDgoal.target_distance = 0;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        ROS_INFO("surgePID server started, sending goal.");
+        surgePIDgoal.target_surge = 0;
+        surgePIDClient.sendGoal(surgePIDgoal);
 
         ////////////////////////////////////////////////////
 
-        if (!th.isAchieved(0, 15, "forward")) {
-            ROS_INFO("Octagon, Failed to achieve forward goal");
+        if (!th.isAchieved(0, 15, "surge")) {
+            ROS_INFO("Octagon, Failed to achieve surge goal");
             // return false;
         }
 
-        if (!th.isAchieved(0, 10, "sideward")) {
-            ROS_INFO("Octagon, Failed to achieve sideward goal");
+        if (!th.isAchieved(0, 10, "sway")) {
+            ROS_INFO("Octagon, Failed to achieve sway goal");
             // return false;
         }
 
@@ -42,8 +42,8 @@ bool Octagon::setActive(bool status) {
     }
     else {
         nh_.setParam("/use_local_yaw", false);
-        forwardPIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
+        surgePIDClient.cancelGoal();
+        swayPIDClient.cancelGoal();
         ROS_INFO("Closing Octagon");
         ROS_INFO("Killing the thrusters");
 	    nh_.setParam("/kill_signal", true);

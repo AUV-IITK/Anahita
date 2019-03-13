@@ -21,10 +21,10 @@
 
 #include <vision_tasks/markerDropperFrontRangeConfig.h>
 #include <vision_tasks/markerDropperBottomRangeConfig.h>
-#include <vision_commons/filter.h>
-#include <vision_commons/contour.h>
-#include <vision_commons/morph.h>
-#include <vision_commons/threshold.h>
+#include <filter.h>
+#include <contour.h>
+#include <morph.h>
+#include <threshold.h>
 
 class MarkerDropper
 {

@@ -1,0 +1,10 @@
+<launch>
+    <arg name="env" default="real" />
+    <param name="env" value="$(arg env)" type="string" />
+
+    <arg name="color_calibrate_object" />
+    <param name="color_calibrate_object" value="$(arg color_calibrate_object)" type="string" />
+    
+    <node name="color_calibrate" type="color_calibrate" pkg="color_calibration" respawn="true" output="screen" />
+    <!-- <node name="fusion_node" type="fusion_node" pkg="vision_fusion" respawn="true" /> -->
+</launch>

@@ -1,7 +1,6 @@
 #include <line.h>
 
 Line::Line() : it(nh) {
-
 	this->low_h_ = 0;
 	this->high_h_ = 81;
 	this->low_s_ = 3;

@@ -1,0 +1,8 @@
+#goal definition
+float32 target_surge
+---
+#result definition
+float32 final_surge
+---
+#feedback
+float32 current_surge

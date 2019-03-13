@@ -1,7 +1,7 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : th(20), anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
-                                        forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
+navigationHandler::navigationHandler () : th(20), yawPIDClient("yawPID"), heavePIDClient("heavePID"), 
+                                        surgePIDClient("surgePID"), swayPIDClient("swayPID") {}
 
 navigationHandler::~navigationHandler () {}
 
@@ -12,8 +12,8 @@ void navigationHandler::stabilise (std::string type) {
     
     ros::Duration(7).sleep();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave");
         return;
     }
 
@@ -29,22 +29,22 @@ void navigationHandler::manouver () {
     nh.setParam("/enable_pressure", true);
     nh.setParam("/disable_imu", false);
 
-    ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
-    anglePIDClient.waitForServer();
+    ROS_INFO("Waiting for yawPID server to start, Navigation Handle");
+    yawPIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
+    ROS_INFO("yawPID server started, sending goal");
+    yawPIDGoal.target_yaw = 0;
+    yawPIDClient.sendGoal(yawPIDGoal);
 
-    if (!th.isAchieved(0, 2, "angle")) {
-        ROS_INFO("Time limit exceeded for angle, NV");
+    if (!th.isAchieved(0, 2, "yaw")) {
+        ROS_INFO("Time limit exceeded for yaw, NV");
         ros::Duration(3).sleep();
         // return;
     }
-    anglePIDClient.cancelGoal();
+    yawPIDClient.cancelGoal();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward, NV");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave, NV");
         // return;
     }
 
@@ -381,7 +381,7 @@ bool navigationHandler::scan (std::string object) {
     nh.setParam("/pwm_yaw", 25);
     
     if (th.isDetected(object, 20)) {
-        anglePIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
         nh.setParam("/kill_signal", true);
         return true;
     }
@@ -397,12 +397,12 @@ bool navigationHandler::dive (std::string target) {
     nh.setParam("/enable_pressure", true);
     nh.setParam("/use_referene_yaw", true);
 
-    ROS_INFO("Waiting for upwardPID server to start.");
-    upwardPIDClient.waitForServer();
+    ROS_INFO("Waiting for heavePID server to start.");
+    heavePIDClient.waitForServer();
 
-    ROS_INFO("upwardPID server started, sending goal.");
-    upwardPIDGoal.target_depth = 40;
-    upwardPIDClient.sendGoal(upwardPIDGoal);
+    ROS_INFO("heavePID server started, sending goal.");
+    heavePIDGoal.target_heave = 40;
+    heavePIDClient.sendGoal(heavePIDGoal);
 
     if (scan(target)) { 
         nh.setParam("/use_reference_yaw", false);

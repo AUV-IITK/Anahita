@@ -114,7 +114,7 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try
 	{
-		// image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	    image_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e)
 	{
@@ -144,7 +144,7 @@ void Buoy::TaskHandling (bool status) {
 
 void Buoy::spinThread(){
 
-	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
+	this->image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig> server;
 	dynamic_reconfigure::Server<vision_tasks::buoyRangeConfig>::CallbackType f;
@@ -178,7 +178,7 @@ void Buoy::spinThread(){
 
 	while (ros::ok())
 	{	
-		image_ = cv::imread("/home/ironman/G0010612.JPG", CV_LOAD_IMAGE_COLOR);
+	//	image_ = cv::imread("/home/ironman/G0010612.JPG", CV_LOAD_IMAGE_COLOR);
 		if (close_task) {
 			break;
 		}

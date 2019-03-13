@@ -1,8 +1,5 @@
 <launch>
-    <include file="$(find master_layer)/launch/parameters.launch" />
-
     <node pkg="hardware_imu" name="px4" type="px4" output="screen"/>
     <node pkg="master_layer" name="pwm_publisher" type="pwm_publisher" output="screen"/>
-    <node pkg="master_layer" name="pressure_publisher" type="pressure_publisher" output="screen" />
-    <node pkg="vision_tasks" name="vision_node" type="vision_node" />
+    <node pkg="hardware_pressure" name="pressure_publisher" type="pressure_publisher" output="screen" />
 </launch>

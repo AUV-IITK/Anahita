@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -71,7 +72,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs anahita_msgs
+  actionlib_msgs std_msgs anahita_msgs geometry_msgs
 )
 
 ################################################
@@ -106,7 +107,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,12 +138,9 @@ include_directories(
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
-add_executable(pressure_publisher src/pressure_publisher.cpp)
-target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
-
-add_executable(master_s src/master_s.cpp)
-add_dependencies(master_s master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master_s 
+add_executable(master src/master.cpp)
+add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(master 
   gate
   moveSideward 
   moveStraight 
@@ -153,29 +151,27 @@ target_link_libraries(master_s
   ${catkin_LIBRARIES}
 )
 
-# add_executable(master src/master.cpp)
-# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(test_node src/test_node.cpp)
+add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_node
+  moveSideward 
+  moveStraight 
+  task_handler 
+  moveDownward 
+  marker_dropper
+  navigation_handler
+  ${catkin_LIBRARIES}
+)
+
+add_executable(gazebo_pwm_pub src/gazebo_pwm_pub.cpp)
+target_link_libraries(gazebo_pwm_pub ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
-  sidewardPIDServer 
-  upwardPIDServer 
-  anglePIDServer 
-  forwardPIDServer 
+  swayPIDServer 
+  heavePIDServer 
+  yawPIDServer 
+  surgePIDServer 
   rollPIDServer 
   pitchPIDServer 
   ${catkin_LIBRARIES}
