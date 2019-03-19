@@ -4,7 +4,7 @@ namespace navigation
 {
     NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
-    	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl/data", 100, &DvlData::DvlTwistCallback, &dvlData_);
+    	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
 		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
 		imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, &IMUData::IMUMsgCallback, &imuData_);
 

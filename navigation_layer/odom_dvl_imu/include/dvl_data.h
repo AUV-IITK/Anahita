@@ -5,6 +5,7 @@
 #include <sensor_msgs/FluidPressure.h>
 #include <eigen3/Eigen/Geometry>
 #include "navigation_device.h"
+#include <geometry_msgs/TwistWithCovarianceStamped.h>
 
 namespace navigation{
 
@@ -26,7 +27,7 @@ namespace navigation{
         DvlData(IntegrationMethodType integrationMethodType = RKMethod);
         ~DvlData();
 
-        void DvlTwistCallback(geometry_msgs::TwistStamped msg);
+        void DvlTwistCallback(const geometry_msgs::TwistWithCovarianceStamped msg);
         void DvlPressureCallback(sensor_msgs::FluidPressure msg);
 
 

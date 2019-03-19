@@ -11,12 +11,6 @@
 
 std::string current_task = "red_buoy";
 std::string previous_task = "";
-    
-void taskCallback(const std_msgs::String::ConstPtr& msg)
-{
-    ROS_INFO("Task being changed to: [%s]", msg->data.c_str());
-    current_task = msg->data;
-}
 
 int main(int argc, char *argv[])
 {    
@@ -29,8 +23,6 @@ int main(int argc, char *argv[])
     MarkerDropper md;
     Octagon octagon;
     Line line;
-
-    // ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);
 
     ros::Rate loop_rate(10);
 
