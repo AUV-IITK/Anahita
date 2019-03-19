@@ -19,11 +19,32 @@ sensor_msgs::Image depth_image;
 
 cv::Mat cv_disparity_image;
 cv::Mat_<cv::Vec3f> cv_depth_image;
+cv::Mat_<float> Q(4, 4);
+
+cv::Mat_<cv::Vec3f> computeDepth () {
+    cv::Mat_<cv::Vec3f> cv_depth_image(cv_disparity_image.rows, cv_disparity_image.cols);   // Output point cloud
+
+    cv::Mat_<float> vec_tmp(4, 1);
+    for(int y = 0; y < cv_disparity_image.rows; ++y) {
+        for(int x = 0; x < cv_disparity_image.cols; ++x) {
+            vec_tmp(0) = x; vec_tmp(1) = y; vec_tmp(2) = cv_disparity_image.at<float>(y, x); vec_tmp(3) = 1;
+
+            vec_tmp = Q*vec_tmp;
+            vec_tmp /= vec_tmp(3);
+            cv::Vec3f &point = cv_depth_image.at<cv::Vec3f>(y, x);
+
+            point[2] = vec_tmp(2);
+            point[1] = vec_tmp(1);
+            point[0] = vec_tmp(0);
+        }
+    }
+    return cv_depth_image;
+}
 
 void imageCB (const stereo_msgs::DisparityImage msg) {
     disparity_image = msg.image;
     cv_disparity_image = cv_bridge::toCvCopy(msg.image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
-    // cv::imshow ("disparity_image", cv_disparity_image);
+    // cv_depth_image = computeDepth();
 }
 
 int main (int argc, char** argv) {
@@ -36,8 +57,6 @@ int main (int argc, char** argv) {
     ros::Time::init();
 
     ros::Rate loop_rate(10);
-
-    cv::Mat_<float> Q(4, 4);
 
     Q.at<float>(0, 0) = 1;
     Q.at<float>(0, 1) = 0;
@@ -64,8 +83,8 @@ int main (int argc, char** argv) {
     while (ros::ok()) {
         header.stamp = ros::Time::now();
         header.seq = count++;
-        // reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
-        pub.publish(cv_bridge::CvImage(header, "bgr8", cv_disparity_image).toImageMsg());
+        reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
+        pub.publish(cv_bridge::CvImage(header, "bgr8", cv_depth_image).toImageMsg());
         loop_rate.sleep();
         ros::spinOnce();
     }
