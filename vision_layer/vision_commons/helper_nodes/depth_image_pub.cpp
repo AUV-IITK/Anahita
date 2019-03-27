@@ -83,10 +83,24 @@ int main (int argc, char** argv) {
     while (ros::ok()) {
         header.stamp = ros::Time::now();
         header.seq = count++;
-        reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
-        pub.publish(cv_bridge::CvImage(header, "bgr8", cv_depth_image).toImageMsg());
+        // reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
+        pub.publish(cv_bridge::CvImage(header, "32FC1", cv_disparity_image).toImageMsg());
         loop_rate.sleep();
         ros::spinOnce();
+        // stereo algorithm : StereoSGBM (1)
+        // prefilter_size : 5
+        // prefilter_cap : 1
+        // correlation_window_size : 21
+        // min_disparity : 0
+        // disparity_range : 32
+        // uniqueness_theorem : 0
+        // texture_threshold : 0
+        // speckle_size : 307
+        // speckle_range : 5
+        // fullDP = true
+        // P1 : 1000
+        // P2 : 0
+        // disp12MaxDiff : 36
     }
     return 0;
 }
