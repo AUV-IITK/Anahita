@@ -9,15 +9,15 @@ double x, y, z;
 geometry_msgs::Quaternion quat;
 
 void xCallback (const std_msgs::Float32 msg) {
-    x = msg.data;
+    x = -msg.data/100;
 }
 
 void yCallback (const std_msgs::Float32 msg) {
-    y = msg.data;
+    y = -msg.data/100;
 }
 
 void zCallback (const std_msgs::Float32 msg) {
-    z = msg.data;
+    z = -msg.data/100;
 }
 
 void imuCallback (const sensor_msgs::Imu msg) {
