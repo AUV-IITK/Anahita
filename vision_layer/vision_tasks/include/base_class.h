@@ -29,7 +29,7 @@
 
 class Base_class{
 
-    protected:
+    public:
         int front_low_h_;
         int front_high_h_;
         int front_low_s_;
@@ -74,7 +74,7 @@ class Base_class{
         ros::Publisher bottom_coordinates_pub;
    	ros::Publisher detection_pub;
     
-    public:
+//     public:
         Base_class();
         ros::NodeHandle nh;
         image_transport::ImageTransport it();

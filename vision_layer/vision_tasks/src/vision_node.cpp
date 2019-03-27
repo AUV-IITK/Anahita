@@ -4,7 +4,7 @@
 // #include "octagon.h"
 #include "torpedo.h"
 #include "line.h"
-
+#include "base_class.h"
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
         if (current_task != previous_task) {
             if (current_task == "red_buoy") {
                 buoy.switchColor(0);
-                buoy.TaskHandling(true);
+                buoy.frontTaskHandling(true);
             }
             if (current_task == "yellow_buoy") {
                 buoy.switchColor(1);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
                 buoy.switchColor(2);
             }
             if (previous_task == "green_buoy") {
-                buoy.TaskHandling(false);
+                buoy.frontTaskHandling(false);
             }
             if (current_task == "gate") {
                 ROS_INFO("gate task");
@@ -60,13 +60,13 @@ int main(int argc, char *argv[])
             }
             if (current_task == "green_torpedo") {
                 torpedo.switchColor(0);
-                torpedo.TaskHandling(true);
+                torpedo.frontTaskHandling(true);
             }
             if (current_task == "red_torpedo") {
                 torpedo.switchColor(1);
             }
             if (previous_task == "green_torpedo") {
-                torpedo.TaskHandling(false);     
+                torpedo.frontTaskHandling(false);     
             }
             if (current_task == "marker_dropper_front") {
                 md.frontTaskHandling(true);
@@ -82,10 +82,10 @@ int main(int argc, char *argv[])
             }
             if (current_task == "line") {
                 ROS_INFO("Line Task Running");
-                line.TaskHandling(true);
+                line.bottomTaskHandling(true);
             }
             if (previous_task == "line") {
-                line.TaskHandling(false);
+                line.bottomTaskHandling(false);
             }
             // if (current_task == "octagon") {
             //     octagon.bottomTaskHandling(true);

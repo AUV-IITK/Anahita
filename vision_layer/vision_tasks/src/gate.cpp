@@ -1,4 +1,5 @@
 #include <gate.h>
+#include "base_class.h"
 
 Gate::Gate(){
     this->front_clahe_clip_ = 4.0;
@@ -46,18 +47,18 @@ Gate::Gate(){
     // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
 
 	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
-	this->thresholded_pub_front = it.advertise("/gate_task/front/thresholded", 1);
+	this->front_thresholded_pub = it.advertise("/gate_task/front/thresholded", 1);
 	this->canny_pub_front = it.advertise("/gate_task/front/canny", 1);
 	this->lines_pub_front = it.advertise("/gate_task/front/lines", 1);
-	this->marked_pub_front = it.advertise("/gate_task/front/marked", 1);
+	this->front_marked_pub = it.advertise("/gate_task/front/marked", 1);
 
     this->blue_filtered_pub_bottom = it.advertise("/gate_task/bottom/blue_filtered", 1);
-    this->thresholded_pub_bottom = it.advertise("/gate_task/bottom/thresholded", 1);
-    this->marked_pub_bottom = it.advertise("/gate_task/bottom/marked", 1);
+    this->bottom_thresholded_pub = it.advertise("/gate_task/bottom/thresholded", 1);
+    this->front_marked_pub = it.advertise("/gate_task/bottom/marked", 1);
 
-	this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
-	this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
-	this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
+	this->front_x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
+	this->front_y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
+	this->front_z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
     
 	this->task_done_pub = nh.advertise<std_msgs::Bool>("/gate_task/done", 1000);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
@@ -214,12 +215,12 @@ void Gate::spinThreadBottom()
 				}
 			}
 			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			thresholded_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
-			coordinates_pub_bottom.publish(pipe_point_message);
+			bottom_thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
+			bottom_coordinates_pub.publish(pipe_point_message);
 			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
-			marked_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
+			bottom_marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
         }
         else
             ROS_INFO("Image empty");
@@ -381,15 +382,15 @@ void Gate::spinThreadFront()
 				{
 					if (abs(vision_commons::Geometry::angleWrtY(longest1, longest2) - 90.0) < front_hough_angle_tolerance_)
 					{
-						x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 1.068) / 7526.5, -.92678);
-						y_coordinate.data = (longest1.x + longest2.x) / 2 - image_front.size().width / 2;
-						z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
+						front_x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 1.068) / 7526.5, -.92678);
+						front_y_coordinate.data = (longest1.x + longest2.x) / 2 - image_front.size().width / 2;
+						front_z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2 + 9 * vision_commons::Geometry::distance(longest1, longest2) / 48;
 					}
 					else
 					{
-						x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 2.848) / 7526.5, -.92678);
-						y_coordinate.data = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
-						z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
+						front_x_coordinate.data = pow((vision_commons::Geometry::distance(longest1, longest2) * 2.848) / 7526.5, -.92678);
+						front_y_coordinate.data = (longest1.x + longest2.x) / 2 + 12 * vision_commons::Geometry::distance(longest1, longest2) / 9 - image_front.size().width / 2;
+						front_z_coordinate.data = image_front.size().height / 2 - (longest1.y + longest2.y) / 2;
 					}
 					cv::line(image_marked, longest1, longest2, hough_line_color, 3, CV_AA);
 					ROS_INFO("Couldn't find gate, estimated gate center (x, y, z) = (%.2f, %.2f, %.2f)", gate_point_message.point.x, gate_point_message.point.y, gate_point_message.point.z);
@@ -401,15 +402,15 @@ void Gate::spinThreadFront()
 			detection_bool.data = found;
 			detection_pub.publish(detection_bool);
 
-			x_coordinates_pub.publish(x_coordinate);
-			y_coordinates_pub.publish(y_coordinate);
-			z_coordinates_pub.publish(z_coordinate);
+			front_x_coordinates_pub.publish(front_x_coordinate);
+			front_y_coordinates_pub.publish(front_y_coordinate);
+			front_z_coordinates_pub.publish(front_z_coordinate);
 		
 			// blue_filtered_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			thresholded_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
+			front_thresholded_pub.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_thresholded).toImageMsg());
 			canny_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "mono8", image_canny).toImageMsg());
 			lines_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_lines).toImageMsg());
-			marked_pub_front.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
+			front_marked_pub.publish(cv_bridge::CvImage(gate_point_message.header, "bgr8", image_marked).toImageMsg());
 		}
 		else
 			ROS_INFO("Image empty");
