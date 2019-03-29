@@ -1,5 +1,6 @@
 #include <line.h>
 
+
 Line::Line(){
 	this->bottom_low_h_ = 31;
 	this->bottom_high_h_ = 47;
@@ -11,6 +12,7 @@ Line::Line(){
 	this->bottom_opening_iter_ = 0;
 	this->bottom_closing_mat_point_ = 2;
 	this->bottom_closing_iter_ = 1;
+
 	this->camera_frame_ = "auv-iitk";
 	image_transport::ImageTransport it(nh);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
