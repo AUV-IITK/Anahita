@@ -43,7 +43,8 @@ Gate::Gate(){
 
     image_transport::ImageTransport it(nh);
 
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Gate::imageFrontCallback, this);
+	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1,
+											 &Gate::imageFrontCallback, this);
     // this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Gate::imageBottomCallback, this);
 
 	this->blue_filtered_pub_front = it.advertise("/gate_task/front/blue_filtered", 1);
@@ -85,21 +86,6 @@ cv::Point2i Gate::rotatePoint(const cv::Point2i &v1, const cv::Point2i &v2, floa
 		return finalVertex;
 	}
 };
-
-// void Gate::TaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&Gate::frontTaskHandling, this); 
-// 		spin_thread_bottom = new boost::thread(&Gate::bottomTaskHandling, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_front->join();
-//         spin_thread_bottom->join();
-// 		std::cout << "Task Handling function over" << std::endl;	
-// 	}
-// }
 
 void Gate::frontCallback(vision_tasks::gateFrontRangeConfig &config, double level)
 {
@@ -189,12 +175,19 @@ void Gate::spinThreadBottom()
         if (!image_bottom.empty())
         {
 			image_bottom.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_, bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_, bottom_balanced_bilateral_iter_, bottom_denoise_h_);
-			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ && bottom_high_v_ > bottom_low_v_)
+			blue_filtered = vision_commons::Filter::blue_filter(image_bottom, bottom_clahe_clip_,
+									bottom_clahe_grid_size_, bottom_clahe_bilateral_iter_,
+									bottom_balanced_bilateral_iter_, bottom_denoise_h_);
+			if (bottom_high_h_ > bottom_low_h_ && bottom_high_s_ > bottom_low_s_ &&
+								 bottom_high_v_ > bottom_low_v_)
 			{
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
-				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, bottom_high_h_, bottom_low_s_, bottom_high_s_, bottom_low_v_, bottom_high_v_);
-				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_, bottom_closing_mat_point_, bottom_closing_iter_);
+				image_thresholded = vision_commons::Threshold::threshold(image_hsv, bottom_low_h_, 
+												bottom_high_h_, bottom_low_s_, bottom_high_s_,
+												 bottom_low_v_, bottom_high_v_);
+				image_thresholded = vision_commons::Morph::close(image_thresholded, 
+												2 * bottom_closing_mat_point_ + 1, bottom_closing_mat_point_,
+												 bottom_closing_mat_point_, bottom_closing_iter_);
 				contours = vision_commons::Contour::getBestX(image_thresholded, 1);
 				if (contours.size() != 0)
 				{
@@ -210,17 +203,21 @@ void Gate::spinThreadBottom()
 					vertices[i] = vertices2f[i];
 				}
 				cv::circle(image_marked, bounding_rectangle.center, 1, pipe_center_color, 8, 0);
-				cv::circle(image_marked, cv::Point(image_bottom.size().width / 2, image_bottom.size().height / 2), 1, image_center_color, 8, 0);
+				cv::circle(image_marked, cv::Point(image_bottom.size().width / 2,
+									 image_bottom.size().height / 2), 1, image_center_color, 8, 0);
 				cv::fillConvexPoly(image_marked, vertices, 4, bounding_rectangle_color);
 				}
 			}
-			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			bottom_thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "mono8", image_thresholded).toImageMsg());
+			blue_filtered_pub_bottom.publish(cv_bridge::CvImage(pipe_point_message.header, 
+														"bgr8", blue_filtered).toImageMsg());
+			bottom_thresholded_pub.publish(cv_bridge::CvImage(pipe_point_message.header, 
+														"mono8", image_thresholded).toImageMsg());
 			bottom_coordinates_pub.publish(pipe_point_message);
 			//ROS_INFO("Pipe Center (x, y) = (%.2f, %.2f)", pipe_point_message.point.x, pipe_point_message.point.y);
 			task_done_pub.publish(task_done_message);
 			ROS_INFO("Task done (bool) = %s", task_done_message.data ? "true" : "false");
-			bottom_marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header, "bgr8", image_marked).toImageMsg());
+			bottom_marked_pub.publish(cv_bridge::CvImage(pipe_point_message.header,
+														 "bgr8", image_marked).toImageMsg());
         }
         else
             ROS_INFO("Image empty");
@@ -285,28 +282,38 @@ void Gate::spinThreadFront()
 			cv::Point2i horizontal1(0, 0);
 			cv::Point2i horizontal2(0, 0);
 			cv::Point2i vertical1(0, 0);
-			cv::Point2i vertical2(0, 0);
+			cv::Point2i vertical2(0, 0);			
 			cv::Point2i longest1(0, 0);
 			cv::Point2i longest2(0, 0);
 
 			image_front.copyTo(image_marked);
-			blue_filtered = vision_commons::Filter::blue_filter(image_front, front_clahe_clip_, front_clahe_grid_size_, front_clahe_bilateral_iter_, front_balanced_bilateral_iter_, front_denoise_h_);
+			blue_filtered = vision_commons::Filter::blue_filter(image_front, front_clahe_clip_,
+											 front_clahe_grid_size_, front_clahe_bilateral_iter_,
+											  front_balanced_bilateral_iter_, front_denoise_h_);
 			if (front_high_h_ > front_low_h_ && front_high_s_ > front_low_s_ && front_high_v_ > front_low_v_)
 			{
 				cv::cvtColor(blue_filtered, image_hsv, CV_BGR2HSV);
-				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_, front_high_h_, front_low_s_, front_high_s_, front_low_v_, front_high_v_);
-				image_thresholded = vision_commons::Morph::close(image_thresholded, 2 * front_closing_mat_point_ + 1, front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
+				image_thresholded = vision_commons::Threshold::threshold(image_hsv, front_low_h_,
+													front_high_h_, front_low_s_, front_high_s_,
+													front_low_v_, front_high_v_);
+				image_thresholded = vision_commons::Morph::close(image_thresholded, 
+											2 * front_closing_mat_point_ + 1, front_closing_mat_point_, 
+											front_closing_mat_point_, front_closing_iter_);
 				cv::cvtColor(image_thresholded, image_gray, CV_GRAY2BGR);
-				cv::Canny(image_gray, image_canny, front_canny_threshold_low_, front_canny_threshold_high_, front_canny_kernel_size_);
+				cv::Canny(image_gray, image_canny, front_canny_threshold_low_, front_canny_threshold_high_,
+							 front_canny_kernel_size_);
 				image_lines = blue_filtered;
-				cv::HoughLinesP(image_thresholded, lines, 1, CV_PI / 180, front_hough_threshold_, front_hough_minline_, front_hough_maxgap_);
+				cv::HoughLinesP(image_thresholded, lines, 1, CV_PI / 180, front_hough_threshold_,
+									 front_hough_minline_, front_hough_maxgap_);
 				double angle = 0.0;
 				for (int i = 0; i < lines.size(); i++)
 				{
 					cv::Point p1(lines[i][0], lines[i][1]);
 					cv::Point p2(lines[i][2], lines[i][3]);
 					angle = vision_commons::Geometry::angleWrtY(p1, p2);
-					if (angle < front_hough_angle_tolerance_ || abs(angle - 90.0) < front_hough_angle_tolerance_ || abs(180.0 - angle) < front_hough_angle_tolerance_)
+					if (angle < front_hough_angle_tolerance_ || 
+						abs(angle - 90.0) < front_hough_angle_tolerance_ || 
+						abs(180.0 - angle) < front_hough_angle_tolerance_)
 					{
 						cv::line(image_lines, p1, p2, hough_line_color, 3, CV_AA);
 						lines_filtered.push_back(lines[i]);
@@ -319,7 +326,8 @@ void Gate::spinThreadFront()
 					pi1.y = lines_filtered[i][1];
 					pi2.x = lines_filtered[i][2];
 					pi2.y = lines_filtered[i][3];
-					if (vision_commons::Geometry::distance(pi1, pi2) > vision_commons::Geometry::distance(longest1, longest2))
+					if (vision_commons::Geometry::distance(pi1, pi2) >
+					    vision_commons::Geometry::distance(longest1, longest2))
 					{
 						longest1.x = pi1.x;
 						longest1.y = pi1.y;
@@ -338,9 +346,16 @@ void Gate::spinThreadFront()
 							double distance2 = vision_commons::Geometry::distance(pi1, pj2);
 							double distance3 = vision_commons::Geometry::distance(pi2, pj1);
 							double distance4 = vision_commons::Geometry::distance(pi2, pj2);
-							if (distance1 < front_gate_distance_tolerance_ || distance2 < front_gate_distance_tolerance_ || distance3 < front_gate_distance_tolerance_ || distance4 < front_gate_distance_tolerance_)
+							if (distance1 < front_gate_distance_tolerance_ ||
+								 distance2 < front_gate_distance_tolerance_ || 
+								 distance3 < front_gate_distance_tolerance_ ||
+								  distance4 < front_gate_distance_tolerance_)
 							{
-								if (abs(angles[j] - 90.0) < abs(angles[i] - 90.0) && (vision_commons::Geometry::distance(pj1, pj2) > vision_commons::Geometry::distance(horizontal1, horizontal2) || vision_commons::Geometry::distance(pi1, pi2) > vision_commons::Geometry::distance(vertical1, vertical2)))
+								if (abs(angles[j] - 90.0) < abs(angles[i] - 90.0) &&
+								 (vision_commons::Geometry::distance(pj1, pj2) > 
+								 	vision_commons::Geometry::distance(horizontal1, horizontal2) 
+								 || vision_commons::Geometry::distance(pi1, pi2) >
+								 	 vision_commons::Geometry::distance(vertical1, vertical2)))
 								{
 									horizontal1.x = pj1.x;
 									horizontal1.y = pj1.y;
@@ -352,7 +367,11 @@ void Gate::spinThreadFront()
 									vertical2.y = pi2.y;
 									found = true;
 								}
-								else if (abs(angles[j] - 90.0) > abs(angles[i] - 90.0) && (vision_commons::Geometry::distance(pi1, pi2) > vision_commons::Geometry::distance(horizontal1, horizontal2) || vision_commons::Geometry::distance(pj1, pj2) > vision_commons::Geometry::distance(vertical1, vertical2)))
+								else if (abs(angles[j] - 90.0) > abs(angles[i] - 90.0)
+								 && (vision_commons::Geometry::distance(pi1, pi2) >
+								 		 vision_commons::Geometry::distance(horizontal1, horizontal2) 
+								 || vision_commons::Geometry::distance(pj1, pj2) > 
+								 		vision_commons::Geometry::distance(vertical1, vertical2)))
 								{
 									horizontal1.x = pi1.x;
 									horizontal1.y = pi1.y;

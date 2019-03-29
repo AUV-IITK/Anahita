@@ -91,20 +91,6 @@ void Torpedo::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 	}
 }
 
-// void Torpedo::frontTaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(boost::bind(&Torpedo::spinThread, this)); 
-// 	}
-// 	else 
-// 	{
-// 		close_task = true;
-//         spin_thread_front->join();
-// 		std::cout << "Task Handling function over" << std::endl;	
-// 	}
-// }
-
-
 void Torpedo::spinThreadFront(){
 
 	dynamic_reconfigure::Server<vision_tasks::torpedoRangeConfig> server;

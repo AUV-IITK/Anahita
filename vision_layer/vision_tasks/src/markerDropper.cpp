@@ -43,15 +43,7 @@ MarkerDropper::MarkerDropper(){
 	image_transport::ImageTransport it(nh);
 	
 	this->bottom_blue_filtered_pub = it.advertise("/markerdropper_task/bottom/blue_filtered", 1);
-	// this->bottom_thresholded_pub = it.advertise("/markerdropper_task/bottom/thresholded", 1);
-	// this->bottom_marked_pub = it.advertise("/markerdropper_task/bottom/marked", 1);
-	// this->bottom_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/bottom_bin_coordinates", 1000);
-	
 	this->front_blue_filtered_pub = it.advertise("/markerdropper_task/front/blue_filtered", 1);
-	// this->front_thresholded_pub = it.advertise("/markerdropper_task/front/thresholded", 1);
-	// this->front_marked_pub = it.advertise("/markerdropper_task/front/marked", 1);
-	// this->front_coordinates_pub = nh.advertise<geometry_msgs::PointStamped>("/markerdropper_task/front_bin_coordinates", 1000);
-
 	this->bottom_image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &MarkerDropper::imageBottomCallback, this);
 	this->front_image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &MarkerDropper::imageFrontCallback, this);
 }
@@ -128,49 +120,6 @@ void MarkerDropper::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
 		ROS_ERROR("cv exception: %s", e.what());
 	}
 };
-
-// void MarkerDropper::frontTaskHandling(bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&MarkerDropper::spinThreadFront, this); 
-// 	}
-// 	else 
-// 	{
-// 		close_task = true;
-//         spin_thread_front->join();
-// 		std::cout << "Front Task Handling function over" << std::endl;	
-// 	}
-// }
-
-
-// void MarkerDropper::bottomTaskHandling(bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread_bottom = new boost::thread(&MarkerDropper::spinThreadBottom, this); 
-// 	}
-// 	else 
-// 	{
-// 		close_task = true;
-//         spin_thread_bottom->join();
-// 		std::cout << "Bottom Task Handling function over" << std::endl;	
-// 	}
-// }
-
-// void MarkerDropper::TaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&MarkerDropper::FrontTaskHandling, this); 
-// 		spin_thread_bottom = new boost::thread(&MarkerDropper::BottomTaskHandling, this); 
-// 	}
-// 	else 
-// 	{
-//         spin_thread_front->join();
-//         spin_thread_bottom->join();
-// 	}
-// 	std::cout << "Task Handling function over" << std::endl;	
-// }
-
-
 
 void MarkerDropper::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::markerDropperBottomRangeConfig> server;

@@ -1,9 +1,5 @@
 #include <base_class.h>
 
-
-//add canny
-//bottom/front_coordinates_pub
-
 Base_class::Base_class(){
 	init();
 }

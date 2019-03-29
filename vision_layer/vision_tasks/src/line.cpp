@@ -13,12 +13,7 @@ Line::Line(){
 	this->bottom_closing_iter_ = 1;
 	this->camera_frame_ = "auv-iitk";
 	image_transport::ImageTransport it(nh);
-	// this->thresholded_pub = it.advertise("/line_task/thresholded", 1);
-	// this->marked_pub = it.advertise("/line_task/marked", 1);
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
-	// this->x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1);
-	// this->y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1);
-	// this->z_coordinates_pub = nh.advertise<std_msgs::Float32>("/mavros/imu/yaw", 1);
 	this->bottom_coordinates_pub = nh.advertise<geometry_msgs::Pose2D>("/line_task/line_coordinates", 1000);
 	this->image_raw_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Line::imageCallback, this);
 }
@@ -60,21 +55,6 @@ void Line::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		ROS_ERROR("cv exception: %s", e.what());
 	}
 }
-
-// void Line::TaskHandling(bool status)
-// {  
-// 	if(status)
-// 	{
-// 		ROS_INFO("Task Handling");
-// 		spin_thread = new boost::thread(boost::bind(&Line::spinThread, this)); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread->join();
-// 		std::cout << "Line Task Handling function over" << std::endl;	
-// 	}
-//}
 
 void Line::spinThreadBottom() {
 	dynamic_reconfigure::Server<vision_tasks::lineRangeConfig> server;

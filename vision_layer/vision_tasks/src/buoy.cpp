@@ -20,12 +20,6 @@ Buoy::Buoy(){
 	this->current_color = 0;
 	image_transport::ImageTransport it(nh);
 	this->blue_filtered_pub = it.advertise("/buoy_task/blue_filtered", 1);
-	// this->front_thresholded_pub = it.advertise("/buoy_task/thresholded", 1);
-	// this->front_marked_pub = it.advertise("/buoy_task/marked", 1);
-	// this->front_x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/x_coordinate", 1000);
-	// this->front_y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/y_coordinate", 1000);
-	// this->front_z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/z_coordinate", 1000);
-	// this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
 	this->image_raw_sub = it.subscribe("/front_camera/image_raw", 1, &Buoy::imageCallback, this);
 }
 
@@ -90,20 +84,6 @@ void Buoy::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 		ROS_ERROR("cv exception: %s", e.what());
 	}
 }
-
-// void Buoy::frontTaskHandling (bool status) {
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(boost::bind(&Buoy::spinThread, this)); 
-// 	}
-// 	else 
-// 	{
-// 		close_task = true;
-//         spin_thread_front->join();
-// 		std::cout << "Buoy Task Handling function over" << std::endl;	
-// 	}
-// }
-
 
 void Buoy::spinThreadFront(){
 

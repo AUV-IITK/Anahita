@@ -312,30 +312,4 @@ void Octagon::spinThreadFront() {
 	}	
 }
 
-// void Octagon::bottomTaskHandling(bool status)
-// {
-// 	if(status)
-// 	{
-// 		spin_thread_bottom = new boost::thread(&Octagon::spinThreadBottom, this); 
-// 	}
-// 	else 
-// 	{	
-// 		task_done = true;
-//         spin_thread_bottom->join();
-// 		std::cout << "Octagon, Bottom Task Handling function over" << std::endl;	
-// 	}
-// }
-
-// void Octagon::frontTaskHandling(bool status){
-// 	if(status)
-// 	{
-// 		spin_thread_front = new boost::thread(&Octagon::spinThreadFront, this); 
-// 	}
-// 	else 
-// 	{
-// 		task_done = true;
-//         spin_thread_front->join();
-// 		std::cout << "Octagon, Front Task Handling function over" << std::endl;	
-// 	}
-// }
 
