@@ -9,8 +9,17 @@
 #include <string>
 #include <std_msgs/String.h>
 
+#include <master_layer/CurrentTask.h>
+
 std::string current_task = "red_buoy";
 std::string previous_task = "";
+
+bool changeCurrentTask (master_layer::CurrentTask::Request &req,
+                        master_layer::CurrentTask::Response &res) {
+    current_task = req.current_task;
+    res.status = true;
+    return true;
+}
 
 int main(int argc, char *argv[])
 {    
@@ -23,6 +32,8 @@ int main(int argc, char *argv[])
     MarkerDropper md;
     Octagon octagon;
     Line line;
+
+    ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
 
     ros::Rate loop_rate(10);
 
