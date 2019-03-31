@@ -4,7 +4,8 @@
 #include <string>
 #include "threshold.h"
 
-cv::Mat vision_commons::Threshold::threshold(cv::Mat &raw, int low_a, int high_a, int low_b, int high_b, int low_c, int high_c)
+cv::Mat vision_commons::Threshold::threshold(cv::Mat &raw, int low_a, 
+                                      int high_a, int low_b, int high_b, int low_c, int high_c)
 {
   cv::Mat image_thresholded;
   if ((high_a > low_a && high_b > low_b && high_c > low_c))
