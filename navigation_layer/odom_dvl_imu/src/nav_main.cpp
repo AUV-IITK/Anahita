@@ -82,7 +82,7 @@ namespace navigation
     void NavigationNode::PublishData()
     {
         nav_msgs::Odometry odometry_msg;
-        odometry_msg.header.frame_id = "world_ned";
+        odometry_msg.header.frame_id = "world";
         odometry_msg.header.stamp = ros::Time::now();
 
         FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
