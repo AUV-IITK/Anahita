@@ -200,11 +200,24 @@ class LineTask(TaskBaseClass):
 # 1. one to find the object with the bottom camera
 # 2. and one with the front camera
 
-class FindTarget(smach.State):
+class FindBottomTarget(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome2'])
 
     def execute(self, userdata):
+        # request to move in a circle or helix to the local planner
+        pass
+
+    def explore(self):
+        # move around to find a target
+
+class FindFrontTarget(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['outcome2'])
+
+    def execute(self, userdata):
+        # move the bot to the pose according to the odom frame of ref 
+        # and then rotate the bot to search object
         pass
 
     def explore(self):
