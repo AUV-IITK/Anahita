@@ -186,8 +186,19 @@ class LineTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
 
+    def align(self):
+        # to align with the line
+        pass
+    
+    def move_forward(self):
+        # after aligning to the line move forward
+
     def execute(self):
         pass
+
+# there are two kinds of findings that need to be dealt with
+# 1. one to find the object with the bottom camera
+# 2. and one with the front camera
 
 class FindTarget(smach.State):
     def __init__(self):
@@ -196,9 +207,64 @@ class FindTarget(smach.State):
     def execute(self, userdata):
         pass
 
-class Explore(smach.State):
+    def explore(self):
+        # move around to find a target
+
+# there are two kinds of scenarios for finding
+# 1. when the bot is working properly but is not able to find the
+#    object at the current position so it goes into `find target state`
+# 2. something very bad happens to the like the thruster behaving weirdly 
+#    and dragging to the direction where it should not go, in that situation 
+#    it becomes necessary for the reset all the things and plan for itself 
+#    according to the task it has done and last pose that it remebers and 
+#    use path planning algorithms to generate waypoints for the trajectory generation
+
+class RescueMode(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['some_outcome'])
 
-    def execute():
+    def execute(self):
+        # monitor the path tracing
         pass
+
+    def localise(self):
+        # locate where is it now
+        # can make a special service for this
+        pass
+
+    def next_task(self):
+        # gives the next task to approach
+
+    def path_to_new_target(self):
+        # use a service to get the path from a path algorithm
+
+    def trace_path(self):
+        # make a request to the init_waypoint_server for trajectory generation
+
+
+class TooFar(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=[''],
+                            input_keys=['target'])
+
+    def execute(self):
+        pass
+    
+    def stop(self):
+        # if the bot is going out of the way of any target
+        # then stop it
+        pass
+
+    def restore(self):
+        # restore to a position from where it can still do the task
+        pass
+
+class StationKeeping(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['success'])
+
+    def execute(self):
+        # just maintain the current pose
+
+if __init__ == '__main__':
+    # do something
