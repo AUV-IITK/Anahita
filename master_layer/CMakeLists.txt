@@ -60,11 +60,10 @@ find_package(motion_layer REQUIRED)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  CurrentTask.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
@@ -177,16 +176,8 @@ target_link_libraries(motion_server
   ${catkin_LIBRARIES}
 )
 
-# add_executable(temp src/temp.cpp)
-# target_link_libraries(temp ${catkin_LIBRARIES})
-
-# add_executable(temp src/temp.cpp)
-# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(temp
-#   line
-#   task_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(local_vision_odom src/local_vision_odom.cpp)
+target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

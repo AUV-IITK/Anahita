@@ -12,10 +12,10 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend> 
   <build_depend>std_msgs</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
-  <!-- <build_depend>OpenCV</build_depend> -->
+  <build_depend>OpenCV</build_depend>
   <build_depend>vision_commons</build_depend>
   <build_depend>image_transport</build_depend>
   <build_export_depend>cv_bridge</build_export_depend>
@@ -23,14 +23,23 @@
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
-  <!-- <build_export_depend>OpenCV</build_export_depend> -->
+  <build_export_depend>OpenCV</build_export_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
-
+  <build_depend>tf</build_depend>
+  <run_depend>master_layer</run_depend>
+  <build_depend>master_layer</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>anahita_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
   <export>
   </export>
   

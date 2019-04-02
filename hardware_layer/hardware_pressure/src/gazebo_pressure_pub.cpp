@@ -23,16 +23,8 @@ int main (int argc, char** argv) {
     ros::Rate loop_rate(50);
 
     while (ros::ok()) {
-        nh.getParam("/enable_pressure", enable_pressure);
-        if (enable_pressure) {
-            depth.data = depth_data;
-            depth_pub.publish(depth);
-        }
-        nh.getParam("/set_reference_depth", set_reference_depth);
-        if (set_reference_depth) {
-            nh.setParam("/reference_depth", depth_data);
-            nh.setParam("/set_reference_depth", false);
-        }
+        depth.data = depth_data;
+        depth_pub.publish(depth);
 
         ros::spinOnce();
         loop_rate.sleep();

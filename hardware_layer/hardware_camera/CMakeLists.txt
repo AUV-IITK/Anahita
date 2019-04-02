@@ -47,6 +47,3 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   # ${OpenCV_INCLUDE_DIRS}
 )
-
-add_executable(gazebo_image_pub src/gazebo_image_pub.cpp)
-target_link_libraries(gazebo_image_pub ${catkin_LIBRARIES})

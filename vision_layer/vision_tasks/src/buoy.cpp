@@ -7,10 +7,10 @@ Buoy::Buoy() : it(nh){
 	this->balanced_bilateral_iter_ = 4;
 	this->denoise_h_ = 10.0;
 	this->low_h_ = 0;
-	this->high_h_ = 79;
+	this->high_h_ = 9;
 	this->low_s_ = 0;
-	this->high_s_ = 24;
-	this->low_v_ = 185;
+	this->high_s_ = 2;
+	this->low_v_ = 0;
 	this->high_v_ = 255;
 	this->opening_mat_point_ = 1;
 	this->opening_iter_ = 3;
@@ -284,6 +284,11 @@ void Buoy::spinThread(){
 				ROS_INFO("Detection switch is: 0");
 			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
 			thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
+			
+			x_coordinate.data = -x_coordinate.data/100;
+			y_coordinate.data = -y_coordinate.data/100;
+			z_coordinate.data = -z_coordinate.data/100;
+
 			x_coordinates_pub.publish(x_coordinate);
 			y_coordinates_pub.publish(y_coordinate);
 			bool enable_pressure = false;

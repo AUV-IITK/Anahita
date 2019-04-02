@@ -5,6 +5,7 @@
 #include <sensor_msgs/FluidPressure.h>
 #include <eigen3/Eigen/Geometry>
 #include "navigation_device.h"
+#include <geometry_msgs/TwistWithCovarianceStamped.h>
 
 namespace navigation{
 

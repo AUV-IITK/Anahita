@@ -5,23 +5,20 @@ namespace navigation
     NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
     	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
+  		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
+    	imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, &IMUData::IMUMsgCallback, &imuData_);
 
-		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
+      // navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
+      // navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
 
-		imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, &IMUData::IMUMsgCallback, &imuData_);
-
-		// navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
-		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
-
-		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/nav/odom", 100);
-		position_          = Eigen::Vector3d::Zero();
-	    incrementPosition_ = Eigen::Vector3d::Zero();
-	    velocity_          = Eigen::Vector3d::Zero();
-	    angularVelocity_   = Eigen::Vector3d::Zero();
-	    eulerAngel_        = Eigen::Vector3d::Zero();
-		zOffset_ 		   = 0;
-		ROS_INFO("Set up initial constructor successfully");
-
+      navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+      position_          = Eigen::Vector3d::Zero();
+      incrementPosition_ = Eigen::Vector3d::Zero();
+      velocity_          = Eigen::Vector3d::Zero();
+      angularVelocity_   = Eigen::Vector3d::Zero();
+      eulerAngel_        = Eigen::Vector3d::Zero();
+      zOffset_ 		   = 0;
+      ROS_INFO("Set up initial constructor successfully");
 	}
 
 	NavigationNode::~NavigationNode()
@@ -46,9 +43,9 @@ namespace navigation
 
 	// bool NavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request, SetDepthOffset::Response &response)
 	// {
-	//         zOffset_ =this.GetPositionZFromPressure();
-	//         imuData_.SetNewDataReady();
-	//         return true;
+	// 	zOffset_ =this.GetPositionZFromPressure();
+	// 	imuData_.SetNewDataReady();
+	// 	return true;
 	// }
 
 	// bool NavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request, SetWorldXYOffset::Response &response)
@@ -110,17 +107,16 @@ namespace navigation
     {
         nav_msgs::Odometry odometry_msg;
         odometry_msg.header.frame_id = "odom";
-		odometry_msg.child_frame_id = "base_link";
+		    odometry_msg.child_frame_id = "base_link";
         odometry_msg.header.stamp = current_time;
 
         FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
-
         FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
         navigationOdomPublisher_.publish(odometry_msg);
     }
 
-	void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg)
+	void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, nav_msgs::Odometry &msg)
 	{
 		msg.pose.pose.position.x    = position.x();
 		msg.pose.pose.position.y    = position.y();
@@ -129,6 +125,7 @@ namespace navigation
 		msg.pose.pose.orientation.y = angle.y();
 		msg.pose.pose.orientation.z = angle.z();
 		ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f", position.x(), position.y(), position.z(), angle.x(), angle.y(), angle.z());
+
 	}
 
 	void NavigationNode::FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg)
