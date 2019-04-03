@@ -83,8 +83,8 @@ int main (int argc, char** argv) {
     while (ros::ok()) {
         header.stamp = ros::Time::now();
         header.seq = count++;
-        // reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
-        pub.publish(cv_bridge::CvImage(header, "32FC1", cv_disparity_image).toImageMsg());
+        reprojectImageTo3D (cv_disparity_image, cv_depth_image, Q, false, CV_32F);
+        pub.publish(cv_bridge::CvImage(header, "bgr8", cv_depth_image).toImageMsg());
         loop_rate.sleep();
         ros::spinOnce();
         // stereo algorithm : StereoSGBM (1)
