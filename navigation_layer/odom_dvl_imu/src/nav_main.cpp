@@ -99,7 +99,7 @@ namespace navigation
 		odom_trans.transform.rotation.y = quaternion.y();
 		odom_trans.transform.rotation.z = quaternion.z();
 
-    	//send the transform
+    	// send the transform
     	odom_broadcaster.sendTransform(odom_trans);
 	}
 
@@ -121,10 +121,14 @@ namespace navigation
 		msg.pose.pose.position.x    = position.x();
 		msg.pose.pose.position.y    = position.y();
 		msg.pose.pose.position.z    = position.z();
-		msg.pose.pose.orientation.x = angle.x();
-		msg.pose.pose.orientation.y = angle.y();
-		msg.pose.pose.orientation.z = angle.z();
-		ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f", position.x(), position.y(), position.z(), angle.x(), angle.y(), angle.z());
+		msg.pose.pose.orientation.x = quanternion.x();
+		msg.pose.pose.orientation.y = quanternion.y();
+		msg.pose.pose.orientation.z = quanternion.z();
+		msg.pose.pose.orientation.w = quanternion.w();
+		ROS_INFO("Pose Message being filled: Position.x: %f,
+				Position.y: %f, Position.z: %f, Angle.x: %f, 
+				Angle.y: %f, Angle.z: %f", position.x(), position.y(), 
+				position.z(), angle.x(), angle.y(), angle.z());
 
 	}
 
@@ -136,7 +140,11 @@ namespace navigation
 		msg.twist.twist.angular.x = angular_velocity.x();
 		msg.twist.twist.angular.y = angular_velocity.y();
 		msg.twist.twist.angular.z = angular_velocity.z();
-		ROS_INFO("Twist Message being filled: Linear.x: %f, Linear.y: %f, Linear.z: %f, AngularVel.x: %f, AngularVel.y: %f, AngularVel.z: %f", linear_velocity.x(), linear_velocity.y(), linear_velocity.z(), angular_velocity.x(), angular_velocity.y(), angular_velocity.z());
+		ROS_INFO("Twist Message being filled: Linear.x: %f, 
+				Linear.y: %f, Linear.z: %f, AngularVel.x: %f, 
+				AngularVel.y: %f, AngularVel.z: %f", linear_velocity.x(), 
+				linear_velocity.y(), linear_velocity.z(), angular_velocity.x(), 
+				angular_velocity.y(), angular_velocity.z());
 	}
 
 }
