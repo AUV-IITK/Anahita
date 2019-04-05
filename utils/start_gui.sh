@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd ../debug_layer
+cd src/Anahita/debug_layer
 rqt --perspective-file rqt_gui.perspective
