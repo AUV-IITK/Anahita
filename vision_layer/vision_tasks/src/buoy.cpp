@@ -179,12 +179,26 @@ void Buoy::spinThreadFront(){
 					detection_pub.publish(detection_bool);
 				}	
 			}
-			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());
-			front_thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
+			// blue_filtered_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", blue_filtered).toImageMsg());		
+      front_thresholded_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "mono8", image_thresholded).toImageMsg());
 			front_x_coordinates_pub.publish(front_x_coordinate);
 			front_y_coordinates_pub.publish(front_y_coordinate);
 			front_z_coordinates_pub.publish(front_z_coordinate);
 			front_marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
+      /* TO CHECK CODE DURING POOL TESTING
+      x_coordinate.data = -x_coordinate.data/100;
+			y_coordinate.data = -y_coordinate.data/100;
+			z_coordinate.data = -z_coordinate.data/100;
+
+			x_coordinates_pub.publish(x_coordinate);
+			y_coordinates_pub.publish(y_coordinate);
+			bool enable_pressure = false;
+			nh.getParam("/enable_pressure", enable_pressure);
+			if (!enable_pressure) {
+				z_coordinates_pub.publish(z_coordinate);
+			}
+			marked_pub.publish(cv_bridge::CvImage(buoy_point_message.header, "bgr8", image_marked).toImageMsg());
+      */
 		}
 		else
 		{

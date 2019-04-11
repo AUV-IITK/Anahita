@@ -9,13 +9,16 @@
 #include <string>
 #include <std_msgs/String.h>
 
+#include <master_layer/CurrentTask.h>
+
 std::string current_task = "red_buoy";
 std::string previous_task = "";
 
-void taskCallback(const std_msgs::String::ConstPtr& msg)
-{
-    ROS_INFO("Task being chaned to: [%s]", msg->data.c_str());
-    current_task = msg->data;
+bool changeCurrentTask (master_layer::CurrentTask::Request &req,
+                        master_layer::CurrentTask::Response &res) {
+    current_task = req.current_task;
+    res.status = true;
+    return true;
 }
 
 int main(int argc, char *argv[])
@@ -29,8 +32,7 @@ int main(int argc, char *argv[])
     MarkerDropper md;
     // Octagon octagon;
     Line line;
-
-    ros::Subscriber current_task_sub = nh.subscribe<std_msgs::String>("/current_task", 1000,taskCallback);
+    ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
 
     ros::Rate loop_rate(10);
 
