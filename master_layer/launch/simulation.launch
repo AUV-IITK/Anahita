@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="hardware_dvl" name="gazebo_driver" type="gazebo_dvl_driver" output="screen"/>
+    <node pkg="odom_dvl_imu" name="odom_node" type="odom_dvl_imu_node" output="screen"/>
+    <node pkg="hardware_pressure" name="pressure_publisher" type="pressure_publisher" output="screen" />
+</launch>

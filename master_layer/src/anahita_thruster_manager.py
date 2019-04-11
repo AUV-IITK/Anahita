@@ -70,56 +70,6 @@ class AnahitaThrusterManager(object):
         thrust = self.inverse_configuration_matrix.dot(gen_forces)
         return thrust
 
-    def filter_pwm(self, pwm):
-
-        if pwm.forward_left > self._max_pwm:
-            pwm.forward_left = self._max_pwm
-        
-        if pwm.forward_left < self._min_pwm:
-            pwm.forward_left = self._min_pwm
-
-        if pwm.forward_right > self._max_pwm:
-            pwm.forward_right = self._max_pwm
-
-        if pwm.forward_right < self._min_pwm:
-            pwm.forward_right = self._min_pwm
-
-        if pwm.sideward_back > self._max_pwm:
-            pwm.sideward_back = self._max_pwm
-
-        if pwm.sideward_front > self._max_pwm:
-            pwm.sideward_front = self._max_pwm
-
-        if pwm.sideward_back < self._min_pwm:
-            pwm.sideward_back = self._min_pwm
-
-        if pwm.sideward_front < self._min_pwm:
-            pwm.sideward_front = self._min_pwm
-
-        if pwm.upward_north_east > self._max_pwm:
-            pwm.upward_north_east = self._max_pwm
-
-        if pwm.upward_north_east < self._min_pwm:
-            pwm.upward_north_east = self._min_pwm
-
-        if pwm.upward_north_west > self._max_pwm:
-            pwm.upward_north_west = self._max_pwm
-
-        if pwm.upward_north_west < self._min_pwm:
-            pwm.upward_north_west = self._min_pwm
-
-        if pwm.upward_south_east > self._max_pwm:
-            pwm.upward_south_east = self._max_pwm
-
-        if pwm.upward_south_east < self._min_pwm:
-            pwm.upward_south_east = self._min_pwm
-
-        if pwm.upward_south_west > self._max_pwm:
-            pwm.upward_south_west = self._max_pwm
-
-        if pwm.upward_south_west < self._min_pwm:
-            pwm.upward_south_west = self._min_pwm
-
     def command_thrusters(self):
         """Publish the thruster input into their specific topic."""
         if self.thrust is None:
@@ -136,9 +86,6 @@ class AnahitaThrusterManager(object):
         pwm.upward_south_east = int(self.compute_pwm(self.thrust[7]))
         pwm.upward_south_west = int(self.compute_pwm(self.thrust[4]))
 
-        print pwm
-
-        self.filter_pwm(pwm)
         self.pwm_pub.publish(pwm)
 
 if __name__ == '__main__':

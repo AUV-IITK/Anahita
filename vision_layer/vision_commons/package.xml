@@ -4,10 +4,8 @@
   <version>1.0.0</version>
   <description>The vision_commons package. Libraries for vision_tasks.</description>
 
-  <maintainer email="naishadh_parmar@live.com">Naishadh Parmar</maintainer>
+  <maintainer email="ayushgup@iitk.ac.in">Ayush</maintainer>
   <license>BSD 3-Clause license</license>
-
-  <author email="naishadh_parmar@live.com">Naishadh Parmar</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cv_bridge</build_depend>

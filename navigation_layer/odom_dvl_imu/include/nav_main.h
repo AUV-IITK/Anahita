@@ -9,6 +9,8 @@
 #include <sensor_msgs/FluidPressure.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 
 #include <odom_dvl_imu/SetDepthOffset.h>
 #include <odom_dvl_imu/SetWorldXYOffset.h>
@@ -27,7 +29,8 @@ namespace navigation{
 
             void Spin();
             void ProcessCartesianPose();
-            void PublishData();
+            void PublishData(ros::Time &current_time);
+        	void BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time);
 
         private:
         
@@ -44,6 +47,7 @@ namespace navigation{
             ros::Subscriber imuSubscriber_;
 
             ros::Publisher  navigationOdomPublisher_;
+            tf::TransformBroadcaster odom_broadcaster;
 
             // ros::ServiceServer navigationDepthOffsetServer_;
             // ros::ServiceServer navigationXYOffsetServer_;
