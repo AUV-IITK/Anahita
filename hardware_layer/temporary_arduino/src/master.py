@@ -59,7 +59,9 @@ if __name__ == '__main__':
     depth_publisher = rospy.Publisher("/depth", Float32, queue_size=10)
     sensor_csv_headers = ["status","pressure"]
 
-    actuator_csv_headers = ["status","thruster_e","thruster_w","thruster_n","thruster_s","thruster_ne","thruster_nw","thruster_se","thruster_sw","marker_dropper","torpedo"]  
+    actuator_csv_headers = ["status", "thruster_e", "thruster_w", "thruster_n",
+                            "thruster_s", "thruster_ne", "thruster_nw", "thruster_se",
+                            "thruster_sw","marker_dropper","torpedo"]  
 
     VALID_SENSOR_VARIABLES = ["pressure_sensor"]
 
