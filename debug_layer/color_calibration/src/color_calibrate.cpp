@@ -7,6 +7,12 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 
+#include <filter.h>
+#include <contour.h>
+#include <morph.h>
+#include <threshold.h>
+#include <geometry.h>
+
 int r_min, r_max, g_min, g_max, b_min, b_max;
 int opening_mat_point, opening_iter, closing_mat_point, closing_iter;
 int bilateral_iter;
@@ -73,6 +79,7 @@ int main (int argc, char** argv) {
     ros::Rate loop_rate(20);
 
     cv::Mat image_thresholded;
+    cv::Mat temp_src;
     sensor_msgs::ImagePtr msg;
 
     while (ros::ok()) {
@@ -85,10 +92,14 @@ int main (int argc, char** argv) {
             }
             save_params = false;
         }
-
-        if ((b_max > b_min && g_max > g_min && r_max > r_min)) {
-            inRange(image, cv::Scalar(b_min, g_min, r_min), cv::Scalar(b_max, g_max, r_max), image_thresholded);
-        }
+        temp_src = image.clone();
+        vision_commons::Filter::bilateral(temp_src, bilateral_iter);
+        image_thresholded = vision_commons::Threshold::threshold(temp_src, b_min, b_max,
+                                                                g_min, g_max, r_min, r_max);
+        vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point + 1, 
+                                    opening_mat_point, opening_mat_point, opening_iter);
+        vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point + 1, 
+                                    closing_mat_point, closing_mat_point, closing_iter);
 
         msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg();
         image_pub.publish(msg);

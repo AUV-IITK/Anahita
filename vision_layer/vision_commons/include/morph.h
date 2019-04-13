@@ -8,14 +8,14 @@ namespace vision_commons
 class Morph
 {
 public:
-  static cv::Mat open(
+  static void open(
       cv::Mat& raw,
       int element_size,
       int element_centerX,
       int element_centerY,
       int iterations);
 
-  static cv::Mat close(
+  static void close(
       cv::Mat& raw,
       int element_size,
       int element_centerX,

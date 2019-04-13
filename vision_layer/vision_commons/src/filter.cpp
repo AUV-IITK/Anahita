@@ -115,17 +115,19 @@ cv::Mat vision_commons::Filter::blue_filter(
       temp2.copyTo(temp);
     }
     int64 t6_ = cv::getTickCount();
-		// ROS_INFO("Time taken by second CLAHE Bilateral: %lf", (t6_-t5_)/cv::getTickFrequency());   
-
-    /*
-    int64 t7_ = cv::getTickCount();
-    cv::fastNlMeansDenoisingColored(temp, blue_filtered, denoise_h, denoise_h, 7, 11);
-    int64 t8_ = cv::getTickCount();
-    ROS_INFO("Time taken by Denoising: %lf", (t8_-t7_)/cv::getTickFrequency());    
-    */
     
     return blue_filtered;
   }
   else
     return image;
+}
+
+void vision_commons::Filter::bilateral (cv::Mat& src, int iters) {
+  
+  cv::Mat dstx;
+
+  for (int j = 0; j < iters; j++){
+      bilateralFilter(src, dstx, 6, 8, 8);
+      bilateralFilter(dstx, src, 6, 8, 8);
+  }
 }

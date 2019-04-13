@@ -1,27 +1,63 @@
 #include <base_class.h>
 
-Base_class::Base_class(){
+Base_class::Base_class() : it(nh) {
 	init();
 }
 
 void Base_class::init(){
-	image_transport::ImageTransport it(nh);
-
 	
-	this->front_thresholded_pub = it.advertise("/anahita/vision/front/thresholded", 1);
-	this->front_marked_pub = it.advertise("/anahita/vision/front/marked", 1);
+	this->front_thresholded_pub = it.advertise("/anahita/front_camera/thresholded", 1);
+	this->front_marked_pub = it.advertise("/anahita/front_camera/marked", 1);
 	
-    this->bottom_thresholded_pub = it.advertise("/anahita/vision/bottom/thresholded", 1);
-    this->bottom_marked_pub = it.advertise("/anahita/vision/bottom/marked", 1);
+    this->bottom_thresholded_pub = it.advertise("/anahita/bottom_camera/thresholded", 1);
+    this->bottom_marked_pub = it.advertise("/anahita/bottom_camera/marked", 1);
 
-	this->front_x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/front/x_coordinate", 1000);
-	this->front_y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/front/y_coordinate", 1000);
-	this->front_z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/front/z_coordinate", 1000);
-	this->bottom_x_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/bottom/x_coordinate", 1000);
-	this->bottom_y_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/bottom/y_coordinate", 1000);
-	this->bottom_z_coordinates_pub = nh.advertise<std_msgs::Float32>("/anahita/vision/bottom/z_coordinate", 1000);
+	this->front_x_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/front_camera/x_coordinate", 1);
+	this->front_y_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/front_camera/y_coordinate", 1);
+	this->front_z_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/front_camera/z_coordinate", 1);
+	this->bottom_x_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/bottom_camera/x_coordinate", 1);
+	this->bottom_y_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/bottom_camera/y_coordinate", 1);
+	this->bottom_z_coordinate_pub = nh.advertise<std_msgs::Float32>("/anahita/bottom_camera/z_coordinate", 1);
 
-	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1000);
+	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1);
+
+	this->front_image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &Base_class::imageFrontCallback, this);
+	this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Base_class::imageBottomCallback, this);
+}
+
+void Base_class::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		// ROS_INFO("Found a new image and stored it in image_front!");
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+}
+
+void Base_class::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
+{
+	cv_bridge::CvImagePtr cv_img_ptr;
+	try
+	{
+		image_bottom = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
 }
 
 void Base_class::frontTaskHandling (bool status) {
@@ -50,6 +86,3 @@ void Base_class::bottomTaskHandling(bool status) {
 	}
 }
 
-void Base_class::spinThreadBottom(){}
-
-void Base_class::spinThreadFront(){}

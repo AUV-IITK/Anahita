@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   dynamic_reconfigure
+  vision_commons
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,7 +108,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES color_calibration
-CATKIN_DEPENDS cv_bridge image_transport sensor_msgs std_msgs dynamic_reconfigure message_runtime
+CATKIN_DEPENDS cv_bridge image_transport sensor_msgs std_msgs dynamic_reconfigure message_runtime vision_commons
 #  DEPENDS system_lib
 )
 

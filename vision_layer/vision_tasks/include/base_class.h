@@ -30,27 +30,29 @@
 class Base_class{
 
     protected:
-        int front_low_h_;
-        int front_high_h_;
-        int front_low_s_;
-        int front_high_s_;
-        int front_low_v_;
-        int front_high_v_;
+        int front_low_g_;
+        int front_high_g_;
+        int front_low_r_;
+        int front_high_r_;
+        int front_low_b_;
+        int front_high_b_;
         int front_opening_mat_point_;	
 	int front_opening_iter_ ;
         int front_closing_mat_point_;
         int front_closing_iter_;
+        int front_bilateral_iter_;
 
-        int bottom_low_h_ ;
-        int bottom_low_s_;
-        int bottom_low_v_;
-        int bottom_high_h_;
-        int bottom_high_s_;
-        int bottom_high_v_;
+        int bottom_low_g_ ;
+        int bottom_low_r_;
+        int bottom_low_b_;
+        int bottom_high_g_;
+        int bottom_high_r_;
+        int bottom_high_b_;
         int bottom_closing_mat_point_;
         int bottom_closing_iter_;
         int bottom_opening_iter_;    
         int bottom_opening_mat_point_;
+        int bottom_bilateral_iter_;
 
         bool close_task= false;
 
@@ -63,21 +65,19 @@ class Base_class{
 	image_transport::Publisher front_thresholded_pub;
 	image_transport::Publisher front_marked_pub;
 
-        ros::Publisher front_x_coordinates_pub;
-        ros::Publisher front_y_coordinates_pub;
-        ros::Publisher front_z_coordinates_pub;
-        ros::Publisher bottom_x_coordinates_pub;
-        ros::Publisher bottom_y_coordinates_pub;
-        ros::Publisher bottom_z_coordinates_pub;
+        ros::Publisher front_x_coordinate_pub;
+        ros::Publisher front_y_coordinate_pub;
+        ros::Publisher front_z_coordinate_pub;
+        ros::Publisher bottom_x_coordinate_pub;
+        ros::Publisher bottom_y_coordinate_pub;
+        ros::Publisher bottom_z_coordinate_pub;
 
-        ros::Publisher front_coordinates_pub;
-        ros::Publisher bottom_coordinates_pub;
    	ros::Publisher detection_pub;
     
       public:
         Base_class();
         ros::NodeHandle nh;
-        image_transport::ImageTransport it();
+        image_transport::ImageTransport it;
 
         std_msgs::Float32 front_x_coordinate;
 	std_msgs::Float32 front_y_coordinate;
@@ -95,11 +95,13 @@ class Base_class{
         cv::Mat image_front_thresholded;
         cv::Mat image_bottom_thresholded;
 
-        void spinThreadFront();
-        void spinThreadBottom();
+        virtual void spinThreadFront() = 0;
+        virtual void spinThreadBottom() = 0;
         void bottomTaskHandling(bool status);
         void frontTaskHandling(bool status);
-        void loadParam();
+        void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
+        void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
+        virtual void loadParams() = 0;
         void init();
 
         boost::thread* spin_thread_bottom; 

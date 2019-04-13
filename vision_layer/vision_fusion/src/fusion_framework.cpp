@@ -182,8 +182,8 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
  	image_transport::ImageTransport it(nh);
 
-  image_transport::Subscriber image_raw_sub = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageFusionCallback);
-  image_transport::Publisher image_final_pub = it.advertise("/front_camera/preprocessed", 1);
+  image_transport::Subscriber image_raw_sub = it.subscribe("/anahita/front_camera/image_raw", 1, imageFusionCallback);
+  image_transport::Publisher image_final_pub = it.advertise("/anahita/front_camera/preprocessed", 1);
  	ros::Rate loop_rate(25);
 
   while(ros::ok())
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
           cv::add(exposedness_weight_cs, exposedness_weight_gw, sum);
 
           cv::divide(exposedness_weight_cs, sum, w1);
-       r   cv::divide(exposedness_weight_gw, sum, w2);
+          cv::divide(exposedness_weight_gw, sum, w2);
 
           LaplacianBlending lBlend(cs, gw, w1, w2, 4);
           result3=lBlend.blend();
