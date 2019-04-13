@@ -3,6 +3,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <color_calibration/visionConfig.h>
 #include <color_calibration/Dump.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
 
 int r_min, r_max, g_min, g_max, b_min, b_max;
 int opening_mat_point, opening_iter, closing_mat_point, closing_iter;
@@ -33,6 +36,24 @@ void callback (color_calibration::visionConfig &config, uint32_t level) {
     ROS_INFO("A color calibration configuration request");
 }
 
+cv::Mat image;
+
+void callback (const sensor_msgs::Image::ConstPtr &msg) {
+	try
+	{
+        image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+	}
+	catch (cv_bridge::Exception &e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+	}
+	catch (cv::Exception &e)
+	{
+		ROS_ERROR("cv exception: %s", e.what());
+	}
+
+}
+
 int main (int argc, char** argv) {
     ros::init (argc, argv, "color_calibrate");
     ros::NodeHandle nh;
@@ -42,10 +63,17 @@ int main (int argc, char** argv) {
     f = boost::bind(&callback, _1, _2);
     server.setCallback(f);
 
+    image_transport::ImageTransport it(nh);
+    image_transport::Subscriber image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &callback);
+    image_transport::Publisher image_pub = it.advertise("/color_calibration/thresholded", 1);
+
     ros::ServiceClient client = nh.serviceClient<color_calibration::Dump>("dump_parameters");
     color_calibration::Dump dump_srv;
 
-    ros::Rate loop_rate(50);
+    ros::Rate loop_rate(20);
+
+    cv::Mat image_thresholded;
+    sensor_msgs::ImagePtr msg;
 
     while (ros::ok()) {
 
@@ -57,7 +85,14 @@ int main (int argc, char** argv) {
             }
             save_params = false;
         }
-        
+
+        if ((b_max > b_min && g_max > g_min && r_max > r_min)) {
+            inRange(image, cv::Scalar(b_min, g_min, r_min), cv::Scalar(b_max, g_max, r_max), image_thresholded);
+        }
+
+        msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg();
+        image_pub.publish(msg);
+
         loop_rate.sleep();
         ros::spinOnce();
     }
