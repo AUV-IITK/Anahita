@@ -64,6 +64,8 @@ int main (int argc, char** argv) {
     ros::init (argc, argv, "color_calibrate");
     ros::NodeHandle nh;
 
+    ros::Time::init();
+
     dynamic_reconfigure::Server<color_calibration::visionConfig> server;
     dynamic_reconfigure::Server<color_calibration::visionConfig>::CallbackType f;
     f = boost::bind(&callback, _1, _2);
@@ -92,18 +94,22 @@ int main (int argc, char** argv) {
             }
             save_params = false;
         }
-        temp_src = image.clone();
-        vision_commons::Filter::bilateral(temp_src, bilateral_iter);
-        image_thresholded = vision_commons::Threshold::threshold(temp_src, b_min, b_max,
-                                                                g_min, g_max, r_min, r_max);
-        vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point + 1, 
-                                    opening_mat_point, opening_mat_point, opening_iter);
-        vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point + 1, 
-                                    closing_mat_point, closing_mat_point, closing_iter);
-
-        msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg();
-        image_pub.publish(msg);
-
+        if (!image.empty()) {
+            temp_src = image.clone();
+            vision_commons::Filter::bilateral(temp_src, bilateral_iter);
+            image_thresholded = vision_commons::Threshold::threshold(temp_src, b_min, b_max,
+                                                                    g_min, g_max, r_min, r_max);
+            std::cout << opening_mat_point << " " << opening_iter << std::endl;
+            vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point + 1, 
+                                        opening_mat_point, opening_mat_point, opening_iter);
+            vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point + 1, 
+                                        closing_mat_point, closing_mat_point, closing_iter);
+            msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_thresholded).toImageMsg();
+            image_pub.publish(msg);
+        }
+        else {
+            ROS_INFO("Image empty");
+        }
         loop_rate.sleep();
         ros::spinOnce();
     }

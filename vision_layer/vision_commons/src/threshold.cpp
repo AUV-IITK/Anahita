@@ -11,5 +11,7 @@ cv::Mat vision_commons::Threshold::threshold(cv::Mat &raw, int low_a,
   cv::Mat image_thresholded;
   if ((high_a > low_a && high_b > low_b && high_c > low_c))
     inRange(raw, cv::Scalar(low_a, low_b, low_c), cv::Scalar(high_a, high_b, high_c), image_thresholded);
+  else 
+    image_thresholded = raw.clone();
   return image_thresholded;
 }
