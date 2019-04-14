@@ -59,6 +59,8 @@ class Base_class{
         image_transport::Subscriber front_image_sub;
         image_transport::Subscriber bottom_image_sub;
 
+        image_transport::Subscriber enhanced_image_sub;
+
 	image_transport::Publisher bottom_thresholded_pub;
 	image_transport::Publisher bottom_marked_pub;
 	
@@ -94,6 +96,7 @@ class Base_class{
         cv::Mat image_bottom_marked;
         cv::Mat image_front_thresholded;
         cv::Mat image_bottom_thresholded;
+        cv::Mat enhanced_image;
 
         virtual void spinThreadFront() = 0;
         virtual void spinThreadBottom() = 0;
@@ -101,6 +104,7 @@ class Base_class{
         void frontTaskHandling(bool status);
         void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
         void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
+        void fusionCallback(const sensor_msgs::Image::ConstPtr &msg);
         virtual void loadParams() = 0;
         void init();
 

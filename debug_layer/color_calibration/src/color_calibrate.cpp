@@ -72,7 +72,7 @@ int main (int argc, char** argv) {
     server.setCallback(f);
 
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &callback);
+    image_transport::Subscriber image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &callback);
     image_transport::Publisher image_pub = it.advertise("/color_calibration/thresholded", 1);
 
     ros::ServiceClient client = nh.serviceClient<color_calibration::Dump>("dump_parameters");
@@ -99,7 +99,6 @@ int main (int argc, char** argv) {
             vision_commons::Filter::bilateral(temp_src, bilateral_iter);
             image_thresholded = vision_commons::Threshold::threshold(temp_src, b_min, b_max,
                                                                     g_min, g_max, r_min, r_max);
-            std::cout << opening_mat_point << " " << opening_iter << std::endl;
             vision_commons::Morph::open(image_thresholded, 2 * opening_mat_point + 1, 
                                         opening_mat_point, opening_mat_point, opening_iter);
             vision_commons::Morph::close(image_thresholded, 2 * closing_mat_point + 1, 
