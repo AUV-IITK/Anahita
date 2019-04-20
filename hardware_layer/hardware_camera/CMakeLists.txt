@@ -6,10 +6,18 @@ project(hardware_camera)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   usb_cam
+  cv_bridge
+  image_transport
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # roslint_cpp()
+
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -23,7 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   #  INCLUDE_DIRS include
   #  LIBRARIES
-  CATKIN_DEPENDS usb_cam
+  CATKIN_DEPENDS usb_cam cv_bridge image_transport sensor_msgs
   #  DEPENDS system_lib
 )
 

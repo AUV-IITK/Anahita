@@ -3,13 +3,10 @@
   <name>vision_tasks</name>
   <version>1.0.0</version>
   <description>The vision_tasks package</description>
-
-  <maintainer email="naishadh_parmar@live.com">Naishadh Parmar</maintainer>
-
+  <maintainer email="ayush_gupta@live.com">Ayush Gupta</maintainer>
   <license>BSD 3-Clause license</license>
-
-  <author email="naishadh_parmar@live.com">Naishadh Parmar</author>
-
+  <author email="ayushgup@iitk.ac.in">Ayush Gupta</author>
+  <license>BSD 3-Clause license</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>roscpp</build_depend>
@@ -32,7 +29,6 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
-
   <export>
   </export>
   

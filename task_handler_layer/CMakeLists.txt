@@ -103,7 +103,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES singleBuoy line gate moveSideward moveStraight moveDownward depthStabilise
+  # LIBRARIES singleBuoy line gate moveSideward moveStraight moveDownward depthStabilise
   CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs motion_layer message_generation
   # DEPENDS system_lib
 )
@@ -119,10 +119,6 @@ include_directories(
   ${motion_layer_INCLUDE_DIRS}
   include
 )
-
-## Declare a C++ library
-# add_library(targetManager SHARED src/targetManager.cpp include/targetManager.h)
-# target_link_libraries(targetManager ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -174,7 +170,7 @@ target_link_libraries(torpedo ${catkin_LIBRARIES})
 
 add_library(marker_dropper SHARED src/marker_dropper.cpp include/marker_dropper.h)
 add_dependencies(marker_dropper ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(marker_dropper line ${catkin_LIBRARIES})
+target_link_libraries(marker_dropper ${catkin_LIBRARIES})
 
 add_library(octagon SHARED src/octagon.cpp include/octagon.h)
 add_dependencies(octagon ${task_handler_layer_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

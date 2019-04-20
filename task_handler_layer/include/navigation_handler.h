@@ -12,10 +12,10 @@
 #include <move_downward_server.h>
 #include <depth_stabilise.h>
 
-#include <motion_layer/forwardPIDAction.h>
-#include <motion_layer/upwardPIDAction.h>
-#include <motion_layer/sidewardPIDAction.h>
-#include <motion_layer/anglePIDAction.h>
+#include <motion_layer/surgePIDAction.h>
+#include <motion_layer/heavePIDAction.h>
+#include <motion_layer/swayPIDAction.h>
+#include <motion_layer/yawPIDAction.h>
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -56,14 +56,14 @@ private:
     moveDownward move_downward;
     depthStabilise depth_stabilise;
 
-    actionlib::SimpleActionClient<motion_layer::forwardPIDAction> forwardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::upwardPIDAction> upwardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::sidewardPIDAction> sidewardPIDClient;
-    actionlib::SimpleActionClient<motion_layer::anglePIDAction> anglePIDClient;
+    actionlib::SimpleActionClient<motion_layer::surgePIDAction> surgePIDClient;
+    actionlib::SimpleActionClient<motion_layer::heavePIDAction> heavePIDClient;
+    actionlib::SimpleActionClient<motion_layer::swayPIDAction> swayPIDClient;
+    actionlib::SimpleActionClient<motion_layer::yawPIDAction> yawPIDClient;
 
-    motion_layer::sidewardPIDGoal sidewardPIDGoal;
-    motion_layer::forwardPIDGoal forwardPIDGoal;
-    motion_layer::upwardPIDGoal upwardPIDGoal;
-    motion_layer::anglePIDGoal anglePIDGoal;
+    motion_layer::swayPIDGoal swayPIDGoal;
+    motion_layer::surgePIDGoal surgePIDGoal;
+    motion_layer::heavePIDGoal heavePIDGoal;
+    motion_layer::yawPIDGoal yawPIDGoal;
 
 };

@@ -1,7 +1,7 @@
 #include <single_buoy.h>
 
-singleBuoy::singleBuoy(): forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID"), 
-                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), th(30) {
+singleBuoy::singleBuoy(): surgePIDClient("surgePID"), swayPIDClient("swayPID"), 
+                        yawPIDClient("yawPID"), heavePIDClient("heavePID"), th(30) {
     sub_ = nh_.subscribe("/anahita/x_coordinate", 1, &singleBuoy::callback, this);
 }
 singleBuoy::~singleBuoy() {}
@@ -13,30 +13,30 @@ bool singleBuoy::setActive(bool status) {
         ros::Duration(1.5).sleep();
         nh_.setParam("/enable_pressure", false);
 
-        ROS_INFO("Waiting for sidewardPID server to start, task buoy.");
-        sidewardPIDClient.waitForServer();
+        ROS_INFO("Waiting for swayPID server to start, task buoy.");
+        swayPIDClient.waitForServer();
 
-        sidewardPIDgoal.target_distance = 0;
-        sidewardPIDClient.sendGoal(sidewardPIDgoal);
-
-        ///////////////////////////////////////////////////
-
-        ROS_INFO("Waiting for upwardPID server to start.");
-        upwardPIDClient.waitForServer();
-
-        upwardPIDgoal.target_depth = 0; // for gazebo
-        upwardPIDClient.sendGoal(upwardPIDgoal);
+        swayPIDgoal.target_sway = 0;
+        swayPIDClient.sendGoal(swayPIDgoal);
 
         ///////////////////////////////////////////////////
 
-        ROS_INFO("Waiting for anglePID server to start.");
-        anglePIDClient.waitForServer();
+        ROS_INFO("Waiting for heavePID server to start.");
+        heavePIDClient.waitForServer();
 
-        anglePIDGoal.target_angle = 0;
-        anglePIDClient.sendGoal(anglePIDGoal);
+        heavePIDgoal.target_heave = 0; // for gazebo
+        heavePIDClient.sendGoal(heavePIDgoal);
 
-        if (!th.isAchieved(0, 40, "sideward")) {
-            ROS_INFO("Unable to achieve sideward goal");
+        ///////////////////////////////////////////////////
+
+        ROS_INFO("Waiting for yawPID server to start.");
+        yawPIDClient.waitForServer();
+
+        yawPIDGoal.target_yaw = 0;
+        yawPIDClient.sendGoal(yawPIDGoal);
+
+        if (!th.isAchieved(0, 40, "sway")) {
+            ROS_INFO("Unable to achieve sway goal");
         }
 
         /////////////////////////////////////////////////////
@@ -49,30 +49,30 @@ bool singleBuoy::setActive(bool status) {
             if (forward_distance <= 125) { break; }
         }
 
-        ROS_INFO("Waiting for forwardPID server to start.");
-        forwardPIDClient.waitForServer();
+        ROS_INFO("Waiting for surgePID server to start.");
+        surgePIDClient.waitForServer();
 
-        forwardPIDgoal.target_distance = 50;
-        forwardPIDClient.sendGoal(forwardPIDgoal);
+        surgePIDgoal.target_surge = 50;
+        surgePIDClient.sendGoal(surgePIDgoal);
 
-        if (!th.isAchieved(50, 10, "forward")) {
-            ROS_INFO("Unable to achieve forward goal");
+        if (!th.isAchieved(50, 10, "surge")) {
+            ROS_INFO("Unable to achieve surge goal");
         }
 
         ROS_INFO("forward distance equal 50");
     	
-    	// if (!th.isAchieved(0, 35, "sideward")) {
-        //     ROS_INFO("Unable to achieve sideward goal");
+    	// if (!th.isAchieved(0, 35, "sway")) {
+        //     ROS_INFO("Unable to achieve sway goal");
         // }
 
         ROS_INFO("Hitting the buoy now!");
 
         depthStabilise depth_stabilise;
-        depth_stabilise.setActive(true, "current");
+        depth_stabilise.activate("current");
 
-        forwardPIDClient.cancelGoal();
-        sidewardPIDClient.cancelGoal();
-    	upwardPIDClient.cancelGoal();
+        surgePIDClient.cancelGoal();
+        swayPIDClient.cancelGoal();
+    	heavePIDClient.cancelGoal();
 
         nh_.setParam("/kill_signal", true);
         ros::Duration(0.5).sleep();
@@ -93,15 +93,15 @@ bool singleBuoy::setActive(bool status) {
 
         ROS_INFO("moving backward finished");
 
-        if (!th.isAchieved(0, 2, "angle")) {
-            ROS_INFO("Unable to achieve angle goal");
+        if (!th.isAchieved(0, 2, "yaw")) {
+            ROS_INFO("Unable to achieve yaw goal");
             return false;
         }
 
         ROS_INFO("Buoy Task Finished!");
     }
     else {
-        anglePIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
 
         ROS_INFO("Closing Single Buoy");
         ROS_INFO("Killing the thrusters");

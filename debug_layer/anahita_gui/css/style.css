@@ -1,0 +1,67 @@
+body {
+    position: relative;
+  }
+  .affix {
+    top:0;
+    width: 100%;
+    z-index: 9999 !important;
+  }
+  .navbar {
+    margin-bottom: 0px;
+  }
+  .affix ~ .container-fluid {
+    position: relative;
+    top: 50px;
+  }
+
+  #section1 {
+    padding-top:50px;
+    color: #fff;
+  }
+
+  #section2 {
+    padding-top: 50px;
+    height:500px;
+    color: #fff;
+  }
+table, th, td {
+    border: 2px solid black;
+    text-align: center;
+
+    color: black;
+    padding=15px;
+    font-size:20px;
+    width:200px;
+}
+
+th{
+  column-width: 200;
+  border: 2px solid black;
+  width:200px;
+}
+i {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}

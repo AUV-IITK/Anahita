@@ -10,9 +10,16 @@ pitchPIDAction::pitchPIDAction(std::string name) :
     goal_ = 0;
 
     // subscribe to the data topic of interest
-    sub_ = nh_.subscribe("/mavros/imu/pitch", 1, &pitchPIDAction::callBack, this);
+    sub_ = nh_.subscribe("/anahita/imu/pitch", 1, &pitchPIDAction::callBack, this);
 
-    pitch.setPID(2.0, 0, 0.65, 1);
+    double p, i, d, band;
+
+    nh_.getParam("/pitch/p", p);
+    nh_.getParam("/pitch/i", i);
+    nh_.getParam("/pitch/d", d);
+    nh_.getParam("/pitch/band", band);
+
+    pitch.setPID(p, i, d, band);
 
     as_.start();
     ROS_INFO("pitch_PID_server Initialised");

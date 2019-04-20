@@ -1,0 +1,8 @@
+#goal definition
+float32 target_heave
+---
+#result definition
+float32 final_heave
+---
+#feedback
+float32 current_heave

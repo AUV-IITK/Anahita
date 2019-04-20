@@ -1,52 +1,50 @@
 #include <navigation_handler.h>
 
-navigationHandler::navigationHandler () : move_straight(0), move_sideward(0), move_downward(0), th(20),
-                                        anglePIDClient("turnPID"), upwardPIDClient("upwardPID"), 
-                                        forwardPIDClient("forwardPID"), sidewardPIDClient("sidewardPID") {}
+navigationHandler::navigationHandler () : th(20), yawPIDClient("yawPID"), heavePIDClient("heavePID"), 
+                                        surgePIDClient("surgePID"), swayPIDClient("swayPID") {}
 
 navigationHandler::~navigationHandler () {}
 
 void navigationHandler::stabilise (std::string type) {
     
-    depth_stabilise.setActive(true, "reference");    
-    move_straight.setThrust(0);
-    move_straight.setActive(true, type);
+    depth_stabilise.activate("reference");
+    move_straight.activate(0, type);
     
     ros::Duration(7).sleep();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave");
         return;
     }
 
-    move_straight.setActive(false, type);
-    depth_stabilise.setActive(false, "reference");
+    move_straight.deActivate ();
+    depth_stabilise.deActivate ();
 }
 
 void navigationHandler::manouver () {
 
     nh.setParam("/use_local_yaw", true);
 
-    depth_stabilise.setActive(true, "reference");
+    depth_stabilise.activate("reference");
     nh.setParam("/enable_pressure", true);
     nh.setParam("/disable_imu", false);
 
-    ROS_INFO("Waiting for anglePID server to start, Navigation Handle");
-    anglePIDClient.waitForServer();
+    ROS_INFO("Waiting for yawPID server to start, Navigation Handle");
+    yawPIDClient.waitForServer();
 
-    ROS_INFO("anglePID server started, sending goal");
-    anglePIDGoal.target_angle = 0;
-    anglePIDClient.sendGoal(anglePIDGoal);
+    ROS_INFO("yawPID server started, sending goal");
+    yawPIDGoal.target_yaw = 0;
+    yawPIDClient.sendGoal(yawPIDGoal);
 
-    if (!th.isAchieved(0, 2, "angle")) {
-        ROS_INFO("Time limit exceeded for angle, NV");
+    if (!th.isAchieved(0, 2, "yaw")) {
+        ROS_INFO("Time limit exceeded for yaw, NV");
         ros::Duration(3).sleep();
         // return;
     }
-    anglePIDClient.cancelGoal();
+    yawPIDClient.cancelGoal();
 
-    if (!th.isAchieved(0, 10, "upward")) {
-        ROS_INFO("Time limit exceeded for upward, NV");
+    if (!th.isAchieved(0, 10, "heave")) {
+        ROS_INFO("Time limit exceeded for heave, NV");
         // return;
     }
 
@@ -55,7 +53,8 @@ void navigationHandler::manouver () {
         move_straight.setThrust(50); 
     }
     else { move_straight.setThrust(-50); }
-    move_straight.setActive(true, "local_yaw");
+
+    move_straight.activate(-50, "local_yaw");
 
     double then = ros::Time::now().toSec();
     double now = ros::Time::now().toSec();
@@ -78,7 +77,7 @@ void navigationHandler::manouver () {
         temp = stop_manouver;
         mtx.unlock();
         if (temp) {
-            move_straight.setActive(false, "local_yaw");
+            move_straight.deActivate ();
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
     	    ROS_INFO("Stopping signal detected");
@@ -86,7 +85,7 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();    
     }
-    move_straight.setActive(false, "local_yaw");
+    move_straight.deActivate ();
 
     then = ros::Time::now().toSec();
     now = ros::Time::now().toSec();
@@ -97,9 +96,14 @@ void navigationHandler::manouver () {
 
     ROS_INFO("Moving Right, NV");
 
-    if (direction == 1) { move_straight.setThrust(50); }
-    else { move_straight.setThrust(-50); }
-    move_straight.setActive(true, "local_yaw");
+    if (direction == 1) { 
+        // move_straight.setThrust(50); 
+        move_straight.activate(50, "local_yaw");
+    }
+    else { 
+        // move_straight.setThrust(-50); 
+        move_straight.activate(-50, "local_yaw");
+    }
 
     while (ros::ok()) {
 
@@ -113,7 +117,7 @@ void navigationHandler::manouver () {
         temp = stop_manouver;
         mtx.unlock();
         if (temp) {
-            move_straight.setActive(false, "local_yaw");
+            move_straight.deActivate ();
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
 	        ROS_INFO("Stopping signal detected");
@@ -121,12 +125,17 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();
     }
-    move_straight.setActive(false, "local_yaw");
+    move_straight.deActivate ();
     nh.setParam("/pwm_sway", 0);
 
-    if (direction == 1) { move_straight.setThrust(35); }
-    else { move_straight.setThrust(-35); }
-    move_straight.setActive(true, "local_yaw");
+    if (direction == 1) { 
+        // move_straight.setThrust(35);
+        move_straight.activate(35, "local_yaw"); 
+    }
+    else { 
+        // move_straight.setThrust(-35);
+        move_straight.activate(-35, "local_yaw");
+    }
 
     nh.setParam("/pwm_sway", -50);
  
@@ -148,7 +157,7 @@ void navigationHandler::manouver () {
         temp = stop_manouver;
         mtx.unlock();
         if (temp) {
-            move_straight.setActive(false, "local_yaw");
+            move_straight.deActivate ();
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
 	    ROS_INFO("Stopping signal detected");
@@ -157,13 +166,13 @@ void navigationHandler::manouver () {
         loop_rate.sleep();
     }
 
-    move_straight.setActive(false, "local_yaw");
+    move_straight.deActivate ();
     nh.setParam("/pwm_sway", 0);
 
     ros::Duration(2).sleep();
 
     move_straight.setThrust(0);
-    move_straight.setActive(true, "local_yaw");
+    move_straight.activate(0, "local_yaw");
 
     then = ros::Time::now().toSec();
     now = ros::Time::now().toSec();
@@ -186,7 +195,7 @@ void navigationHandler::manouver () {
         mtx.unlock();
 
         if (temp) {
-            move_straight.setActive(false, "local_yaw");
+            move_straight.deActivate ();
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
     	    ROS_INFO("Stopping signal detected");
@@ -194,11 +203,16 @@ void navigationHandler::manouver () {
         }
         loop_rate.sleep();
     }
-    move_straight.setActive(false, "local_yaw");
+    move_straight.deActivate ();
     
-    if (direction == 1) { move_straight.setThrust(-50); }
-    else { move_straight.setThrust(50); }
-    move_straight.setActive(true, "local_yaw");
+    if (direction == 1) { 
+        // move_straight.setThrust(-50); 
+        move_straight.activate (-50, "local_yaw");    
+    }
+    else { 
+        // move_straight.setThrust(50); 
+        move_straight.activate (50, "local_yaw");
+    }
 
     then = ros::Time::now().toSec();
     now = ros::Time::now().toSec();
@@ -218,7 +232,7 @@ void navigationHandler::manouver () {
         mtx.unlock();
 
         if (temp) {
-            move_straight.setActive(false, "local_yaw");
+            move_straight.deActivate ();
             nh.setParam("/kill_signal", true);
             nh.setParam("/use_local_yaw", false);
 	        ROS_INFO("Stopping signal detected");
@@ -227,8 +241,8 @@ void navigationHandler::manouver () {
         loop_rate.sleep();
     }
 
-    move_straight.setActive(false, "local_yaw");
-    depth_stabilise.setActive(false, "reference");
+    move_straight.deActivate ();
+    depth_stabilise.deActivate ();
     nh.setParam("/use_local_yaw", false);
 }
 
@@ -362,18 +376,18 @@ bool navigationHandler::scan (std::string object) {
     nh.setParam("/use_reference_yaw", true);
     nh.setParam("/current_task", object);
 
-    depth_stabilise.setActive(true, "reference");
+    depth_stabilise.activate ("reference");
 
     nh.setParam("/pwm_yaw", 25);
     
     if (th.isDetected(object, 20)) {
-        anglePIDClient.cancelGoal();
+        yawPIDClient.cancelGoal();
         nh.setParam("/kill_signal", true);
         return true;
     }
 
     nh.setParam("/kill_signal", true);
-    depth_stabilise.setActive(true, "reference");
+    depth_stabilise.deActivate ();
 
     return false;
 }
@@ -383,12 +397,12 @@ bool navigationHandler::dive (std::string target) {
     nh.setParam("/enable_pressure", true);
     nh.setParam("/use_referene_yaw", true);
 
-    ROS_INFO("Waiting for upwardPID server to start.");
-    upwardPIDClient.waitForServer();
+    ROS_INFO("Waiting for heavePID server to start.");
+    heavePIDClient.waitForServer();
 
-    ROS_INFO("upwardPID server started, sending goal.");
-    upwardPIDGoal.target_depth = 40;
-    upwardPIDClient.sendGoal(upwardPIDGoal);
+    ROS_INFO("heavePID server started, sending goal.");
+    heavePIDGoal.target_heave = 40;
+    heavePIDClient.sendGoal(heavePIDGoal);
 
     if (scan(target)) { 
         nh.setParam("/use_reference_yaw", false);

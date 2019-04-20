@@ -53,5 +53,3 @@ target_link_libraries(dvl_library ${catkin_LIBRARIES})
 add_executable(dvl_node src/hardware_dvl_ethernet/dvl_node.cpp src/hardware_dvl_ethernet/dvl_connection.cpp)
 target_link_libraries(dvl_node dvl_library ${catkin_LIBRARIES})
 # add_dependencies(dvl_node dvl_generate_messages_cpp)
-
-

@@ -11,10 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  hyperion_msgs
+  anahita_msgs
   roscpp
   rospy
   std_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -25,7 +26,7 @@ find_package(motion_layer REQUIRED)
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -59,11 +60,10 @@ find_package(motion_layer REQUIRED)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  CurrentTask.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
@@ -71,7 +71,7 @@ find_package(motion_layer REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs hyperion_msgs
+  actionlib_msgs std_msgs anahita_msgs geometry_msgs
 )
 
 ################################################
@@ -106,7 +106,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer hyperion_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,115 +137,47 @@ include_directories(
 add_executable(pwm_publisher src/pwm_publisher.cpp)
 target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
-add_executable(pressure_publisher src/pressure_publisher.cpp)
-target_link_libraries(pressure_publisher ${catkin_LIBRARIES})
-
 add_executable(master src/master.cpp)
 add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(master 
-  singleBuoy 
   gate
-  line
   moveSideward 
   moveStraight 
   task_handler 
-  torpedo 
   moveDownward 
   marker_dropper
-  octagon
   navigation_handler
   ${catkin_LIBRARIES}
 )
 
-# add_executable(temp src/temp.cpp)
-# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(temp 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(test_node src/test_node.cpp)
+add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_node
+  moveSideward 
+  moveStraight 
+  task_handler 
+  moveDownward 
+  marker_dropper
+  navigation_handler
+  ${catkin_LIBRARIES}
+)
 
-# add_executable(master2 src/master2.cpp)
-# add_dependencies(master2 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master2 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
-
-# add_executable(master3 src/master3.cpp)
-# add_dependencies(master3 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master3 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
-
-# add_executable(master4 src/master4.cpp)
-# add_dependencies(master4 master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(master4 
-#   singleBuoy 
-#   gate
-#   line
-#   moveSideward 
-#   moveStraight 
-#   task_handler 
-#   torpedo 
-#   moveDownward 
-#   marker_dropper
-#   octagon
-#   navigation_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(gazebo_pwm_pub src/gazebo_pwm_pub.cpp)
+target_link_libraries(gazebo_pwm_pub ${catkin_LIBRARIES})
 
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
-  sidewardPIDServer 
-  upwardPIDServer 
-  anglePIDServer 
-  forwardPIDServer 
+  swayPIDServer 
+  heavePIDServer 
+  yawPIDServer 
+  surgePIDServer 
   rollPIDServer 
   pitchPIDServer 
   ${catkin_LIBRARIES}
 )
 
-# add_executable(temp src/temp.cpp)
-# target_link_libraries(temp ${catkin_LIBRARIES})
-
-# add_executable(temp src/temp.cpp)
-# add_dependencies(temp master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(temp
-#   line
-#   task_handler
-#   ${catkin_LIBRARIES}
-# )
+add_executable(local_vision_odom src/local_vision_odom.cpp)
+target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
