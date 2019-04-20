@@ -1,0 +1,10 @@
+<launch>
+    <arg name="tam_file" default="$(find master_layer)/config/anahita_tam.yaml"/>
+    <node pkg="master_layer"
+        type="anahita_thruster_manager.py"
+        name="anahita_thruster_allocator"
+        output="screen">
+        <!-- Load thruster allocation matrix -->
+        <rosparam file="$(arg tam_file)" command="load"/>
+    </node>
+</launch>

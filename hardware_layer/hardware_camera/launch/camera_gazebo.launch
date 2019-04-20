@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="hardware_camera" name="gazebo_image_pub" type="gazebo_image_pub" />
-</launch>

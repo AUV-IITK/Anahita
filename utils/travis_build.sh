@@ -12,4 +12,5 @@ catkin_make --pkg hardware_dvl
 catkin_make --pkg hardware_camera
 catkin_make --pkg hardware_pressure
 catkin_make --pkg pid_calibration
+catkin_make --pkg viso2_ros
 catkin_make --pkg master_layer

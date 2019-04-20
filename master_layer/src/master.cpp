@@ -23,6 +23,8 @@
 #include <task_handler.h>
 #include <navigation_handler.h>
 
+#include <master_layer/CurrentTask.h>
+
 #define FORWARD 1
 #define BACKWARD -1
 
@@ -65,6 +67,9 @@ int main(int argc, char** argv) {
     motion_layer::yawPIDGoal yawPIDGoal;
     motion_layer::rollPIDGoal rollPIDGoal;
     motion_layer::pitchPIDGoal pitchPIDGoal;
+
+    ros::ServiceClient client = nh.serviceClient<master_layer::CurrentTask>("current_task");
+    master_layer::CurrentTask currentTask_srv;
 
     /////////////////////////////////////////////
 
