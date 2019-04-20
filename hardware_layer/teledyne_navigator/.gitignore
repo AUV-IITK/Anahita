@@ -1,0 +1,8 @@
+# Python
+*.py[cod]
+
+# Temporary files
+*~
+*.swo
+*.swp
+.DS_Store
