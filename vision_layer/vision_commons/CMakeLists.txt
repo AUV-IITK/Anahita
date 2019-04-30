@@ -10,7 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   image_transport
   dynamic_reconfigure
+  sensor_msgs
 )
+find_package(PCL 1.2 REQUIRED)
 
 roslint_cpp()
 
@@ -27,7 +29,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+  ${PCL_INCLUDE_DIRS}
 )
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 add_library(vision_commons src/filter.cpp src/contour.cpp src/geometry.cpp src/morph.cpp src/threshold.cpp)
 target_link_libraries(vision_commons ${OpenCV_LIBRARIES} )
@@ -43,6 +48,6 @@ add_executable(image_save helper_nodes/image_save.cpp)
 target_link_libraries(image_save ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_executable(depth_image_pub helper_nodes/depth_image_pub.cpp)
-target_link_libraries(depth_image_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+target_link_libraries(depth_image_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons ${PCL_LIBRARIES})
 
 install(DIRECTORY include/vision_commons/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
