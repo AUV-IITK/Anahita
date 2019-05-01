@@ -1,0 +1,11 @@
+<launch>
+
+  <!-- This can be replaced with your favourite visual odometry node. -->
+  
+  <include file="$(find viso2_ros)/launch/stereo_odometer.launch" />
+
+  <node pkg="elas_ros" type="elas_ros" name="elas" args="stereo:=anahita image:=image_rect_color" respawn="true">
+    <param name="approximate_sync" value="true" />
+  </node>
+
+</launch>
