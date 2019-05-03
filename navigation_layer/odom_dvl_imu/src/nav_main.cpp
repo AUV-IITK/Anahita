@@ -4,21 +4,26 @@ namespace navigation
 {
     NavigationNode::NavigationNode(const ros::NodeHandlePtr& nh) : nh_(nh), quaternion_(0.0,0.0,0.0,0.0) 
     {
-    	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
-  		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,&DvlData::DvlPressureCallback, &dvlData_);
-    	imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, &IMUData::IMUMsgCallback, &imuData_);
+    	dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100, 
+									&DvlData::DvlTwistCallback, &dvlData_);
+  		dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100, 
+		  								&DvlData::DvlPressureCallback, &dvlData_);
+    	imuSubscriber_ = nh_->subscribe("/anahita/imu", 100, 
+								&IMUData::IMUMsgCallback, &imuData_);
 
-      // navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", SetDepthOffsetCallback);
-      // navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", SetWorldXYOffsetCallback);
+		// navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", 
+	  	// 														SetDepthOffsetCallback);
+		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", 
+		// 												SetWorldXYOffsetCallback);
 
-      navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
-      position_          = Eigen::Vector3d::Zero();
-      incrementPosition_ = Eigen::Vector3d::Zero();
-      velocity_          = Eigen::Vector3d::Zero();
-      angularVelocity_   = Eigen::Vector3d::Zero();
-      eulerAngel_        = Eigen::Vector3d::Zero();
-      zOffset_ 		   = 0;
-      ROS_INFO("Set up initial constructor successfully");
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+		position_          = Eigen::Vector3d::Zero();
+		incrementPosition_ = Eigen::Vector3d::Zero();
+		velocity_          = Eigen::Vector3d::Zero();
+		angularVelocity_   = Eigen::Vector3d::Zero();
+		eulerAngel_        = Eigen::Vector3d::Zero();
+		zOffset_ 		   = 0;
+		ROS_INFO("Set up initial constructor successfully");
 	}
 
 	NavigationNode::~NavigationNode()
@@ -88,7 +93,7 @@ namespace navigation
 	{
 		geometry_msgs::TransformStamped odom_trans;
     	odom_trans.header.stamp = current_time;
-    	odom_trans.header.frame_id = "odom";
+    	odom_trans.header.frame_id = "world";
     	odom_trans.child_frame_id = "base_link";
 
     	odom_trans.transform.translation.x = position.x();
@@ -99,18 +104,18 @@ namespace navigation
 		odom_trans.transform.rotation.y = quaternion.y();
 		odom_trans.transform.rotation.z = quaternion.z();
 
-    	//send the transform
+    	// send the transform
     	odom_broadcaster.sendTransform(odom_trans);
 	}
 
     void NavigationNode::PublishData(ros::Time &current_time)
     {
         nav_msgs::Odometry odometry_msg;
-        odometry_msg.header.frame_id = "odom";
-		    odometry_msg.child_frame_id = "base_link";
+        odometry_msg.header.frame_id = "world";
+		odometry_msg.child_frame_id = "base_link";
         odometry_msg.header.stamp = current_time;
 
-        FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
+        FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
         FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
         navigationOdomPublisher_.publish(odometry_msg);
@@ -121,10 +126,11 @@ namespace navigation
 		msg.pose.pose.position.x    = position.x();
 		msg.pose.pose.position.y    = position.y();
 		msg.pose.pose.position.z    = position.z();
-		msg.pose.pose.orientation.x = angle.x();
-		msg.pose.pose.orientation.y = angle.y();
-		msg.pose.pose.orientation.z = angle.z();
-		ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f", position.x(), position.y(), position.z(), angle.x(), angle.y(), angle.z());
+		msg.pose.pose.orientation.x = quaternion.x();
+		msg.pose.pose.orientation.y = quaternion.y();
+		msg.pose.pose.orientation.z = quaternion.z();
+		msg.pose.pose.orientation.w = quaternion.w();
+		ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f", position.x(), position.y(), position.z(), eulerAngel_.x(), eulerAngel_.y(), eulerAngel_.z());
 
 	}
 

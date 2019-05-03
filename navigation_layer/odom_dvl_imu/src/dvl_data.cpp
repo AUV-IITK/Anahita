@@ -26,11 +26,11 @@ namespace navigation{
     DvlData::~DvlData() { }
     void DvlData::DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg)
     {
-        // dvl_twist_ = msg;
-        dvl_twist_.header = msg.header;
-        dvl_twist_.twist = msg.twist.twist;
-        dvl_twist_.twist.linear.x = msg.twist.twist.linear.z;
-        dvl_twist_.twist.linear.z = -msg.twist.twist.linear.x;
+        dvl_twist_ = msg;
+        // dvl_twist_.header = msg.header;
+        // dvl_twist_.twist = msg.twist;
+        dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.z;
+        dvl_twist_.twist.twist.linear.z = -msg.twist.twist.linear.x;
 
         SetNewDataReady();
     }

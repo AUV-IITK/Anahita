@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   dynamic_reconfigure
+  vision_commons
 )
 
 ## System dependencies are found with CMake's conventions
@@ -24,7 +25,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -107,7 +108,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES color_calibration
-CATKIN_DEPENDS cv_bridge image_transport sensor_msgs std_msgs dynamic_reconfigure message_runtime
+CATKIN_DEPENDS cv_bridge image_transport sensor_msgs std_msgs dynamic_reconfigure message_runtime vision_commons
 #  DEPENDS system_lib
 )
 
