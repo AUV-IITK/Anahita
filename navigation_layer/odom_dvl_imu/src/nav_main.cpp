@@ -91,10 +91,11 @@ namespace navigation
 
 	void NavigationNode::BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time)
 	{
+		ROS_INFO("Publishing a transform");
 		geometry_msgs::TransformStamped odom_trans;
     	odom_trans.header.stamp = current_time;
-    	odom_trans.header.frame_id = "world";
-    	odom_trans.child_frame_id = "base_link";
+    	odom_trans.header.frame_id = "odom";
+    	odom_trans.child_frame_id = "anahita/base_link";
 
     	odom_trans.transform.translation.x = position.x();
     	odom_trans.transform.translation.y = position.y();
@@ -106,13 +107,14 @@ namespace navigation
 
     	// send the transform
     	odom_broadcaster.sendTransform(odom_trans);
+		ROS_INFO("Published the transform");
 	}
 
     void NavigationNode::PublishData(ros::Time &current_time)
     {
         nav_msgs::Odometry odometry_msg;
-        odometry_msg.header.frame_id = "world";
-		odometry_msg.child_frame_id = "base_link";
+        odometry_msg.header.frame_id = "odom";
+		odometry_msg.child_frame_id = "anahita/base_link";
         odometry_msg.header.stamp = current_time;
 
         FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
