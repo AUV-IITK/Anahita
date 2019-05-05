@@ -1,7 +1,7 @@
 <launch>
     <!-- Launches ELAS node, and rectification nodes for input --> 
     <!-- Arguments: input stereo namespace and output elas namespace -->
-    <arg name="stereo" default="stereo"/>
+    <arg name="stereo" default="anahita"/>
     <arg name="elas_ns" default="elas"/>
     
     <!-- If you already have rectified camera images remove the image_proc nodes -->
