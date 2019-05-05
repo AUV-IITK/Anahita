@@ -41,9 +41,9 @@ void Gate::spinThreadFront()
 			ROS_INFO("Found Image");
 			temp_src = image_front.clone();
 			vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
-			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_low_b_,
-																			front_low_g_, front_low_g_,
-																			front_low_b_, front_low_b_);
+			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
+																			front_low_g_, front_high_g_,
+																			front_low_r_, front_high_r_);
 			vision_commons::Morph::open(image_front_thresholded, 2 * front_opening_mat_point_ + 1, 
 										front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
 			vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1, 
@@ -61,12 +61,12 @@ void Gate::spinThreadFront()
 			front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
         	front_marked_pub.publish(front_image_marked_msg);
 
-			front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_front_thresholded).toImageMsg();
+			front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
         	front_thresholded_pub.publish(front_image_thresholded_msg);
 
 			front_x_coordinate.data = 0;
-			front_y_coordinate.data = bound_rect_center.x;
-			front_z_coordinate.data = bound_rect_center.y;
+			front_y_coordinate.data = bound_rect_center.x - 320;
+			front_z_coordinate.data = 240 - bound_rect_center.y;
 
 			front_x_coordinate_pub.publish(front_x_coordinate);
 			front_y_coordinate_pub.publish(front_y_coordinate);

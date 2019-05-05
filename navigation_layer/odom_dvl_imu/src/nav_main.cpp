@@ -16,7 +16,7 @@ namespace navigation
 		// navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", 
 		// 												SetWorldXYOffsetCallback);
 
-		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt/relay", 100);
 		position_          = Eigen::Vector3d::Zero();
 		incrementPosition_ = Eigen::Vector3d::Zero();
 		velocity_          = Eigen::Vector3d::Zero();
