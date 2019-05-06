@@ -21,7 +21,7 @@ int y_count = 0;
 
 double thres = 10;
 
-std::string odom_source = "vision";
+std::string odom_source = "dvl";
 
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                         master_layer::ChangeOdom::Response &res) {
