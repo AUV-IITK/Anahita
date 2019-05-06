@@ -59,7 +59,7 @@ void PathMarker::spinThreadBottom()
             cv::Canny(image_bottom_thresholded, canny_edge, 50, 200, 3);
             HoughLinesP(canny_edge, lines, 1, CV_PI/180, 50, 50, 10 );
             
-            std::cout << "No. of lines: " << lines.size() << std::endl;
+            // std::cout << "No. of lines: " << lines.size() << std::endl;
             for( size_t i = 0; i < lines.size(); i++ )
             {
                 double theta = atan(static_cast<double>(lines[i][2] - lines[i][0]) / (lines[i][1] - lines[i][3])) * 180.0 / 3.14159;
