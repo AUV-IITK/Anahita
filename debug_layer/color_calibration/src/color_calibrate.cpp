@@ -72,7 +72,7 @@ int main (int argc, char** argv) {
     server.setCallback(f);
 
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &callback);
+    image_transport::Subscriber image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &callback);
     image_transport::Publisher image_pub = it.advertise("/color_calibration/thresholded", 1);
 
     ros::ServiceClient client = nh.serviceClient<color_calibration::Dump>("dump_parameters");
