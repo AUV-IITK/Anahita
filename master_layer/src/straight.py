@@ -21,6 +21,10 @@ def straight_callback (msg):
         now = rospy.get_time()
         cmd_pose = Pose()
         cmd_pose = odom_msg.pose.pose
+        cmd_pose.orientation.x = 0
+        cmd_pose.orientation.y = 0
+        cmd_pose.orientation.z = 0
+        cmd_pose.orientation.w = 1
         cmd_pose.position.x = cmd_pose.position.x + 2
         pose_cmd_pose.publish(cmd_pose)
         rospy.sleep(2)
