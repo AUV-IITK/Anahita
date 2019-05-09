@@ -1,5 +1,5 @@
 <launch>
-    <include file="$(find uuv_gazebo_worlds)/launch/empty_underwater_world.launch"/>
+    <include file="$(find uuv_gazebo_worlds)/launch/robosub_world.launch"/>
     <include file="$(find anahita_description)/launch/upload_anahita_default.launch"/>
     <!-- <include file="$(find master_layer)/launch/simulation.launch"/> -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="world_to_odom_translator" args="0 0 0 0 0 0 1 /world /odom 100" /> -->
