@@ -47,7 +47,7 @@
 
 #include <libelas/elas.h>
 
-//#define DOWN_SAMPLE
+// #define DOWN_SAMPLE
 
 class Elas_Proc
 {
@@ -67,10 +67,11 @@ public:
     image_transport::ImageTransport it(nh);
     left_sub_.subscribe(it, left_topic, 1, transport);
     right_sub_.subscribe(it, right_topic, 1, transport);
+    roi_sub_.subscribe(it, "/anahita/roi", 1, transport);
     left_info_sub_.subscribe(nh, left_info_topic, 1);
     right_info_sub_.subscribe(nh, right_info_topic, 1);
 
-    ROS_INFO("Subscribing to:\n%s\n%s\n%s\n%s",left_topic.c_str(),right_topic.c_str(),left_info_topic.c_str(),right_info_topic.c_str());
+    ROS_INFO("Subscribing to:\n%s\n%s\n%s\n%s", left_topic.c_str(), right_topic.c_str(), left_info_topic.c_str(), right_info_topic.c_str());
 
     image_transport::ImageTransport local_it(local_nh);
 
@@ -87,22 +88,22 @@ public:
     if (approx)
     {
       approximate_sync_.reset(new ApproximateSync(ApproximatePolicy(queue_size_),
-                                                  left_sub_, right_sub_, left_info_sub_, right_info_sub_) );
-      approximate_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4));
+                                                  left_sub_, right_sub_, left_info_sub_, right_info_sub_, roi_sub_) );
+      approximate_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4, _5));
     }
     else
     {
       exact_sync_.reset(new ExactSync(ExactPolicy(queue_size_),
-                                      left_sub_, right_sub_, left_info_sub_, right_info_sub_) );
-      exact_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4));
+                                      left_sub_, right_sub_, left_info_sub_, right_info_sub_, roi_sub_) );
+      exact_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4, _5));
     }
 
     // Create the elas processing class
-    //param.reset(new Elas::parameters(Elas::MIDDLEBURY));
-    //param.reset(new Elas::parameters(Elas::ROBOTICS));
+    // param.reset(new Elas::parameters(Elas::MIDDLEBURY));
+    // param.reset(new Elas::parameters(Elas::ROBOTICS));
     param.reset(new Elas::parameters);
 
-    /* Parameters tunned*/
+    /* Parameters tunned */
     param->disp_min              = 0;
     param->disp_max              = 255;
     param->support_threshold     = 0.95;
@@ -127,9 +128,9 @@ public:
     param->postprocess_only_left = 1;
     param->subsampling           = 0;
 
-    //param->match_texture = 1;
-    //param->postprocess_only_left = 1;
-    //param->ipol_gap_width = 2;
+    // param->match_texture = 1;
+    // param->postprocess_only_left = 1;
+    // param->ipol_gap_width = 2;
 #ifdef DOWN_SAMPLE
     param->subsampling = true;
 #endif
@@ -139,8 +140,8 @@ public:
   typedef image_transport::SubscriberFilter Subscriber;
   typedef message_filters::Subscriber<sensor_msgs::CameraInfo> InfoSubscriber;
   typedef image_transport::Publisher Publisher;
-  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactPolicy;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximatePolicy;
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo, sensor_msgs::Image> ExactPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo, sensor_msgs::Image> ApproximatePolicy;
   typedef message_filters::Synchronizer<ExactPolicy> ExactSync;
   typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
   typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
@@ -236,9 +237,10 @@ public:
   void process(const sensor_msgs::ImageConstPtr& l_image_msg, 
                const sensor_msgs::ImageConstPtr& r_image_msg,
                const sensor_msgs::CameraInfoConstPtr& l_info_msg, 
-               const sensor_msgs::CameraInfoConstPtr& r_info_msg)
+               const sensor_msgs::CameraInfoConstPtr& r_info_msg,
+               const sensor_msgs::ImageConstPtr& roi_image_msg)
   {
-
+    ROS_INFO("Getting Callbacks");
     ROS_DEBUG("Received images and camera info.");
 
     // Update the camera model
@@ -265,7 +267,7 @@ public:
 
     // Have a synchronised pair of images, now to process using elas
     // convert images if necessary
-    uint8_t *l_image_data, *r_image_data;
+    uint8_t *l_image_data, *r_image_data, *roi_image_data;
     int32_t l_step, r_step;
     cv_bridge::CvImageConstPtr l_cv_ptr, r_cv_ptr;
     if (l_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
@@ -290,6 +292,10 @@ public:
       r_image_data = r_cv_ptr->image.data;
       r_step = r_cv_ptr->image.step[0];
     }
+    roi_image_data = const_cast<uint8_t*>(&(roi_image_msg->data[0]));
+    ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
+    ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
+    ROS_ASSERT(l_image_msg->height == roi_image_msg->height);
 
     ROS_ASSERT(l_step == r_step);
     ROS_ASSERT(l_image_msg->width == r_image_msg->width);
@@ -304,8 +310,8 @@ public:
 #endif
 
     // Allocate
-    const int32_t dims[3] = {l_image_msg->width,l_image_msg->height,l_step};
-    //float* l_disp_data = new float[width*height*sizeof(float)];
+    const int32_t dims[3] = {l_image_msg->width, l_image_msg->height, l_step};
+    // float* l_disp_data = new float[width*height*sizeof(float)];
     float* l_disp_data = reinterpret_cast<float*>(&disp_msg->image.data[0]);
     float* r_disp_data = new float[width*height*sizeof(float)];
 
@@ -314,7 +320,7 @@ public:
 
     // Find the max for scaling the image colour
     float disp_max = 0;
-    for (int32_t i=0; i<width*height; i++)
+    for (int32_t i = 0; i < width*height; i++)
     {
       if (l_disp_data[i]>disp_max) disp_max = l_disp_data[i];
       if (r_disp_data[i]>disp_max) disp_max = r_disp_data[i];
@@ -333,16 +339,20 @@ public:
     std::vector<int32_t> inliers;
     for (int32_t i=0; i<width*height; i++)
     {
-      out_msg.image.data[i] = (uint8_t)std::max(255.0*l_disp_data[i]/disp_max,0.0);
-      //disp_msg->image.data[i] = l_disp_data[i];
-      //disp_msg->image.data[i] = out_msg.image.data[i]
+      out_msg.image.data[i] = (uint8_t)std::max(255.0*l_disp_data[i]/disp_max, 0.0);
+      // disp_msg->image.data[i] = l_disp_data[i];
+      // disp_msg->image.data[i] = out_msg.image.data[i]
 
       float disp =  l_disp_data[i];
       // In milimeters
-      //out_depth_msg_image_data[i] = disp;
+      // out_depth_msg_image_data[i] = disp;
       out_depth_msg_image_data[i] = disp <= 0.0f ? bad_point : (uint16_t)(depth_fact/disp);
 
-      if (l_disp_data[i] > 0) inliers.push_back(i);
+      if (l_disp_data[i] > 0) {
+        if (roi_image_data[i] == 255) {
+          inliers.push_back(i);
+        }
+      }
     }
 
     // Publish
@@ -353,14 +363,14 @@ public:
     pub_disparity_.publish(disp_msg);
 
     // Cleanup data
-    //delete l_disp_data;
+    // delete l_disp_data;
     delete r_disp_data;
   }
 
 private:
 
   ros::NodeHandle nh;
-  Subscriber left_sub_, right_sub_;
+  Subscriber left_sub_, right_sub_, roi_sub_;
   InfoSubscriber left_info_sub_, right_info_sub_;
   boost::shared_ptr<Publisher> disp_pub_;
   boost::shared_ptr<Publisher> depth_pub_;

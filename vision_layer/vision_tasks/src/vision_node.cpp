@@ -1,6 +1,7 @@
 // #include "buoy.h"
 #include "gate.h"
 #include "path_marker.h"
+#include "marker.h"
 // #include "markerDropper.h"
 // #include "octagon.h"
 // #include "torpedo.h"
@@ -12,7 +13,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "path_marker";
+std::string current_task = "marker";
 std::string previous_task = "";
 
 bool changeCurrentTask (master_layer::CurrentTask::Request &req,
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
     // Buoy buoy;
     Gate gate;
     PathMarker path_marker;
+    Marker marker;
     // Torpedo torpedo;
     // MarkerDropper md;
     // Octagon octagon;
@@ -58,12 +60,12 @@ int main(int argc, char *argv[])
             // if (previous_task == "green_buoy") {
             //     buoy.frontTaskHandling(false);
             // }
-            if (current_task == "path_marker") {
-                ROS_INFO("path_marker task");
-                path_marker.bottomTaskHandling(true);
+            if (current_task == "marker") {
+                ROS_INFO("marker task");
+                marker.frontTaskHandling(true);
             }
-            if (previous_task == "path_marker") {
-                path_marker.bottomTaskHandling(false);
+            if (previous_task == "marker") {
+                marker.frontTaskHandling(false);
             }
             // if (current_task == "green_torpedo") {
             //     torpedo.switchColor(0);

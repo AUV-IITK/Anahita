@@ -21,7 +21,7 @@ void Base_class::init(){
 
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1);
 
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Base_class::imageFrontCallback, this);
+	this->front_image_sub = it.subscribe("/anahita/left/image_raw", 1, &Base_class::imageFrontCallback, this);
 	this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Base_class::imageBottomCallback, this);
 
 	this->enhanced_image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &Base_class::fusionCallback, this);
