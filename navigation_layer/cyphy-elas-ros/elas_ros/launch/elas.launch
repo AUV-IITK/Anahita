@@ -1,6 +1,9 @@
 <launch>
     <!-- Launches ELAS node, and rectification nodes for input --> 
     <!-- Arguments: input stereo namespace and output elas namespace -->
+
+    <include file="$(find hardware_camera)/launch/stereo_proc.launch" />
+
     <arg name="stereo" default="anahita"/>
     <arg name="elas_ns" default="elas"/>
     
@@ -19,6 +22,6 @@
         <remap from="image" to="image_rect"/>
 
         <!-- If your cameras are not synchronised then uncomment the following line -->
-        <!-- <param name="approximate_sync" value="true" type="bool"/> -->
+        <param name="approximate_sync" value="true" type="bool"/>
     </node>
 </launch>

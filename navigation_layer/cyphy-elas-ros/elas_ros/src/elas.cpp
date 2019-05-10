@@ -238,7 +238,7 @@ public:
                const sensor_msgs::CameraInfoConstPtr& l_info_msg, 
                const sensor_msgs::CameraInfoConstPtr& r_info_msg)
   {
-
+    ROS_INFO("Getting Callbacks");
     ROS_DEBUG("Received images and camera info.");
 
     // Update the camera model
