@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   geometry_msgs
   message_generation
+  dynamic_reconfigure
 )
 
 find_package(OpenCV REQUIRED)
@@ -30,12 +31,17 @@ generate_messages(
     sensor_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  cfg/params.cfg
+)
+
 add_definitions(-msse3)
 
 include_directories(src ${libelas_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(elas_ros src/elas.cpp)
+add_dependencies(elas_ros ${PROJECT_NAME}_gencfg)
 
 add_dependencies(elas_ros ${catkin_EXPORTED_TARGETS})
 add_dependencies(elas_ros ${PROJECT_NAME}_gencpp)

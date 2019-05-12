@@ -17,18 +17,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(vision_commons REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/buoyRange.cfg
-  cfg/gateBottomRange.cfg
-  cfg/gateFrontRange.cfg
-  cfg/lineRange.cfg
-  cfg/torpedoRange.cfg
-  cfg/markerDropperFrontRange.cfg
-  cfg/markerDropperBottomRange.cfg  
-  cfg/octagonBottomRange.cfg  
-  cfg/octagonFrontRange.cfg    
-)
-
 catkin_package(LIBRARIES vision_commons)
 
 include_directories(
@@ -80,12 +68,7 @@ target_link_libraries(vision_node
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES} 
   vision_commons 
-  # buoy_task 
   gate_task 
   path_marker
   marker
-  # line_task 
-  # torpedo_task 
-  # markerDropper_task
-  # octagon_task
 )

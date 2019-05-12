@@ -34,6 +34,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 
 #include <image_transport/subscriber_filter.h>
+#include <image_transport/image_transport.h>
 
 #include <image_geometry/stereo_camera_model.h>
 
@@ -45,7 +46,9 @@
 
 #include <elas_ros/ElasFrameData.h>
 
+#include <dynamic_reconfigure/server.h>
 #include <libelas/elas.h>
+#include <elas_ros/paramsConfig.h>
 
 // #define DOWN_SAMPLE
 
@@ -67,7 +70,7 @@ public:
     image_transport::ImageTransport it(nh);
     left_sub_.subscribe(it, left_topic, 1, transport);
     right_sub_.subscribe(it, right_topic, 1, transport);
-    roi_sub_.subscribe(it, "/anahita/roi", 1, transport);
+  	roi_sub_ = it.subscribe("/anahita/roi", 1, &Elas_Proc::roiCB, this);
     left_info_sub_.subscribe(nh, left_info_topic, 1);
     right_info_sub_.subscribe(nh, right_info_topic, 1);
 
@@ -88,14 +91,14 @@ public:
     if (approx)
     {
       approximate_sync_.reset(new ApproximateSync(ApproximatePolicy(queue_size_),
-                                                  left_sub_, right_sub_, left_info_sub_, right_info_sub_, roi_sub_) );
-      approximate_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4, _5));
+                                                  left_sub_, right_sub_, left_info_sub_, right_info_sub_) );
+      approximate_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4));
     }
     else
     {
       exact_sync_.reset(new ExactSync(ExactPolicy(queue_size_),
-                                      left_sub_, right_sub_, left_info_sub_, right_info_sub_, roi_sub_) );
-      exact_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4, _5));
+                                      left_sub_, right_sub_, left_info_sub_, right_info_sub_) );
+      exact_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4));
     }
 
     // Create the elas processing class
@@ -106,7 +109,7 @@ public:
     /* Parameters tunned */
     param->disp_min              = 0;
     param->disp_max              = 255;
-    param->support_threshold     = 0.95;
+    param->support_threshold     = 0.85;
     param->support_texture       = 10;
     param->candidate_stepsize    = 5;
     param->incon_window_size     = 5;
@@ -122,7 +125,7 @@ public:
     param->lr_threshold          = 2;
     param->speckle_sim_threshold = 1;
     param->speckle_size          = 200;
-    param->ipol_gap_width        = 300;
+    param->ipol_gap_width        = 3;
     param->filter_median         = 0;
     param->filter_adaptive_mean  = 1;
     param->postprocess_only_left = 1;
@@ -135,13 +138,20 @@ public:
     param->subsampling = true;
 #endif
     elas_.reset(new Elas(*param));
+
+    dynamic_reconfigure::Server<elas_ros::paramsConfig> server;
+    dynamic_reconfigure::Server<elas_ros::paramsConfig>::CallbackType f;
+    f = boost::bind(&Elas_Proc::callback, this, _1, _2);
+    server.setCallback(f);
+
+    ROS_INFO("Elas Proc setup completed");
   }
 
   typedef image_transport::SubscriberFilter Subscriber;
   typedef message_filters::Subscriber<sensor_msgs::CameraInfo> InfoSubscriber;
   typedef image_transport::Publisher Publisher;
-  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo, sensor_msgs::Image> ExactPolicy;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo, sensor_msgs::Image> ApproximatePolicy;
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximatePolicy;
   typedef message_filters::Synchronizer<ExactPolicy> ExactSync;
   typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
   typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
@@ -237,8 +247,7 @@ public:
   void process(const sensor_msgs::ImageConstPtr& l_image_msg, 
                const sensor_msgs::ImageConstPtr& r_image_msg,
                const sensor_msgs::CameraInfoConstPtr& l_info_msg, 
-               const sensor_msgs::CameraInfoConstPtr& r_info_msg,
-               const sensor_msgs::ImageConstPtr& roi_image_msg)
+               const sensor_msgs::CameraInfoConstPtr& r_info_msg)
   {
     ROS_INFO("Getting Callbacks");
     ROS_DEBUG("Received images and camera info.");
@@ -292,7 +301,7 @@ public:
       r_image_data = r_cv_ptr->image.data;
       r_step = r_cv_ptr->image.step[0];
     }
-    roi_image_data = const_cast<uint8_t*>(&(roi_image_msg->data[0]));
+    roi_image_data = const_cast<uint8_t*>(&(roi_image_msg_->data[0]));
     ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
     ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
     ROS_ASSERT(l_image_msg->height == roi_image_msg->height);
@@ -367,10 +376,44 @@ public:
     delete r_disp_data;
   }
 
+  void roiCB (const sensor_msgs::ImageConstPtr &msg) {
+    roi_image_msg_ = msg;
+  }
+
+  void callback (elas_ros::paramsConfig &config, uint32_t level) {
+    param->disp_min              = config.disp_min;
+    param->disp_max              = config.disp_max;
+    param->support_threshold     = config.support_threshold;
+    param->support_texture       = config.support_texture;
+    param->candidate_stepsize    = config.candidate_stepsize;
+    param->incon_window_size     = config.incon_window_size;
+    param->incon_threshold       = config.incon_threshold;
+    param->incon_min_support     = config.incon_min_support;
+    param->add_corners           = config.add_corners;
+    param->grid_size             = config.grid_size;
+    param->beta                  = config.beta;
+    param->gamma                 = config.gamma;
+    param->sigma                 = config.sigma;
+    param->sradius               = config.sradius;
+    param->match_texture         = config.match_texture;
+    param->lr_threshold          = config.lr_threshold;
+    param->speckle_sim_threshold = config.speckle_sim_threshold;
+    param->speckle_size          = config.speckle_size;
+    param->ipol_gap_width        = config.ipol_gap_width;
+    param->filter_median         = config.filter_median;
+    param->filter_adaptive_mean  = config.filter_adaptive_mean;
+    param->postprocess_only_left = config.postprocess_only_left;
+    param->subsampling           = config.subsampling;
+
+    ROS_INFO("A parameter configuration request");
+    elas_.reset(new Elas(*param));
+  }
+
 private:
 
   ros::NodeHandle nh;
-  Subscriber left_sub_, right_sub_, roi_sub_;
+  Subscriber left_sub_, right_sub_;
+  image_transport::Subscriber roi_sub_;
   InfoSubscriber left_info_sub_, right_info_sub_;
   boost::shared_ptr<Publisher> disp_pub_;
   boost::shared_ptr<Publisher> depth_pub_;
@@ -379,6 +422,7 @@ private:
   boost::shared_ptr<ExactSync> exact_sync_;
   boost::shared_ptr<ApproximateSync> approximate_sync_;
   boost::shared_ptr<Elas> elas_;
+  boost::shared_ptr<const sensor_msgs::Image> roi_image_msg_;
   int queue_size_;
 
   image_geometry::StereoCameraModel model_;
@@ -390,6 +434,7 @@ private:
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "elas_ros");
+  // ros::NodeHandle nh;
   if (ros::names::remap("stereo") == "stereo") {
     ROS_WARN("'stereo' has not been remapped! Example command-line usage:\n"
              "\t$ rosrun viso2_ros stereo_odometer stereo:=narrow_stereo image:=image_rect");

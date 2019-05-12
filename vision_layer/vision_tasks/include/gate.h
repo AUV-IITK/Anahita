@@ -3,9 +3,6 @@
 
 #include "base_class.h"
 
-#include <vision_tasks/gateFrontRangeConfig.h>
-#include <vision_tasks/gateBottomRangeConfig.h>
-
 class Gate : public Base_class
 {
 public:

@@ -1,12 +1,6 @@
-// #include "buoy.h"
 #include "gate.h"
 #include "path_marker.h"
 #include "marker.h"
-// #include "markerDropper.h"
-// #include "octagon.h"
-// #include "torpedo.h"
-// #include "line.h"
-// #include "base_class.h"
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
@@ -29,16 +23,11 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh;
     ros::Time::init();
 
-    ros::Duration(2).sleep();
+    ros::Duration(1).sleep();
 
-    // Buoy buoy;
     Gate gate;
     PathMarker path_marker;
     Marker marker;
-    // Torpedo torpedo;
-    // MarkerDropper md;
-    // Octagon octagon;
-    // Line line;
     ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
 
     ros::Rate loop_rate(10);
@@ -47,19 +36,6 @@ int main(int argc, char *argv[])
 
     while (ros::ok()) {
         if (current_task != previous_task) {
-            // if (current_task == "red_buoy") {
-            //     buoy.switchColor(0);
-            //     buoy.frontTaskHandling(true);
-            // }
-            // if (current_task == "yellow_buoy") {
-            //     buoy.switchColor(1);
-            // }
-            // if (current_task == "green_buoy") {
-            //     buoy.switchColor(2);
-            // }
-            // if (previous_task == "green_buoy") {
-            //     buoy.frontTaskHandling(false);
-            // }
             if (current_task == "marker") {
                 ROS_INFO("marker task");
                 marker.frontTaskHandling(true);
@@ -67,41 +43,6 @@ int main(int argc, char *argv[])
             if (previous_task == "marker") {
                 marker.frontTaskHandling(false);
             }
-            // if (current_task == "green_torpedo") {
-            //     torpedo.switchColor(0);
-            //     torpedo.frontTaskHandling(true);
-            // }
-            // if (current_task == "red_torpedo") {
-            //     torpedo.switchColor(1);
-            // }
-            // if (previous_task == "green_torpedo") {
-            //     torpedo.frontTaskHandling(false);     
-            // }
-            // if (current_task == "marker_dropper_front") {
-            //     md.frontTaskHandling(true);
-            // }
-            // if (previous_task == "marker_dropper_front") {
-            //     md.frontTaskHandling(false);
-            // }
-            // if (current_task == "marker_dropper_bottom") {
-            //     md.bottomTaskHandling(true);
-            // }
-            // if (previous_task == "marker_dropper_bottom") {
-            //     md.bottomTaskHandling(false);
-            // }
-            // if (current_task == "line") {
-            //     ROS_INFO("Line Task Running");
-            //     line.bottomTaskHandling(true);
-            // }
-            // if (previous_task == "line") {
-            //     line.bottomTaskHandling(false);
-            // }
-            // if (current_task == "octagon") {
-            //     octagon.bottomTaskHandling(true);
-            // }
-            // if (previous_task == "octagon") {
-            //     octagon.bottomTaskHandling(false);
-            // }
             previous_task = current_task;
         }
         loop_rate.sleep();
