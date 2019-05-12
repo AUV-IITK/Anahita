@@ -5,6 +5,7 @@
   <group ns="anahita">
     <rosparam file="$(find color_calibration)/params/gate_$(arg env).yaml" command="load" />
     <rosparam file="$(find color_calibration)/params/path_marker_$(arg env).yaml" command="load" />
+    <rosparam file="$(find color_calibration)/params/marker_$(arg env).yaml" command="load" />
   </group>
 
   <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen" />  

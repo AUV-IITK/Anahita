@@ -1,11 +1,11 @@
 <launch>
     <!-- Launches ELAS node, and rectification nodes for input --> 
     <!-- Arguments: input stereo namespace and output elas namespace -->
-
+    
     <include file="$(find hardware_camera)/launch/stereo_proc.launch" />
-
-    <arg name="stereo" default="anahita"/>
-    <arg name="elas_ns" default="elas"/>
+    
+    <arg name="stereo" default="anahita" />
+    <arg name="elas_ns" default="elas" />
     
     <!-- If you already have rectified camera images remove the image_proc nodes -->
     <group ns="$(arg stereo)/left">

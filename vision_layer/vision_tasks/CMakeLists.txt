@@ -17,18 +17,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(vision_commons REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/buoyRange.cfg
-  cfg/gateBottomRange.cfg
-  cfg/gateFrontRange.cfg
-  cfg/lineRange.cfg
-  cfg/torpedoRange.cfg
-  cfg/markerDropperFrontRange.cfg
-  cfg/markerDropperBottomRange.cfg  
-  cfg/octagonBottomRange.cfg  
-  cfg/octagonFrontRange.cfg    
-)
-
 catkin_package(LIBRARIES vision_commons)
 
 include_directories(
@@ -62,6 +50,10 @@ add_library(path_marker SHARED src/path_marker.cpp include/path_marker.h include
 add_dependencies(path_marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_library(marker SHARED src/marker.cpp include/marker.h include/base_class.h)
+add_dependencies(marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 # add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
 # add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(markerDropper_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -76,11 +68,7 @@ target_link_libraries(vision_node
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES} 
   vision_commons 
-  # buoy_task 
   gate_task 
   path_marker
-  # line_task 
-  # torpedo_task 
-  # markerDropper_task
-  # octagon_task
+  marker
 )
