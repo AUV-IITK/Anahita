@@ -8,7 +8,7 @@
     <rosparam file="$(find color_calibration)/params/marker_$(arg env).yaml" command="load" />
   </group>
 
-  <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen" />  
+  <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen"/><!-- if="$(eval env == 'real')" /-->  
   <node name="vision_node" type="vision_node" pkg="vision_tasks" output="screen" />
 
 </launch>

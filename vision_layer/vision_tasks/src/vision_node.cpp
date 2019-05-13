@@ -7,7 +7,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "marker";
+std::string current_task = "gate";
 std::string previous_task = "";
 
 bool changeCurrentTask (master_layer::CurrentTask::Request &req,
@@ -36,6 +36,10 @@ int main(int argc, char *argv[])
 
     while (ros::ok()) {
         if (current_task != previous_task) {
+            if (current_task == "gate"){
+                ROS_INFO("gate_task");
+                gate.frontTaskHandling(true);
+            }
             if (current_task == "marker") {
                 ROS_INFO("marker task");
                 marker.frontTaskHandling(true);
