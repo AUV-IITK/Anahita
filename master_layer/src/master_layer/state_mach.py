@@ -92,7 +92,13 @@ class TaskBaseClass(smach.State):
             self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
             
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+            print "Service call failed: %s"
+    
+    def has_reached (pos, threshold):
+        while (not status or rospy.is_shutdown()):
+            continue
+        while (calc_dist(pos, current_p) > threshold or rospy.is_shutdown()):
+            continue
 
     def odometry_callback(self, msg):
         self._pose = numpy.array([msg.pose.pose.position.x,
@@ -101,6 +107,8 @@ class TaskBaseClass(smach.State):
         self._orientation = numpy.array([msg.pose.pose.orientation.x,
                                 msg.pose.pose.orientation.y,
                                 msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        global status
+        status = True 
 
     
         
@@ -133,36 +141,51 @@ class TaskBaseClass(smach.State):
         else:
             return False
     
-    def conventional_detector_cb(self):
-        pass
+    def conventional_detector_cb(self, msg):
+        self._conventional_prob = msg.data
         
-
-
 
 class ApproachXYZ(TaskBaseClass):
     
     def __init__(self):
         TaskBaseClass.__init__(self)
         print("Creating an approachXYZ task")
-        smach.State.__init__(self, outcomes=['found_visually', 'reached_final'],
+        smach.State.__init__(self, outcomes=['found_visually', 'reached_final', 'lost'],
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
         
+        then = rospy.get_time()
+        timeout_ = 60
+
+        self.target_pose_ = Pose()
         change_odom_response = self._change_odom(odom="dvl")
         self.start_moving()
-
-        
+        self.present_status()
     
     def start_moving(self):
-        target_pose = Pose()
-        fill_pose_data(target_pose, 10, 10, 10, 0, 0, 0, 1)
-        _pose_cmd_pub.publish(target_pose)
+        fill_pose_data(self.target_pose_, 10, 10, 10, 0, 0, 0, 1)
+        self.pose_cmd_pub.publish(self.target_pose_)
         rospy.loginfo("We are now moving towards the target pose")
     
-
-
-
+    def present_status(self):
+        rospy.loginfo("Now, I'll check whatever is happening")
         
+        while True:
+            if _conventional_prob > .80:
+                rospy.loginfo("changing to visual odom")
+                change_odom_response = self._change_odom(odom="visual")
+                return 'found_visually'
+        
+            if has_reached(target_pose.pose.position, 3) is True:
+                rospy.loginfo("reached the position")
+                return 'reached_final'
+            
+            now = rospy.get_time()
+            dt = now - then
+            if dt > timeout_:
+                rospy.loginfo("I've lost")
+                return 'lost'
+
 
 class BouyTask(TaskBaseClass):
     def __init__(self):
@@ -340,5 +363,6 @@ class StationKeeping(smach.State):
         pass
 
 if __name__ == '__main__':
+    rospy.init_node('state_machine')
     approach_xyz = ApproachXYZ()
     # do something
