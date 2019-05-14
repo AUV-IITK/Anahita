@@ -45,8 +45,6 @@ bool inRange (double x, double avg) {
 }
 
 void zCallback (const std_msgs::Float32 msg) {
-
-    ROS_INFO("z callback");
     z = -msg.data;
     if (z_count < 10) { 
         z_coord[z_count] = z;
@@ -60,12 +58,10 @@ void zCallback (const std_msgs::Float32 msg) {
             z_coord[9] = z;
         }
     }
-    
+    ROS_INFO("Calculated from z_callback: %f", z_avg);    
 }
 
 void yCallback (const std_msgs::Float32 msg) {
-
-    ROS_INFO("y callback");
     y = msg.data;
     if (y_count < 10) { 
         y_coord[y_count] = y;
@@ -79,6 +75,8 @@ void yCallback (const std_msgs::Float32 msg) {
             y_coord[9] = y;
         }
     }
+    ROS_INFO("Calculated from y_callback: %f", y_avg);
+
 }
 
 void dvlCallback (const nav_msgs::Odometry msg) {
