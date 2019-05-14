@@ -5,6 +5,7 @@ set(CMAKE_BUILD_TYPE Release)
 find_package(catkin REQUIRED COMPONENTS
   libelas
   roscpp
+  std_msgs
   sensor_msgs
   stereo_msgs
   nav_msgs
@@ -22,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS signals)
+find_package(PCL REQUIRED)
 
 add_message_files( DIRECTORY msg FILES ElasFrameData.msg)
 
@@ -39,6 +41,7 @@ add_definitions(-msse3)
 
 include_directories(src ${libelas_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
 
 add_executable(elas_ros src/elas.cpp)
 add_dependencies(elas_ros ${PROJECT_NAME}_gencfg)
@@ -49,5 +52,10 @@ add_dependencies(elas_ros ${PROJECT_NAME}_gencpp)
 add_executable(pc_construction src/pc_construction.cpp)
 add_dependencies(pc_construction ${PROJECT_NAME}_gencpp)
 
+add_executable(depth src/depth.cpp)
+add_dependencies(depth ${catkin_EXPORTED_TARGETS})
+add_dependencies(depth ${PROJECT_NAME}_gencpp)
+
 target_link_libraries(elas_ros ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries(pc_construction ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(depth ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
