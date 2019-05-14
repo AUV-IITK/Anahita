@@ -143,7 +143,7 @@ class TaskBaseClass(smach.State):
         self._conventional_prob = msg.data
         
 
-class ApproachXYZ(TaskBaseClass):
+class MoveToXYZ(TaskBaseClass):
     
     def __init__(self):
         TaskBaseClass.__init__(self)
@@ -363,5 +363,26 @@ class StationKeeping(smach.State):
 
 if __name__ == '__main__':
     rospy.init_node('state_machine')
-    approach_xyz = ApproachXYZ()
-    # do something
+
+    # Create a SMACH state machine
+    sm = smach.StateMachine(outcomes=['outcome4'])
+
+    # Open the container
+    with sm:
+        # Add states to the container
+        smach.StateMachine.add('MovingToXYZ', MoveToXYZ(), 
+                               transitions={'found_visually':'identifier', 'reached_final':'try_again', 'lost':'station_keeping'})
+                                   
+        
+
+    sis = smach_ros.IntrospectionServer('smach_introspect', sm, '/SM_ROOT')
+    sis.start()
+
+    outcome = sm.execute()
+
+    rospy.spin()
+    sis.stop()
+
+    # Execute SMACH plan
+    
+
