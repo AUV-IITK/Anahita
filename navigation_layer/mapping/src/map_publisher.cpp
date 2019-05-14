@@ -4,9 +4,25 @@
 #include <cmath>
 #include "yaml-cpp/yaml.h"
 #include<string>
+#include "nav_msgs/Odometry.h"
 
 using namespace grid_map;
+GridMap map({"elevation", "occupancy"});
 std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
+
+void odometry_update_cb(const nav_msgs::Odometry::ConstPtr& msg)
+{
+    ROS_INFO("Position-> x: [%f], y: [%f], z: [%f]", msg->pose.pose.position.x,msg->pose.pose.position.y, msg->pose.pose.position.z);
+    ROS_INFO("Orientation-> x: [%f], y: [%f], z: [%f], w: [%f]", msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
+    ROS_INFO("Vel-> Linear: [%f], Angular: [%f]", msg->twist.twist.linear.x,msg->twist.twist.angular.z);
+
+    Position checked_space(msg->pose.pose.position.x,msg->pose.pose.position.y);
+    
+    //need to check if already visited, or object is present here
+    if(map.atPosition("occupancy", checked_space) == 0)
+        map.atPosition("occupancy", checked_space) = -1;
+    
+}
 
 void loadMapFromYAML(GridMap &map)
 {
@@ -24,10 +40,9 @@ int main(int argc, char** argv)
   // Initialize node and publisher.
   ros::init(argc, argv, "map_publisher_node");
   ros::NodeHandle nh("~");
-  ros::Publisher publisher = nh.advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
-
+  ros::Publisher publisher = nh.advertise<grid_map_msgs::GridMap>("/grid_map", 1, true);
+  ros::Subscriber odom_subscriber = nh.subscribe("/anahita/pose_gt", 10, odometry_update_cb);
   // Create grid map.
-  GridMap map({"elevation", "occupancy"});
   map.setFrameId("map");
   map.setGeometry(Length(30,30), 1);
   ROS_INFO("Created map with size %f x %f m (%i x %i cells).",
@@ -51,6 +66,11 @@ int main(int argc, char** argv)
   ros::Rate rate(30.0);
   while (nh.ok()) {
 
+    
+
+
+
+
     // Add data to grid map.
     ros::Time time = ros::Time::now();
     // Publish grid map.
@@ -60,6 +80,9 @@ int main(int argc, char** argv)
     publisher.publish(message);
     ROS_INFO_THROTTLE(1.0, "Grid map (timestamp %f) published.", message.info.header.stamp.toSec());
 
+
+
+    ros::spin();
     // Wait for next cycle.
     rate.sleep();
   }

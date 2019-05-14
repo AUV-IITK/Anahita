@@ -84,9 +84,10 @@ class TaskBaseClass(smach.State):
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
 
-        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
+        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
         self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
         self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
+        self._conventional_prob = 0
         
         try:
             self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
@@ -94,19 +95,16 @@ class TaskBaseClass(smach.State):
         except rospy.ServiceException, e:
             print "Service call failed: %s"
     
-    def has_reached (pos, threshold):
+    def has_reached (self, pos, threshold):
         while (not status or rospy.is_shutdown()):
-            continue
-        while (calc_dist(pos, current_p) > threshold or rospy.is_shutdown()):
-            continue
+            return False
+        while (calc_dist(pos, self._pose) > threshold or rospy.is_shutdown()):
+            return False
+        return True
 
     def odometry_callback(self, msg):
-        self._pose = numpy.array([msg.pose.pose.position.x,
-                                msg.pose.pose.position.y,
-                                msg.pose.pose.position.z])
-        self._orientation = numpy.array([msg.pose.pose.orientation.x,
-                                msg.pose.pose.orientation.y,
-                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        self._pose = msg.pose.pose.position
+        self._orientation = msg.pose.pose.orientation
         global status
         status = True 
 
@@ -154,8 +152,8 @@ class ApproachXYZ(TaskBaseClass):
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
         
-        then = rospy.get_time()
-        timeout_ = 60
+        self.then_ = rospy.get_time()
+        self.timeout_ = 60
 
         self.target_pose_ = Pose()
         change_odom_response = self._change_odom(odom="dvl")
@@ -163,26 +161,27 @@ class ApproachXYZ(TaskBaseClass):
         self.present_status()
     
     def start_moving(self):
-        fill_pose_data(self.target_pose_, 10, 10, 10, 0, 0, 0, 1)
-        self.pose_cmd_pub.publish(self.target_pose_)
+        fill_pose_data(self.target_pose_, 15, 15, 0, 0, 0, 0, 1)
+        self._pose_cmd_pub.publish(self.target_pose_)
         rospy.loginfo("We are now moving towards the target pose")
     
     def present_status(self):
         rospy.loginfo("Now, I'll check whatever is happening")
         
         while True:
-            if _conventional_prob > .80:
+            rospy.loginfo("I am seraching, prob: " + str(self._conventional_prob))
+            if self._conventional_prob > .80:
                 rospy.loginfo("changing to visual odom")
-                change_odom_response = self._change_odom(odom="visual")
+                change_odom_response = self._change_odom(odom="vision")
                 return 'found_visually'
         
-            if has_reached(target_pose.pose.position, 3) is True:
+            if self.has_reached(self.target_pose_.position, 3) is True:
                 rospy.loginfo("reached the position")
                 return 'reached_final'
             
             now = rospy.get_time()
-            dt = now - then
-            if dt > timeout_:
+            dt = now - self.then_
+            if dt > self.timeout_:
                 rospy.loginfo("I've lost")
                 return 'lost'
 

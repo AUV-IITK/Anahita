@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   grid_map_core
   grid_map_msgs
+  nav_msgs
   grid_map_ros
   std_msgs
 )
@@ -69,7 +70,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs
+  DEPENDENCIES actionlib_msgs std_msgs nav_msgs
 )
 
 ################################################
