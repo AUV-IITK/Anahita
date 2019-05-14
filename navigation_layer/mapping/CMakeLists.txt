@@ -120,7 +120,7 @@ include_directories(
 )
 
 add_executable(map_publisher_node src/map_publisher.cpp)
-target_link_libraries(map_publisher_node ${catkin_LIBRARIES})
+target_link_libraries(map_publisher_node ${catkin_LIBRARIES} yaml-cpp)
 
 ## Declare a C++ library
 
