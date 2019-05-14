@@ -1,7 +1,12 @@
 <launch>
+    <include file="$(find uuv_gazebo_worlds)/launch/empty_underwater_world.launch"/>
+    <include file="$(find anahita_description)/launch/upload_anahita_default.launch"/>
+    <!-- <include file="$(find master_layer)/launch/simulation.launch"/> -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="world_to_odom_translator" args="0 0 0 0 0 0 1 /world /odom 100" /> -->
+
     <node name="gazebo_imu" type="gazebo_imu" pkg="hardware_imu" />
-    <node name="gazebo_dvl" type="gazebo_dvl" pkg="hardware_dvl" />
-    <node name="gazebo_camera" type="gazebo_camera" pkg="hardware_camera" />
+    <node name="gazebo_dvl" type="gazebo_dvl_driver" pkg="hardware_dvl_ethernet" />
+    <!-- <node name="gazebo_camera" type="gazebo_camera" pkg="hardware_camera" /> -->
     <node name="gazebo_pressure_pub" type="gazebo_pressure_pub" pkg="hardware_pressure" />
     <node name="gazebo_pwm_pub" type="gazebo_pwm_pub" pkg="master_layer" />
     <node name="motion_server" type="motion_server" pkg="master_layer" />

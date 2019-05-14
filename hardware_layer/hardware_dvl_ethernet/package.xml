@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>hardware_dvl</name>
+  <name>hardware_dvl_ethernet</name>
   <version>0.1.0</version>
   <description>The DVL package</description>
 
