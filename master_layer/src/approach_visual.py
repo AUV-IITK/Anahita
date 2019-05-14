@@ -46,7 +46,6 @@ def odometry_callback(msg):
     status = True    
 
 def has_reached (pos, threshold):
-    
     while (not status or rospy.is_shutdown()):
         return False
     while (calc_dist(pos, current_p) > threshold or rospy.is_shutdown()):
