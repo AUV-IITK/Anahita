@@ -85,6 +85,7 @@ class TaskBaseClass(smach.State):
                             output_keys=['field1', 'field2', 'field2'])
 
         self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
+        self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
         self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
         
         try:
@@ -100,6 +101,7 @@ class TaskBaseClass(smach.State):
         self._orientation = numpy.array([msg.pose.pose.orientation.x,
                                 msg.pose.pose.orientation.y,
                                 msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+
     
         
     def load_params(self):
@@ -113,7 +115,7 @@ class TaskBaseClass(smach.State):
     def execute(self):
         pass
 
-    def start_detecting(self):  
+    def object_detector(self):  
         # to start object recognition as soon the bot enters
         # that task and confirm it is the same object
         # a service to ask vision layer if it is the same object
@@ -130,6 +132,10 @@ class TaskBaseClass(smach.State):
             return True
         else:
             return False
+    
+    def conventional_detector_cb(self):
+        pass
+        
 
 
 
@@ -144,6 +150,8 @@ class ApproachXYZ(TaskBaseClass):
         
         change_odom_response = self._change_odom(odom="dvl")
         self.start_moving()
+
+        
     
     def start_moving(self):
         target_pose = Pose()
@@ -151,8 +159,8 @@ class ApproachXYZ(TaskBaseClass):
         _pose_cmd_pub.publish(target_pose)
         rospy.loginfo("We are now moving towards the target pose")
     
-    def do_we_see_it(self):
-        
+
+
 
         
 
