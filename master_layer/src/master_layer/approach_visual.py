@@ -5,6 +5,7 @@ from master_layer.srv import GoToIncremental
 from master_layer.srv import GoTo
 from master_layer.msg import Waypoint
 from master_layer.srv import ChangeOdom
+from master_layer.srv import VerifyObject
 
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Pose
@@ -12,19 +13,13 @@ from std_msgs.msg import Int32
 
 from nav_msgs.msg import Odometry
 from rospy.numpy_msg import numpy_msg
+import anahita_utils
+
 
 status = False
 current_p = Point()
 stop_target = 0
 
-def fill_pose_data(pose_object, pos_x, pos_y, pos_z, orient_x, orient_y, orient_z, orient_w):
-    pose_object.position.x = pos_x
-    pose_object.position.y = pos_y
-    pose_object.position.z = pos_z
-    pose_object.orientation.x = orient_x
-    pose_object.orientation.y = orient_y
-    pose_object.orientation.z = orient_z
-    pose_object.orientation.w = orient_w
     
 def calc_dist (pose1, pose2):
     x1 = pose1.x

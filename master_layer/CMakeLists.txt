@@ -65,6 +65,7 @@ add_service_files(
   ChangeOdom.srv
   GoToIncremental.srv
   GoTo.srv
+  VerifyObject.srv
 )
 
 ## Generate actions in the 'action' folder

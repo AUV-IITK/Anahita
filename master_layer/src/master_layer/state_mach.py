@@ -2,14 +2,20 @@
 
 import rospy
 import smach
+import time
+import numpy
+
 from uuv_control_msgs.srv import *
 from uuv_control_msgs.msg import Waypoint as WaypointMsg
-from std_msgs.msg import Time, String
-import time
-from nav_msgs.msg import Odometry
-import numpy
-from rospy.numpy_msg import numpy_msg
 from master_layer.srv import VerifyObject
+from rospy.numpy_msg import numpy_msg
+from std_msgs.msg import Time, String
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point
+from geometry_msgs.msg import Pose
+from std_msgs.msg import Int32
+from master_layer.srv import ChangeOdom
+from anahita_utils import *
 
 class Transition(smach.State):
     def __init__(self):
@@ -17,7 +23,8 @@ class Transition(smach.State):
                             input_keys=['target_waypoint'])
         self._odom_topic_sub = rospy.Subscriber(
             '/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
-
+        
+        
         self._pose = numpy.zeros(3)
         self._threshold = 0.5
         self._timeout = 60 # in seconds
@@ -77,11 +84,24 @@ class TaskBaseClass(smach.State):
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
 
-    def stabilise(self):
-        # after the start of stereo vision get to the supposed 
-        # start point avoiding any targets
-        pass
+        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
+        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
+        
+        try:
+            self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
+            
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
 
+    def odometry_callback(self, msg):
+        self._pose = numpy.array([msg.pose.pose.position.x,
+                                msg.pose.pose.position.y,
+                                msg.pose.pose.position.z])
+        self._orientation = numpy.array([msg.pose.pose.orientation.x,
+                                msg.pose.pose.orientation.y,
+                                msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+    
+        
     def load_params(self):
         # start point for the task
         pass
@@ -110,6 +130,31 @@ class TaskBaseClass(smach.State):
             return True
         else:
             return False
+
+
+
+class ApproachXYZ(TaskBaseClass):
+    
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+        print("Creating an approachXYZ task")
+        smach.State.__init__(self, outcomes=['found_visually', 'reached_final'],
+                            input_keys=['field1', 'field2', 'field3'],
+                            output_keys=['field1', 'field2', 'field2'])
+        
+        change_odom_response = self._change_odom(odom="dvl")
+        self.start_moving()
+    
+    def start_moving(self):
+        target_pose = Pose()
+        fill_pose_data(target_pose, 10, 10, 10, 0, 0, 0, 1)
+        _pose_cmd_pub.publish(target_pose)
+        rospy.loginfo("We are now moving towards the target pose")
+    
+    def do_we_see_it(self):
+        
+
+        
 
 class BouyTask(TaskBaseClass):
     def __init__(self):
@@ -192,6 +237,7 @@ class LineTask(TaskBaseClass):
     
     def move_forward(self):
         # after aligning to the line move forward
+        pass
 
     def execute(self):
         pass
@@ -210,6 +256,7 @@ class FindBottomTarget(smach.State):
 
     def explore(self):
         # move around to find a target
+        pass
 
 class FindFrontTarget(smach.State):
     def __init__(self):
@@ -221,6 +268,7 @@ class FindFrontTarget(smach.State):
         pass
 
     def explore(self):
+        pass
         # move around to find a target
 
 # there are two kinds of scenarios for finding
@@ -247,12 +295,15 @@ class RescueMode(smach.State):
 
     def next_task(self):
         # gives the next task to approach
+        pass
 
     def path_to_new_target(self):
         # use a service to get the path from a path algorithm
+        pass
 
     def trace_path(self):
         # make a request to the init_waypoint_server for trajectory generation
+        pass
 
 
 class TooFar(smach.State):
@@ -278,6 +329,8 @@ class StationKeeping(smach.State):
 
     def execute(self):
         # just maintain the current pose
+        pass
 
-if __init__ == '__main__':
+if __name__ == '__main__':
+    approach_xyz = ApproachXYZ()
     # do something
