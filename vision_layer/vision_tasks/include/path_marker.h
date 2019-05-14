@@ -6,7 +6,6 @@
 class PathMarker : public Base_class
 {
 public:
-    using Base_class::bottomTaskHandling;
     PathMarker();
     ~PathMarker();
     virtual void loadParams () override;
