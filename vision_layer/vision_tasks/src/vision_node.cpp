@@ -1,13 +1,14 @@
 #include "gate.h"
 #include "path_marker.h"
 #include "marker.h"
+#include "torpedo.h"
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "gate";
+std::string current_task = "torpedo";
 std::string previous_task = "";
 
 bool changeCurrentTask (master_layer::CurrentTask::Request &req,
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     ros::Duration(1).sleep();
 
     Gate gate;
+    Torpedo torpedo;
     PathMarker path_marker;
     Marker marker;
     ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
@@ -36,6 +38,10 @@ int main(int argc, char *argv[])
 
     while (ros::ok()) {
         if (current_task != previous_task) {
+             if (current_task == "torpedo"){
+                ROS_INFO("torpedo");
+                torpedo.frontTaskHandling(true);
+            }
             if (current_task == "gate"){
                 ROS_INFO("gate_task");
                 gate.frontTaskHandling(true);

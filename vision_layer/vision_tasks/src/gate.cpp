@@ -41,7 +41,7 @@ void Gate::spinThreadFront()
 			ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
 			
 			temp_src = image_front.clone();
-						ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
+			ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
 
 			vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
 			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
