@@ -4,6 +4,9 @@
 
     <arg name="color_calibrate_object" />
     <param name="color_calibrate_object" value="$(arg color_calibrate_object)" type="string" />
+
+    <arg name="camera" default="front" />
+    <param name="camera" value="$(arg camera)" type="string" />
     
     <node name="color_calibrate" type="color_calibrate" pkg="color_calibration" output="screen" />
     <node name="fusion_node" type="fusion_node" pkg="vision_fusion" />

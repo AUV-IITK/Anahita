@@ -3,13 +3,13 @@
 #include <Wire.h>
 #include <MS5837.h>
 
-#define servoEastPin 40       // pin definitions for forward thrusters
+#define servoEastPin 40 // pin definitions for forward thrusters
 #define servoWestPin 43
 
-#define servoNorthSwayPin 31   // pin definitions for sideward thrusters
+#define servoNorthSwayPin 31 // pin definitions for sideward thrusters
 #define servoSouthSwayPin 32
 
-#define servoNorthWestUpPin 28// pin definitions for upward thrusters
+#define servoNorthWestUpPin 28 // pin definitions for upward thrusters
 #define servoSouthWestUpPin 33
 #define servoNorthEastUpPin 27 
 #define servoSouthEastUpPin 30

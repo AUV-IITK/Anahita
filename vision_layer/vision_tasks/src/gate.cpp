@@ -38,12 +38,15 @@ void Gate::spinThreadFront()
 			break;
 		}
 		if (!image_front.empty()) {
-			ROS_INFO("Found Image");
+			ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
+			
 			temp_src = image_front.clone();
+			ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
+
 			vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
-			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_low_b_,
-																			front_low_g_, front_low_g_,
-																			front_low_b_, front_low_b_);
+			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
+																			front_low_g_, front_high_g_,
+																			front_low_r_, front_high_r_);
 			vision_commons::Morph::open(image_front_thresholded, 2 * front_opening_mat_point_ + 1, 
 										front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
 			vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1, 
@@ -51,22 +54,28 @@ void Gate::spinThreadFront()
 
 			largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
 			bound_rect = cv::boundingRect(cv::Mat(largest_contour));
+			ROS_INFO("Center of bound_rect_tl: %d %d", (bound_rect.tl()).x, (bound_rect.tl()).y);
+			ROS_INFO("Center of bound_rect_tr: %d %d", (bound_rect.br()).x, (bound_rect.br()).y);
+
 			cv::rectangle(temp_src, bound_rect.tl(), bound_rect.br(), bound_rect_color, 2, 8, 0);
 			bound_rect_center.x = ((bound_rect.br()).x + (bound_rect.tl()).x) / 2;
 			bound_rect_center.y = ((bound_rect.tl()).y + (bound_rect.br()).y) / 2;
 
-			cv::circle(temp_src, bound_rect_center, 5, cv::Scalar(0, 250, 0), -1, 8, 1);
+			ROS_INFO("Center of bound_rect_center: %d %d", bound_rect_center.x, bound_rect_center.y);
+			cv::circle(temp_src, bound_rect.tl(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
+			cv::circle(temp_src, bound_rect.br(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
+			cv::circle(temp_src, bound_rect_center, 10, cv::Scalar(0, 250, 0), -1, 8, 1);
 			cv::circle(temp_src, cv::Point(320, 240), 4, cv::Scalar(150, 150, 150), -1, 8, 0);
 
 			front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
         	front_marked_pub.publish(front_image_marked_msg);
 
-			front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_front_thresholded).toImageMsg();
+			front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
         	front_thresholded_pub.publish(front_image_thresholded_msg);
 
 			front_x_coordinate.data = 0;
-			front_y_coordinate.data = bound_rect_center.x;
-			front_z_coordinate.data = bound_rect_center.y;
+			front_y_coordinate.data = bound_rect_center.x - 320;
+			front_z_coordinate.data = 240 - bound_rect_center.y;
 
 			front_x_coordinate_pub.publish(front_x_coordinate);
 			front_y_coordinate_pub.publish(front_y_coordinate);

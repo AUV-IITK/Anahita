@@ -1,30 +1,101 @@
 #include <ros/ros.h>
 #include <iostream>
+#include <vector>
 #include <std_msgs/Float32.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Quaternion.h>
 
-double x, y, z;
-geometry_msgs::Quaternion quat;
+#include <master_layer/ChangeOdom.h>
 
-void xCallback (const std_msgs::Float32 msg) {
-    x = -msg.data/100;
+double z, y;
+double z_avg, y_avg;
+
+nav_msgs::Odometry odom_data;
+
+std::vector<double> z_coord;
+std::vector<double> y_coord;
+
+int z_count = 0;
+int y_count = 0;
+
+double thres = 10;
+
+std::string odom_source = "dvl";
+
+bool changeOdom (master_layer::ChangeOdom::Request &req,
+                        master_layer::ChangeOdom::Response &res) {
+    odom_source = req.odom;
+    res.success = true;
+    return true;
 }
 
-void yCallback (const std_msgs::Float32 msg) {
-    y = -msg.data/100;
+double avg (std::vector<double> array) {
+    double sum = std::accumulate(array.begin(), array.end(), 0);
+    double size = array.size();
+
+    return sum/size;
+}
+
+bool inRange (double x, double avg) {
+    if (std::abs(avg) + thres >= x || std::abs(avg) - thres <= x) {
+        return true;
+    }
+    return false;
 }
 
 void zCallback (const std_msgs::Float32 msg) {
-    z = -msg.data/100;
+    z = -msg.data;
+    if (z_count < 10) { 
+        z_coord[z_count] = z;
+        z_avg = avg (z_coord);
+        z_count++;
+    }
+    else {
+        z_avg = avg (z_coord);
+        if (inRange(z, z_avg)) {
+            std::rotate (z_coord.begin(), z_coord.begin() + 1, z_coord.end());
+            z_coord[9] = z;
+        }
+    }
+    ROS_INFO("Calculated from z_callback: %f", z_avg);    
 }
 
-void imuCallback (const sensor_msgs::Imu msg) {
-    quat.x = msg.orientation.x;
-    quat.y = msg.orientation.y;
-    quat.z = msg.orientation.z;
-    quat.w = msg.orientation.w;
+void yCallback (const std_msgs::Float32 msg) {
+    y = msg.data;
+    if (y_count < 10) { 
+        y_coord[y_count] = y;
+        y_avg = avg (y_coord);
+        y_count++;
+    }
+    else {
+        y_avg = avg (y_coord);
+        if (inRange(y, y_avg)) {
+            std::rotate (y_coord.begin(), y_coord.begin() + 1, y_coord.end());
+            y_coord[9] = y;
+        }
+    }
+    ROS_INFO("Calculated from y_callback: %f", y_avg);
+
+}
+
+void dvlCallback (const nav_msgs::Odometry msg) {
+    odom_data.pose.pose.position.x = msg.pose.pose.position.x;
+    odom_data.pose.pose.position.y = msg.pose.pose.position.y;
+    odom_data.pose.pose.position.z = msg.pose.pose.position.z;
+    odom_data.pose.pose.orientation.x = msg.pose.pose.orientation.x;
+    odom_data.pose.pose.orientation.y = msg.pose.pose.orientation.y;
+    odom_data.pose.pose.orientation.z = msg.pose.pose.orientation.z;
+    odom_data.pose.pose.orientation.w = msg.pose.pose.orientation.w;
+    odom_data.twist.twist.linear.x = msg.twist.twist.linear.x;
+    odom_data.twist.twist.linear.y = msg.twist.twist.linear.y;
+    odom_data.twist.twist.linear.z = msg.twist.twist.linear.z;
+    odom_data.twist.twist.angular.x = msg.twist.twist.angular.x; 
+    odom_data.twist.twist.angular.y = msg.twist.twist.angular.y;
+    odom_data.twist.twist.angular.z = msg.twist.twist.angular.z;
+    odom_data.header.frame_id = msg.header.frame_id;
+    odom_data.child_frame_id = msg.child_frame_id;
+    odom_data.header.stamp = odom_data.header.stamp;
 }
 
 int main (int argc, char** argv) {
@@ -32,25 +103,34 @@ int main (int argc, char** argv) {
     ros::init (argc, argv, "local_vision_odom");
     ros::NodeHandle nh;
 
-    ros::Subscriber x_sub = nh.subscribe("/anahita/x_coordinate", 100, &xCallback);
-    ros::Subscriber y_sub = nh.subscribe("/anahita/y_coordinate", 100, &yCallback);
-    ros::Subscriber z_sub = nh.subscribe("/anahita/z_coordinate", 100, &zCallback);
-    ros::Subscriber imu_sub = nh.subscribe("/anahita/imu", 100, &imuCallback);
+    ros::Subscriber z_sub = nh.subscribe("/anahita/front_camera/z_coordinate", 100, &zCallback);
+    ros::Subscriber y_sub = nh.subscribe("/anahita/front_camera/y_coordinate", 100, &yCallback);
+    ros::Subscriber odom_sub = nh.subscribe("/anahita/pose_gt/relay", 100, &dvlCallback);
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+    ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
 
     ros::Rate loop_rate(20);
 
     nav_msgs::Odometry odom_msg;
 
+    z_coord.resize(10);
+    y_coord.resize(10);
+
     while (ros::ok()) {
-        odom_msg.pose.pose.position.x = x;
-        odom_msg.pose.pose.position.y = y;
-        odom_msg.pose.pose.position.z = z;
-        odom_msg.pose.pose.orientation.x = quat.x;
-        odom_msg.pose.pose.orientation.y = quat.y;
-        odom_msg.pose.pose.orientation.z = quat.z;
-        odom_msg.pose.pose.orientation.w = quat.w;
+
+        if (odom_source == "dvl") {
+            odom_msg = odom_data;
+        }
+        else if (odom_source == "vision") {
+            odom_msg = odom_data;
+            odom_msg.pose.pose.position.y = y_avg/100.0;
+            odom_msg.pose.pose.position.z = z_avg/100.0;
+        }
+        else {
+            ROS_INFO("Invalid odom source");
+            return 1;
+        }
 
         odom_pub.publish(odom_msg);
         

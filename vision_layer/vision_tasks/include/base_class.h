@@ -1,6 +1,9 @@
 #ifndef BASE_CLASS_H
 #define BASE_CLASS_H
 
+#include <iostream>
+#include <vector>
+
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
 #include "opencv2/imgproc/imgproc.hpp"
