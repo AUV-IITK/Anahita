@@ -3,12 +3,36 @@
 #include <grid_map_msgs/GridMap.h>
 #include <cmath>
 #include "yaml-cpp/yaml.h"
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 #include<string>
 #include "nav_msgs/Odometry.h"
 
 using namespace grid_map;
 GridMap map({"elevation", "occupancy"});
+tf::TransformBroadcaster map_to_odom_broadcaster;
 std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
+
+void transform_broadcaster_initial()
+{
+		ROS_INFO("Publishing a transform");
+		geometry_msgs::TransformStamped map_to_odom_trans;
+    map_to_odom_trans.header.stamp = ros::Time();
+    map_to_odom_trans.header.frame_id = "map";
+    map_to_odom_trans.child_frame_id = "odom";
+
+    map_to_odom_trans.transform.translation.x = 0;
+    map_to_odom_trans.transform.translation.y = 0;
+    map_to_odom_trans.transform.translation.z = 0;
+    map_to_odom_trans.transform.rotation.w = 0;
+		map_to_odom_trans.transform.rotation.x = 0;
+		map_to_odom_trans.transform.rotation.y = 0;
+		map_to_odom_trans.transform.rotation.z = 0;
+
+    	// send the transform
+    map_to_odom_broadcaster.sendTransform(map_to_odom_trans);
+		ROS_INFO("Published the transform");
+}
 
 void odometry_update_cb(const nav_msgs::Odometry::ConstPtr& msg)
 {
@@ -37,11 +61,13 @@ void loadMapFromYAML(GridMap &map)
 
 int main(int argc, char** argv)
 {
+  ROS_INFO("Starting the mapping node");
   // Initialize node and publisher.
   ros::init(argc, argv, "map_publisher_node");
-  ros::NodeHandle nh("~");
+  ros::NodeHandle nh;
   ros::Publisher publisher = nh.advertise<grid_map_msgs::GridMap>("/grid_map", 1, true);
   ros::Subscriber odom_subscriber = nh.subscribe("/anahita/pose_gt", 10, odometry_update_cb);
+  //transform_broadcaster_initial();
   // Create grid map.
   map.setFrameId("map");
   map.setGeometry(Length(30,30), 1);

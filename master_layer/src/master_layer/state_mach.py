@@ -368,7 +368,7 @@ class FindFrontTarget(smach.State):
         while dt < self._timeout:
             rospy.loginfo("Still trying to search my boi")
 
-            _target_yaw += 10
+            _target_yaw += 30
             if(_target_yaw>180):
                 _target_yaw -= 360
             rospy.loginfo('The target yaw is: ' + str(_target_yaw))
