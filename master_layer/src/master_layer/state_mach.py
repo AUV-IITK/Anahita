@@ -2,14 +2,20 @@
 
 import rospy
 import smach
+import time
+import numpy
+
 from uuv_control_msgs.srv import *
 from uuv_control_msgs.msg import Waypoint as WaypointMsg
-from std_msgs.msg import Time, String
-import time
-from nav_msgs.msg import Odometry
-import numpy
-from rospy.numpy_msg import numpy_msg
 from master_layer.srv import VerifyObject
+from rospy.numpy_msg import numpy_msg
+from std_msgs.msg import Time, String
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point
+from geometry_msgs.msg import Pose
+from std_msgs.msg import Int32
+from master_layer.srv import ChangeOdom
+from anahita_utils import *
 
 class Transition(smach.State):
     def __init__(self):
@@ -17,7 +23,8 @@ class Transition(smach.State):
                             input_keys=['target_waypoint'])
         self._odom_topic_sub = rospy.Subscriber(
             '/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
-
+        
+        
         self._pose = numpy.zeros(3)
         self._threshold = 0.5
         self._timeout = 60 # in seconds
@@ -77,11 +84,32 @@ class TaskBaseClass(smach.State):
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
 
-    def stabilise(self):
-        # after the start of stereo vision get to the supposed 
-        # start point avoiding any targets
-        pass
+        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
+        self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
+        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
+        self._conventional_prob = 0
+        
+        try:
+            self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
+            
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"
+    
+    def has_reached (self, pos, threshold):
+        while (not status or rospy.is_shutdown()):
+            return False
+        while (calc_dist(pos, self._pose) > threshold or rospy.is_shutdown()):
+            return False
+        return True
 
+    def odometry_callback(self, msg):
+        self._pose = msg.pose.pose.position
+        self._orientation = msg.pose.pose.orientation
+        global status
+        status = True 
+
+    
+        
     def load_params(self):
         # start point for the task
         pass
@@ -93,7 +121,7 @@ class TaskBaseClass(smach.State):
     def execute(self):
         pass
 
-    def start_detecting(self):  
+    def object_detector(self):  
         # to start object recognition as soon the bot enters
         # that task and confirm it is the same object
         # a service to ask vision layer if it is the same object
@@ -110,6 +138,53 @@ class TaskBaseClass(smach.State):
             return True
         else:
             return False
+    
+    def conventional_detector_cb(self, msg):
+        self._conventional_prob = msg.data
+        
+
+class MoveToXYZ(TaskBaseClass):
+    
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+        print("Creating an approachXYZ task")
+        smach.State.__init__(self, outcomes=['found_visually', 'reached_final', 'lost'],
+                            input_keys=['field1', 'field2', 'field3'],
+                            output_keys=['field1', 'field2', 'field2'])
+        
+        self.then_ = rospy.get_time()
+        self.timeout_ = 60
+
+        self.target_pose_ = Pose()
+        change_odom_response = self._change_odom(odom="dvl")
+        self.start_moving()
+        self.present_status()
+    
+    def start_moving(self):
+        fill_pose_data(self.target_pose_, 15, 15, 0, 0, 0, 0, 1)
+        self._pose_cmd_pub.publish(self.target_pose_)
+        rospy.loginfo("We are now moving towards the target pose")
+    
+    def present_status(self):
+        rospy.loginfo("Now, I'll check whatever is happening")
+        
+        while True:
+            rospy.loginfo("I am seraching, prob: " + str(self._conventional_prob))
+            if self._conventional_prob > .80:
+                rospy.loginfo("changing to visual odom")
+                change_odom_response = self._change_odom(odom="vision")
+                return 'found_visually'
+        
+            if self.has_reached(self.target_pose_.position, 3) is True:
+                rospy.loginfo("reached the position")
+                return 'reached_final'
+            
+            now = rospy.get_time()
+            dt = now - self.then_
+            if dt > self.timeout_:
+                rospy.loginfo("I've lost")
+                return 'lost'
+
 
 class BouyTask(TaskBaseClass):
     def __init__(self):
@@ -192,6 +267,7 @@ class LineTask(TaskBaseClass):
     
     def move_forward(self):
         # after aligning to the line move forward
+        pass
 
     def execute(self):
         pass
@@ -210,6 +286,7 @@ class FindBottomTarget(smach.State):
 
     def explore(self):
         # move around to find a target
+        pass
 
 class FindFrontTarget(smach.State):
     def __init__(self):
@@ -221,6 +298,7 @@ class FindFrontTarget(smach.State):
         pass
 
     def explore(self):
+        pass
         # move around to find a target
 
 # there are two kinds of scenarios for finding
@@ -247,12 +325,15 @@ class RescueMode(smach.State):
 
     def next_task(self):
         # gives the next task to approach
+        pass
 
     def path_to_new_target(self):
         # use a service to get the path from a path algorithm
+        pass
 
     def trace_path(self):
         # make a request to the init_waypoint_server for trajectory generation
+        pass
 
 
 class TooFar(smach.State):
@@ -278,6 +359,30 @@ class StationKeeping(smach.State):
 
     def execute(self):
         # just maintain the current pose
+        pass
 
-if __init__ == '__main__':
-    # do something
+if __name__ == '__main__':
+    rospy.init_node('state_machine')
+
+    # Create a SMACH state machine
+    sm = smach.StateMachine(outcomes=['outcome4'])
+
+    # Open the container
+    with sm:
+        # Add states to the container
+        smach.StateMachine.add('MovingToXYZ', MoveToXYZ(), 
+                               transitions={'found_visually':'identifier', 'reached_final':'try_again', 'lost':'station_keeping'})
+                                   
+        
+
+    sis = smach_ros.IntrospectionServer('smach_introspect', sm, '/SM_ROOT')
+    sis.start()
+
+    outcome = sm.execute()
+
+    rospy.spin()
+    sis.stop()
+
+    # Execute SMACH plan
+    
+

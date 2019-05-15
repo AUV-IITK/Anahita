@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hardware_dvl)
-set(hardware_dvl_SRC_DIR "src")
-set(hardware_dvl_INCLUDE_DIR "include")
+project(hardware_dvl_ethernet)
+set(hardware_dvl_ethernet_SRC_DIR "src")
+set(hardware_dvl_ethernet_INCLUDE_DIR "include")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -47,9 +47,12 @@ include_directories(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_library(dvl_library SHARED src/driver/dvl_ethernet.cpp include/dvl_data.h include/dvl_ethernet.h)
+add_library(dvl_library SHARED src/driver/dvl_ethernet.cpp include/dvl_data.h include/dvl_ethernet.h include/dvl_connection.h)
 target_link_libraries(dvl_library ${catkin_LIBRARIES})
 
-add_executable(dvl_node src/hardware_dvl/dvl_node.cpp src/hardware_dvl/dvl_connection.cpp)
+add_executable(dvl_node src/hardware_dvl_ethernet/dvl_node.cpp src/hardware_dvl_ethernet/dvl_connection.cpp)
 target_link_libraries(dvl_node dvl_library ${catkin_LIBRARIES})
 # add_dependencies(dvl_node dvl_generate_messages_cpp)
+
+add_executable(gazebo_dvl_driver src/gazebo_dvl_driver.cpp)
+target_link_libraries(gazebo_dvl_driver ${catkin_LIBRARIES} dvl_library)

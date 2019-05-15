@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(master_layer)
+project(mapping)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -11,22 +11,22 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  anahita_msgs
   roscpp
   rospy
+  grid_map_core
+  grid_map_msgs
+  nav_msgs
+  grid_map_ros
   std_msgs
-  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-find_package(task_handler_layer REQUIRED)
-find_package(motion_layer REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
+# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -53,28 +53,24 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  Waypoint.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  CurrentTask.srv
-  ChangeOdom.srv
-  GoToIncremental.srv
-  GoTo.srv
-  VerifyObject.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
-# add_action_files(DIRECTORY action FILES upwardPID.action anglePID.action forwardPID.action sidewardPID.action)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  actionlib_msgs std_msgs anahita_msgs geometry_msgs
+  DEPENDENCIES actionlib_msgs std_msgs nav_msgs
 )
 
 ################################################
@@ -107,10 +103,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  # LIBRARIES heavePIDServer swayPIDServer surgePIDServer yawPIDServer pitchPIDServer rollPIDServer
+  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation
+  # DEPENDS system_lib
 )
 
 ###########
@@ -122,9 +118,10 @@ CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${task_handler_layer_INCLUDE_DIRS}
-  ${motion_layer_INCLUDE_DIRS}
 )
+
+add_executable(map_publisher_node src/map_publisher.cpp)
+target_link_libraries(map_publisher_node ${catkin_LIBRARIES} yaml-cpp)
 
 ## Declare a C++ library
 
@@ -137,50 +134,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(pwm_publisher src/pwm_publisher.cpp)
-target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
-add_executable(master src/master.cpp)
-add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master 
-  gate
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
-
-add_executable(test_node src/test_node.cpp)
-add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_node
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
-
-add_executable(gazebo_pwm_pub src/gazebo_pwm_pub.cpp)
-target_link_libraries(gazebo_pwm_pub ${catkin_LIBRARIES})
-
-add_executable(motion_server src/motion_server.cpp)
-target_link_libraries(motion_server 
-  swayPIDServer 
-  heavePIDServer 
-  yawPIDServer 
-  surgePIDServer 
-  rollPIDServer 
-  pitchPIDServer 
-  ${catkin_LIBRARIES}
-)
-
-add_executable(local_vision_odom src/local_vision_odom.cpp)
-target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -219,11 +173,11 @@ target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

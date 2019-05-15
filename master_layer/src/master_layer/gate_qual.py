@@ -5,6 +5,7 @@ from master_layer.srv import GoToIncremental
 from master_layer.srv import GoTo
 from master_layer.msg import Waypoint
 from master_layer.srv import ChangeOdom
+from anahita_utils import *
 
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Pose
@@ -14,18 +15,6 @@ from rospy.numpy_msg import numpy_msg
 
 status = False
 current_p = Point()
-
-def calc_dist (pose1, pose2):
-    x1 = pose1.x
-    y1 = pose1.y
-    z1 = pose1.z
-
-    x2 = pose2.x
-    y2 = pose2.y
-    z2 = pose2.z
-
-    dist = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2)
-    return dist
 
 def odometry_callback(msg):
     global current_p
@@ -38,13 +27,12 @@ def has_reached (pos, threshold):
     while (not status or rospy.is_shutdown()):
         continue
     while (calc_dist(pos, current_p) > threshold or rospy.is_shutdown()):
-        #print status
+        print status
         continue
 
 if __name__ == '__main__':
-    rospy.loginfo("Starting the visual-approach task")
-    
-    rospy.init_node('approach_visual')
+
+    rospy.init_node('gate_qual')
     """print 'waiting for waypoint server'
     rospy.wait_for_service('anahita/go_to_incremental')"""
 
@@ -52,7 +40,6 @@ if __name__ == '__main__':
     pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
 
     try:
-        rospy.loginfo("Entering the trying statement")
         """go_to_incremental = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
         go_to = rospy.ServiceProxy('anahita/go_to', GoTo)"""
 
@@ -80,7 +67,7 @@ if __name__ == '__main__':
         point = Point()
 
         point = pose.position
-        has_reached(point, 3)
+        has_reached(point, 0.2)
 
         rospy.loginfo("Aligned to the center of the gate")
         rospy.sleep(4)
