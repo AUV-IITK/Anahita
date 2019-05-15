@@ -162,7 +162,7 @@ class MoveToXYZ(TaskBaseClass):
         self.present_status()
     
     def start_moving(self):
-        fill_pose_data(self.target_pose_, -3, -3, 0, 0, 0, 0, 1)
+        fill_pose_data(self.target_pose_, 10, 10, 0, 0, 0, 0, 1)
         self._pose_cmd_pub.publish(self.target_pose_)
         rospy.loginfo("We are now moving towards the target pose")
     
