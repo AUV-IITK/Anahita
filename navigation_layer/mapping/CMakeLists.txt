@@ -103,9 +103,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
+  # INCLUDE_DIRS include
   # LIBRARIES heavePIDServer swayPIDServer surgePIDServer yawPIDServer pitchPIDServer rollPIDServer
-  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation
+  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation grid_map_core grid_map_msgs grid_map_ros
   # DEPENDS system_lib
 )
 

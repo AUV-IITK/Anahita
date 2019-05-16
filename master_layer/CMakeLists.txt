@@ -165,9 +165,6 @@ target_link_libraries(test_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(gazebo_pwm_pub src/gazebo_pwm_pub.cpp)
-target_link_libraries(gazebo_pwm_pub ${catkin_LIBRARIES})
-
 add_executable(motion_server src/motion_server.cpp)
 target_link_libraries(motion_server 
   swayPIDServer 
