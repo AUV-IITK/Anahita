@@ -6,7 +6,7 @@
     Teledyne Navigator Doppler Velocity Log (DVL) ROS driver.
   </description>
 
-  <maintainer email="dev@anassinator.com">Anass Al</maintainer>
+  <maintainer email="ayushgup@iitk.ac.in">Ayush Gupta</maintainer>
 
   <license>GPLv2</license>
   <buildtool_depend>catkin</buildtool_depend>
