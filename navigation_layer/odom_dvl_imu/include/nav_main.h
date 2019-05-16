@@ -19,56 +19,55 @@
 #include "imu_data.h"
 #include "ekf.h"
 
-namespace navigation{
+namespace navigation
+{
 
-    class NavigationNode {
-        public:
+class NavigationNode
+{
+public:
+    NavigationNode(const ros::NodeHandlePtr &nh);
+    ~NavigationNode();
 
-            NavigationNode(const ros::NodeHandlePtr &nh);
-            ~NavigationNode();
+    void Spin();
+    void ProcessCartesianPose();
+    void PublishData(ros::Time &current_time);
+    void BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time);
 
-            void Spin();
-            void ProcessCartesianPose();
-            void PublishData(ros::Time &current_time);
-        	void BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time);
+    bool SetDepthOffsetCallback(odom_dvl_imu::SetDepthOffset::Request &rqst, odom_dvl_imu::SetDepthOffset::Response &response);
+    bool SetWorldXYOffsetCallback(odom_dvl_imu::SetWorldXYOffset::Request &rqst, odom_dvl_imu::SetWorldXYOffset::Response &response);
 
-        private:
-        
-            // bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-            // bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst,SetWorldXYOffset::Response &response);
+    void FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &angle, nav_msgs::Odometry &msg);
+    void FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg);
 
-            void FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &angle, nav_msgs::Odometry &msg);
-            void FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg);
+private:
+    ros::NodeHandlePtr nh_;
 
-            ros::NodeHandlePtr nh_;
+    ros::Subscriber dvlTwistSubscriber_;
+    ros::Subscriber dvlPressureSubscriber_;
+    ros::Subscriber imuSubscriber_;
 
-            ros::Subscriber dvlTwistSubscriber_;
-            ros::Subscriber dvlPressureSubscriber_;
-            ros::Subscriber imuSubscriber_;
+    ros::Publisher navigationOdomPublisher_;
+    tf::TransformBroadcaster odom_broadcaster;
 
-            ros::Publisher  navigationOdomPublisher_;
-            tf::TransformBroadcaster odom_broadcaster;
+    ros::ServiceServer navigationDepthOffsetServer_;
+    ros::ServiceServer navigationXYOffsetServer_;
 
-            // ros::ServiceServer navigationDepthOffsetServer_;
-            // ros::ServiceServer navigationXYOffsetServer_;
+    DvlData dvlData_;
+    IMUData imuData_;
 
-            DvlData dvlData_;
-            IMUData imuData_;
+    ExtendedKalmanFilter dvlFilter_;
+    Eigen::Vector3d poseEstimation_;
 
-            ExtendedKalmanFilter dvlFilter_;
-            Eigen::Vector3d      poseEstimation_;
+    double zOffset_;
+    double positionFromDepth_;
 
-            double zOffset_;
-            double positionFromDepth_;
+    Eigen::Quaterniond quaternion_;
+    Eigen::Vector3d position_;
+    Eigen::Vector3d incrementPosition_;
+    Eigen::Vector3d velocity_;
+    Eigen::Vector3d angularVelocity_;
+    Eigen::Vector3d eulerAngel_;
+};
 
-            Eigen::Quaterniond quaternion_;
-            Eigen::Vector3d    position_;
-            Eigen::Vector3d    incrementPosition_;
-            Eigen::Vector3d    velocity_;
-            Eigen::Vector3d    angularVelocity_;
-            Eigen::Vector3d    eulerAngel_;
-
-    };
-
-}
+} // namespace navigation
 #endif //NAVIGATION_NODE_H_
