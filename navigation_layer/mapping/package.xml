@@ -57,6 +57,7 @@
     <build_depend>std_msgs</build_depend>
     <build_depend>grid_map_core</build_depend>
     <build_depend>grid_map_msgs</build_depend>
+    <build_depend>grid_map_ros</build_depend>
     <build_export_depend>actionlib</build_export_depend>
     <build_export_depend>actionlib_msgs</build_export_depend>
     <build_export_depend>roscpp</build_export_depend>
@@ -70,6 +71,7 @@
     <exec_depend>message_generation</exec_depend>
     <exec_depend>grid_map_core</exec_depend>
     <exec_depend>grid_map_msgs</exec_depend>
+    <exec_depend>grid_map_ros</exec_depend>
 
 
     <!-- The export tag contains other, unspecified, tags -->
