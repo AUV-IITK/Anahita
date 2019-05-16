@@ -8,7 +8,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "image_pub");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
-  image_transport::Publisher pub = it.advertise("/camera/image_raw", 1);
+  image_transport::Publisher pub = it.advertise("/anahita/left/image_raw", 1);
   cv::Mat image = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
   std::cout << "Loaded Image: " << argv[1] << std::endl;
   cv::waitKey(30);
