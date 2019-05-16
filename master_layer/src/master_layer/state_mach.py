@@ -2,6 +2,7 @@
 
 import rospy
 import smach
+import smach_ros
 import time
 import numpy
 
@@ -148,12 +149,12 @@ class MoveToXYZ(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
         print("Creating an approachXYZ task")
-        smach.State.__init__(self, outcomes=['found_visually', 'reached_final', 'lost'],
-                            input_keys=['field1', 'field2', 'field3'],
+        smach.State.__init__(self, outcomes=['found_visually', 'cannot_see', 'lost'],
+                            input_keys=['task_found', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
         
         self.then_ = rospy.get_time()
-        self.timeout_ = 60
+        self.timeout_ = 10
 
         self.target_pose_ = Pose()
         change_odom_response = self._change_odom(odom="dvl")
@@ -161,7 +162,7 @@ class MoveToXYZ(TaskBaseClass):
         self.present_status()
     
     def start_moving(self):
-        fill_pose_data(self.target_pose_, 15, 15, 0, 0, 0, 0, 1)
+        fill_pose_data(self.target_pose_, 10, 10, 0, 0, 0, 0, 1)
         self._pose_cmd_pub.publish(self.target_pose_)
         rospy.loginfo("We are now moving towards the target pose")
     
@@ -177,7 +178,7 @@ class MoveToXYZ(TaskBaseClass):
         
             if self.has_reached(self.target_pose_.position, 3) is True:
                 rospy.loginfo("reached the position")
-                return 'reached_final'
+                return 'cannot_see'
             
             now = rospy.get_time()
             dt = now - self.then_
@@ -289,13 +290,103 @@ class FindBottomTarget(smach.State):
         pass
 
 class FindFrontTarget(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['outcome2'])
 
-    def execute(self, userdata):
+    def __init__(self):
+        rospy.loginfo("I am not able to see things, let's turn around and find something")
+        smach.State.__init__(self, outcomes=['found_visually', 'lost'])
+    
+        global status
+        status = True
+        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
+        self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
+        self._ml_detection_pub = rospy.Subscriber('/anahita/ml', Int32, self.ml_cb)
+        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
+        
+        self._conventional_prob = 0
+        self._ml_prob = 0
+        self._then = rospy.get_time()
+        self._timeout = 120
+        self._step_timeout = 5
+        self._target_pose = Pose()
+        self._pos = self._target_pose.position
+        self._orientation = self._target_pose.orientation
+        self._current_pose = Pose()
+        self.execute()
+        
+
+        try:
+            self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)   
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"
+
+        change_odom_response = self._change_odom(odom="dvl")
+    
+    def conventional_detector_cb(self, msg):
+        self._conventional_prob = msg.data
+    def ml_cb(self, msg):
+        self._ml_prob = msg.data
+
+    def odometry_callback(self, msg):
+        self._current_pose = msg.pose.pose
+        self._pos = msg.pose.pose.position
+        self._orientation = msg.pose.pose.orientation
+        _curr_roll, _curr_pitch, _curr_yaw = quaternion_to_eulerRPY(self._orientation)
+        global status
+        status = True 
+    
+    def has_reached_with_yaw(self, target_pose, curr_pose, pos_threshold, yaw_threshold):
+        while (not status or rospy.is_shutdown()):
+            return False
+        while (calc_dist(target_pose.position, curr_pose.position) > pos_threshold or rospy.is_shutdown()):
+            return False
+        _curr_roll, _curr_pitch, _curr_yaw = quaternion_to_eulerRPY(curr_pose.orientation)
+        _target_roll, _target_pitch, _target_yaw = quaternion_to_eulerRPY(target_pose.orientation)
+        while (abs(_curr_yaw - _target_yaw) > yaw_threshold):
+            return False
+        return True
+
+    def execute(self):
         # move the bot to the pose according to the odom frame of ref 
         # and then rotate the bot to search object
-        pass
+
+        #we'll use the initial yaw reference over here
+        fill_pose_data(self._target_pose, self._pos.x, self._pos.y, self._pos.z, 0, 0, 0, 1)
+        self._pose_cmd_pub.publish(self._target_pose)
+        while self.has_reached_with_yaw(self._target_pose, self._current_pose, 1, 10) is False:
+            rospy.loginfo("Still reaching the initial start position")
+               
+        _now = rospy.get_time()
+        dt = _now - self._then
+        
+        _target_pos = self._pos
+        _start_roll, _start_pitch, _start_yaw = quaternion_to_eulerRPY(self._current_pose.orientation)
+        _target_roll = 0
+        _target_pitch = 0
+        _target_yaw = TO_DEGREE(_start_yaw)
+        rospy.loginfo("The yaw before starting out is: " + str(_start_yaw))
+        
+        while dt < self._timeout:
+            rospy.loginfo("Still trying to search my boi")
+
+            _target_yaw += 30
+            if(_target_yaw>180):
+                _target_yaw -= 360
+            rospy.loginfo('The target yaw is: ' + str(_target_yaw))
+            target_quaternion = eulerRPY_to_quaternion(_target_roll, _target_pitch, TO_RADIAN(_target_yaw))
+            
+            fill_pose_data_pq(self._target_pose, self._pos, target_quaternion)
+            self._pose_cmd_pub.publish(self._target_pose)
+            rospy.sleep(self._step_timeout)
+
+            if(self._conventional_prob > 0.8):
+                rospy.loginfo("Conventionally mila hai kuch chod")  
+                return 'found_visually'
+
+            if(self._ml_prob > 0.8):
+                rospy.loginfo("ML se milgya, nice bro")
+                return 'found_visually'
+            
+        return 'lost'
 
     def explore(self):
         pass
@@ -335,6 +426,12 @@ class RescueMode(smach.State):
         # make a request to the init_waypoint_server for trajectory generation
         pass
 
+class IdentifyTarget(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=[''], input_keys=['target'])
+        rospy.loginfo("Identifying the target")
+        
+
 
 class TooFar(smach.State):
     def __init__(self):
@@ -371,10 +468,11 @@ if __name__ == '__main__':
     with sm:
         # Add states to the container
         smach.StateMachine.add('MovingToXYZ', MoveToXYZ(), 
-                               transitions={'found_visually':'identifier', 'reached_final':'try_again', 'lost':'station_keeping'})
+                               transitions={'found_visually':'IdentifyTarget', 'cannot_see':'FindFrontTarget', 'lost':'MovingToXYZ'})
                                    
-        
-
+        smach.StateMachine.add('FindFrontTarget', FindFrontTarget(), transitions = {'found_visually':'IdentifyTarget', 'lost':'MovingToXYZ'})
+        smach.StateMachine.add('IdentifyTarget', IdentifyTarget())
+    
     sis = smach_ros.IntrospectionServer('smach_introspect', sm, '/SM_ROOT')
     sis.start()
 
