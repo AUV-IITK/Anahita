@@ -139,8 +139,6 @@ public:
 #endif
         elas_.reset(new Elas(*param));
 
-        dynamic_reconfigure::Server<elas_ros::paramsConfig> server;
-        dynamic_reconfigure::Server<elas_ros::paramsConfig>::CallbackType f;
         f = boost::bind(&Elas_Proc::callback, this, _1, _2);
         server.setCallback(f);
 
@@ -433,6 +431,9 @@ private:
     image_geometry::StereoCameraModel model_;
     ros::Publisher pub_disparity_;
     boost::scoped_ptr<Elas::parameters> param;
+
+    dynamic_reconfigure::Server<elas_ros::paramsConfig> server;
+    dynamic_reconfigure::Server<elas_ros::paramsConfig>::CallbackType f;
 };
 
 int main(int argc, char **argv)
