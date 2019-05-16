@@ -104,6 +104,7 @@ class TaskBaseClass(smach.State):
         return True
 
     def odometry_callback(self, msg):
+        rospy.loginfo("Current pose: " + str(msg))
         self._pose = msg.pose.pose.position
         self._orientation = msg.pose.pose.orientation
         global status
@@ -152,19 +153,17 @@ class MoveToXYZ(TaskBaseClass):
         smach.State.__init__(self, outcomes=['found_visually', 'cannot_see', 'lost'],
                             input_keys=['task_found', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
-        
-        self.then_ = rospy.get_time()
-        self.timeout_ = 10
-
-        self.target_pose_ = Pose()
         change_odom_response = self._change_odom(odom="dvl")
+        self.then_ = rospy.get_time()
+        self.timeout_ = 50
+        self.target_pose_ = Pose()
         self.start_moving()
         self.present_status()
     
     def start_moving(self):
-        fill_pose_data(self.target_pose_, 10, 10, 0, 0, 0, 0, 1)
+        fill_pose_data(self.target_pose_, 10, 10, 1.5, 0, 0, 0, 1)
         self._pose_cmd_pub.publish(self.target_pose_)
-        rospy.loginfo("We are now moving towards the target pose")
+        rospy.loginfo("We are now moving towards the target pose" + str(self.target_pose_))
     
     def present_status(self):
         rospy.loginfo("Now, I'll check whatever is happening")
