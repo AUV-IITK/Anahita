@@ -96,7 +96,7 @@ class XSensDriver(object):
                           "gyroscope biases for %d s. Please don't move the IMU"
                           " during this time." % no_rotation_duration)
             self.mt.SetNoRotation(no_rotation_duration)
-
+        
         self.frame_id = get_param('~frame_id', '/base_imu')
 
         self.frame_local = get_param('~frame_local', 'ENU')
