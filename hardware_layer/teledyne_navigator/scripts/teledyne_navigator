@@ -18,10 +18,13 @@ def callback(dvl, ensemble):
     pub.publish(ensemble)
     
     twist_msg = TwistWithCovarianceStamped()
-    twist_msg.twist.twist.linear.x = ensemble.bottom_velocity
-    twist_msg.twist.twist.linear.y = ensemble.bottom_velocity
-    twist_msg.twist.twist.linear.z = ensemble.bottom_velocity
+    twist_msg.header = ensemble.header
+    twist_msg.twist.twist.linear.x = ensemble.bottom_velocity.x
+    twist_msg.twist.twist.linear.y = ensemble.bottom_velocity.y
+    twist_msg.twist.twist.linear.z = ensemble.bottom_velocity.z
     twist_pub.publish(twist_msg)
+   
+    rospy.loginfo("Publishing information")
 
 
 if __name__ == "__main__":
@@ -33,7 +36,7 @@ if __name__ == "__main__":
     timeout = rospy.get_param("~timeout")
 
     pub = rospy.Publisher("~ensemble", Ensemble, queue_size=1)
-    twist_pub = rospy.Publisher("/anahita/dvl_twist", TwistWithCovariance   Stamped, queue_size=10)
+    twist_pub = rospy.Publisher("/anahita/dvl_twist", TwistWithCovarianceStamped, queue_size=10)
 
     with TeledyneNavigator(port, baudrate, frame_id, timeout) as dvl:
         # Sync ROS time terribly.

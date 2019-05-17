@@ -25,5 +25,4 @@
 		<rosparam param="orientation_covariance_diagonal" subst_value="True">$(arg orientation_covariance_diagonal)</rosparam>
 	</node>
 
-    <remap from="/anahita/imu" to="/imu/data"/>
 </launch>
