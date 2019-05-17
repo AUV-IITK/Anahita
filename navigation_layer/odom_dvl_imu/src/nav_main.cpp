@@ -51,6 +51,7 @@ bool NavigationNode::SetDepthOffsetCallback(odom_dvl_imu::SetDepthOffset::Reques
 {
     zOffset_ = dvlData_.GetPositionZFromPressure();
     imuData_.SetNewDataReady();
+    ROS_INFO("Service completed");
     return true;
 }
 
@@ -60,6 +61,7 @@ bool NavigationNode::SetWorldXYOffsetCallback(odom_dvl_imu::SetWorldXYOffset::Re
     position_.x() = 0.0f;
     position_.y() = 0.0f;
     dvlData_.SetNewDataReady();
+    ROS_INFO("Service completed");
     return true;
 }
 
