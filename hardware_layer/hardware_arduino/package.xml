@@ -4,8 +4,7 @@
   <version>0.0.0</version>
   <description>The hardware_arduino package</description>
 
-  <maintainer email="mayankm.iitk@gmail.com">Mayank Mittal</maintainer>
-  <maintainer email="asurya@iitk.ac.in">Suryansh Agarwal</maintainer>
+  <maintainer email="ayushgup@iitk.ac.in.com">Ayush Gupta</maintainer>
 
   <license>BSD</license>
 

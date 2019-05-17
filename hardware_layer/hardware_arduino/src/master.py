@@ -39,19 +39,20 @@ if __name__ == '__main__':
         exit()
 
     while not rospy.is_shutdown():
+        try:
+            rospy.loginfo('Inside the spin loop')
+            serial_connection.flush()
+            pwm_msg = pwm_str.encode('utf-8')
+            serial_connection.write(pwm_msg)
+            rospy.sleep(0.05)
 
-        rospy.loginfo('Inside the spin loop')
-
-        serial_connection.flush()
-        pwm_msg = pwm_str.encode('utf-8')
-        serial_connection.write(pwm_msg)
-        rospy.sleep(0.05)
-
-        # Serial read section
-        msg = serial_connection.read(serial_connection.inWaiting()) # read all characters in buffer
-        sensor_msg.data = float(msg)
-        depth_publisher.publish(sensor_msg)
-        print msg
+            # Serial read section
+            msg = serial_connection.read(serial_connection.inWaiting()) # read all characters in buffer
+            sensor_msg.data = float(msg)
+            depth_publisher.publish(sensor_msg)
+            print msg
+        except:
+            rospy.logerr('Some error has occured')
 
 
     rospy.spin()
