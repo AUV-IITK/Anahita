@@ -1,14 +1,13 @@
 <launch>
 
-  <arg name="env" default="real" />
+  <arg name="env" default="real"/>
 
   <group ns="anahita">
     <rosparam file="$(find color_calibration)/params/gate_$(arg env).yaml" command="load" />
     <rosparam file="$(find color_calibration)/params/path_marker_$(arg env).yaml" command="load" />
     <rosparam file="$(find color_calibration)/params/marker_$(arg env).yaml" command="load" />
   </group>
-
-  <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen"/><!-- if="$(eval env == 'real')" /-->  
+  <remap from="/anahita/left/image_raw" to="/anahita/front_camera/image_raw"/>
+  <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen"/>
   <node name="vision_node" type="vision_node" pkg="vision_tasks" output="screen" />
-
 </launch>

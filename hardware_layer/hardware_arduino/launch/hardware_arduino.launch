@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="rosserial_python" type="serial_node.py" name="serial_node" output="screen">
+    <node pkg="hardware_arduino" type="master.py" name="arduino_node" output="screen">
     <param name="port" value="/dev/arduino"/>
     <param name="baud" value="57600"/>
     </node>
