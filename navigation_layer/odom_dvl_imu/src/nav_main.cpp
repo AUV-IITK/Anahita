@@ -46,16 +46,18 @@ void NavigationNode::Spin()
     }
 }
 
-bool NavigationNode::SetDepthOffsetCallback(odom_dvl_imu::SetDepthOffset::Request &request,
-                                            odom_dvl_imu::SetDepthOffset::Response &response)
+bool NavigationNode::SetDepthOffsetCallback(
+    odom_dvl_imu::SetDepthOffset::Request &request,
+    odom_dvl_imu::SetDepthOffset::Response &response)
 {
     zOffset_ = dvlData_.GetPositionZFromPressure();
     imuData_.SetNewDataReady();
     return true;
 }
 
-bool NavigationNode::SetWorldXYOffsetCallback(odom_dvl_imu::SetWorldXYOffset::Request &request,
-                                              odom_dvl_imu::SetWorldXYOffset::Response &response)
+bool NavigationNode::SetWorldXYOffsetCallback(
+    odom_dvl_imu::SetWorldXYOffset::Request &request,
+    odom_dvl_imu::SetWorldXYOffset::Response &response)
 {
     position_.x() = 0.0f;
     position_.y() = 0.0f;
@@ -76,9 +78,11 @@ void NavigationNode::ProcessCartesianPose()
         angularVelocity_ = imuData_.GetAngularVelocity();
         eulerAngel_ = imuData_.GetOrientation();
         quaternion_ = imuData_.GetQuaternion();
-        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f", incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
+        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f",
+                 incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
         position_ += quaternion_.toRotationMatrix() * incrementPosition_;
-        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f, Position.z: %.2f", position_.x(), position_.y(), position_.z());
+        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f, Position.z: %.2f",
+                 position_.x(), position_.y(), position_.z());
 
         position_.z() = positionFromDepth_ - zOffset_;
 
@@ -91,13 +95,15 @@ void NavigationNode::ProcessCartesianPose()
     }
 }
 
-void NavigationNode::BroadcastTransform(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, ros::Time &current_time)
+void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
+                                        Eigen::Quaterniond &quaternion,
+                                        ros::Time &current_time)
 {
     ROS_INFO("Publishing a transform");
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "anahita/base_link";
+    odom_trans.header.frame_id = "world";
+    odom_trans.child_frame_id = "base_link";
 
     odom_trans.transform.translation.x = position.x();
     odom_trans.transform.translation.y = position.y();
@@ -108,15 +114,15 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position, Eigen::Quater
     odom_trans.transform.rotation.z = quaternion.z();
 
     // send the transform
-    odom_broadcaster.sendTransform(odom_trans);
+    // odom_broadcaster.sendTransform(odom_trans);
     ROS_INFO("Published the transform");
 }
 
 void NavigationNode::PublishData(ros::Time &current_time)
 {
     nav_msgs::Odometry odometry_msg;
-    odometry_msg.header.frame_id = "odom";
-    odometry_msg.child_frame_id = "anahita/base_link";
+    odometry_msg.header.frame_id = "world";
+    odometry_msg.child_frame_id = "base_link";
     odometry_msg.header.stamp = current_time;
 
     FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
@@ -125,7 +131,9 @@ void NavigationNode::PublishData(ros::Time &current_time)
     navigationOdomPublisher_.publish(odometry_msg);
 }
 
-void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &quaternion, nav_msgs::Odometry &msg)
+void NavigationNode::FillPoseMsg(Eigen::Vector3d &position,
+                                 Eigen::Quaterniond &quaternion,
+                                 nav_msgs::Odometry &msg)
 {
     msg.pose.pose.position.x = position.x();
     msg.pose.pose.position.y = position.y();
@@ -134,7 +142,8 @@ void NavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Quaterniond &
     msg.pose.pose.orientation.y = quaternion.y();
     msg.pose.pose.orientation.z = quaternion.z();
     msg.pose.pose.orientation.w = quaternion.w();
-    ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f", position.x(), position.y(), position.z(), eulerAngel_.x(), eulerAngel_.y(), eulerAngel_.z());
+    ROS_INFO("Pose Message being filled: Position.x: %f, Position.y: %f, Position.z: %f, Angle.x: %f, Angle.y: %f, Angle.z: %f",
+             position.x(), position.y(), position.z(), eulerAngel_.x(), eulerAngel_.y(), eulerAngel_.z());
 }
 
 void NavigationNode::FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg)
@@ -145,7 +154,8 @@ void NavigationNode::FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vecto
     msg.twist.twist.angular.x = angular_velocity.x();
     msg.twist.twist.angular.y = angular_velocity.y();
     msg.twist.twist.angular.z = angular_velocity.z();
-    ROS_INFO("Twist Message being filled: Linear.x: %f, Linear.y: %f, Linear.z: %f, AngularVel.x: %f, AngularVel.y: %f, AngularVel.z: %f", linear_velocity.x(), linear_velocity.y(), linear_velocity.z(), angular_velocity.x(), angular_velocity.y(), angular_velocity.z());
+    ROS_INFO("Twist Message being filled: Linear.x: %f, Linear.y: %f, Linear.z: %f, AngularVel.x: %f, AngularVel.y: %f, AngularVel.z: %f",
+             linear_velocity.x(), linear_velocity.y(), linear_velocity.z(), angular_velocity.x(), angular_velocity.y(), angular_velocity.z());
 }
 
 } // namespace navigation

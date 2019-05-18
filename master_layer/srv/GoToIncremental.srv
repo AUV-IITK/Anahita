@@ -1,3 +1,8 @@
+string LIPB='lipb'
+string CUBIC='cubic'
+string DUBINS='dubins'
+string LINEAR='linear'
+
 geometry_msgs/Point step
 float64 max_forward_speed
 string interpolator

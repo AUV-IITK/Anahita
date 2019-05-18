@@ -5,19 +5,22 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Point.h>
 
 #include <master_layer/ChangeOdom.h>
 
-double z, y;
-double z_avg, y_avg;
+double z, y, x;
+double z_avg, y_avg, x_avg;
 
 nav_msgs::Odometry odom_data;
 
 std::vector<double> z_coord;
 std::vector<double> y_coord;
+std::vector<double> x_coord;
 
 int z_count = 0;
 int y_count = 0;
+int x_count = 0;
 
 double thres = 10;
 
@@ -58,7 +61,7 @@ void zCallback (const std_msgs::Float32 msg) {
             z_coord[9] = z;
         }
     }
-    ROS_INFO("Calculated from z_callback: %f", z_avg);    
+    // ROS_INFO("Calculated from z_callback: %f", z_avg);
 }
 
 void yCallback (const std_msgs::Float32 msg) {
@@ -75,7 +78,25 @@ void yCallback (const std_msgs::Float32 msg) {
             y_coord[9] = y;
         }
     }
-    ROS_INFO("Calculated from y_callback: %f", y_avg);
+    // ROS_INFO("Calculated from y_callback: %f", y_avg);
+
+}
+
+void xCallback (const geometry_msgs::Point msg) {
+    x = msg.z;
+    if (x_count < 10) { 
+        x_coord[x_count] = x;
+        x_avg = avg (x_coord);
+        x_count++;
+    }
+    else {
+        x_avg = avg (x_coord);
+        if (inRange(x, x_avg)) {
+            std::rotate (x_coord.begin(), x_coord.begin() + 1, x_coord.end());
+            x_coord[9] = x;
+        }
+    }
+    // ROS_INFO("Calculated from x_callback: %f", x_avg);
 
 }
 
@@ -106,6 +127,7 @@ int main (int argc, char** argv) {
     ros::Subscriber z_sub = nh.subscribe("/anahita/front_camera/z_coordinate", 100, &zCallback);
     ros::Subscriber y_sub = nh.subscribe("/anahita/front_camera/y_coordinate", 100, &yCallback);
     ros::Subscriber odom_sub = nh.subscribe("/anahita/pose_gt/relay", 100, &dvlCallback);
+    ros::Subscriber mean_coord_sub = nh.subscribe("/anahita/mean_coord", 100, &xCallback);
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
     ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
@@ -116,6 +138,7 @@ int main (int argc, char** argv) {
 
     z_coord.resize(10);
     y_coord.resize(10);
+    x_coord.resize(10);
 
     while (ros::ok()) {
 
@@ -126,6 +149,11 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/100.0;
             odom_msg.pose.pose.position.z = z_avg/100.0;
+        }
+        else if (odom_source == "stereo") {
+            odom_msg = odom_data;
+            odom_msg.pose.pose.position.y = y_avg/100.0;
+            odom_msg.pose.pose.position.x = -x_avg;
         }
         else {
             ROS_INFO("Invalid odom source");

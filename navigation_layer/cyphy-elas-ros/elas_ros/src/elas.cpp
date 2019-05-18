@@ -299,6 +299,7 @@ public:
             r_image_data = r_cv_ptr->image.data;
             r_step = r_cv_ptr->image.step[0];
         }
+        ROS_ASSERT(vision_layer_init == true);
         roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
         ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
         ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
@@ -381,6 +382,7 @@ public:
     void roiCB(const sensor_msgs::ImageConstPtr &msg)
     {
         roi_image_msg_ = msg;
+        vision_layer_init = true;
     }
 
     void callback(elas_ros::paramsConfig &config, uint32_t level)
@@ -427,6 +429,7 @@ private:
     boost::shared_ptr<Elas> elas_;
     boost::shared_ptr<const sensor_msgs::Image> roi_image_msg_;
     int queue_size_;
+    bool vision_layer_init = false;
 
     image_geometry::StereoCameraModel model_;
     ros::Publisher pub_disparity_;

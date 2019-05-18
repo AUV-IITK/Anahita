@@ -3,6 +3,7 @@
     <!-- Arguments: input stereo namespace and output elas namespace -->
     
     <include file="$(find hardware_camera)/launch/stereo_proc.launch" />
+    <node name="depth" pkg="elas_ros" type="depth" output="screen" />
     
     <arg name="stereo" default="anahita" />
     <arg name="elas_ns" default="elas" />

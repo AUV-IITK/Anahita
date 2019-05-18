@@ -57,7 +57,7 @@ void Marker::spinThreadFront()
 			bound_rect_center.y = ((bound_rect.tl()).y + (bound_rect.br()).y) / 2;
 
 			cv::circle(temp_src, bound_rect_center, 5, cv::Scalar(0, 250, 0), -1, 8, 1);
-			cv::circle(temp_src, cv::Point(320, 240), 4, cv::Scalar(150, 150, 150), -1, 8, 0);
+			cv::circle(temp_src, cv::Point(temp_src.cols/2, temp_src.rows/2), 4, cv::Scalar(150, 150, 150), -1, 8, 0);
 
 			front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
         	front_marked_pub.publish(front_image_marked_msg);
@@ -67,8 +67,8 @@ void Marker::spinThreadFront()
 			front_roi_pub.publish(front_image_thresholded_msg);
 
 			front_x_coordinate.data = 0;
-			front_y_coordinate.data = bound_rect_center.x - 320;
-			front_z_coordinate.data = 240 - bound_rect_center.y;
+			front_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;
+			front_z_coordinate.data = temp_src.rows/2 - bound_rect_center.y;
 
 			front_x_coordinate_pub.publish(front_x_coordinate);
 			front_y_coordinate_pub.publish(front_y_coordinate);

@@ -1,13 +1,13 @@
 vision:
   marker:
-    b_max: 30
+    b_max: 24
     b_min: 0
     bilateral_iter: 0
     closing_iter: 0
     closing_mat_point: 1
-    g_max: 42
+    g_max: 34
     g_min: 0
     opening_iter: 1
     opening_mat_point: 1
-    r_max: 78
-    r_min: 16
+    r_max: 85
+    r_min: 7

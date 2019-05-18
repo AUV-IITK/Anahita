@@ -65,7 +65,12 @@ add_service_files(
   ChangeOdom.srv
   GoToIncremental.srv
   GoTo.srv
+  GoToPose.srv
   VerifyObject.srv
+  InitCircularTrajectory.srv
+  Hold.srv
+  TrajectoryComplete.srv
+  PoseReach.srv
 )
 
 ## Generate actions in the 'action' folder
