@@ -31,10 +31,10 @@ def fill_pose_data_xyzq(pose_object, pos_x, pos_y, pos_z, quaternion):
     pose_object.position.x = pos_x
     pose_object.position.y = pos_y
     pose_object.position.z = pos_z
-    pose_object.orientation.x = quaternion[0]
-    pose_object.orientation.y = quaternion[1]
-    pose_object.orientation.z = quaternion[2]
-    pose_object.orientation.w = quaternion[3]
+    pose_object.orientation.x = quaternion.x
+    pose_object.orientation.y = quaternion.y
+    pose_object.orientation.z = quaternion.z
+    pose_object.orientation.w = quaternion.w
 
 def fill_pose_data(pose_object, pos_x, pos_y, pos_z, orient_x, orient_y, orient_z, orient_w):
     pose_object.position.x = pos_x

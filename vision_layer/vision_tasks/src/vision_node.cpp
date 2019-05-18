@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     PathMarker path_marker;
     Marker marker;
     ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
-
+    nh.setParam("/current_task", current_task);
     ros::Rate loop_rate(10);
 
     ROS_INFO("Vision Node started");

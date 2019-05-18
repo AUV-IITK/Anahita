@@ -10,7 +10,7 @@
 #include <master_layer/ChangeOdom.h>
 
 
-double z, y;
+double z, y, y_ml, z_ml;
 double z_avg, y_avg;
 
 nav_msgs::Odometry odom_data;
@@ -24,9 +24,23 @@ int y_count = 0;
 double thres = 10;
 
 std::string odom_source = "dvl";
-std::string current_task;
 
+//I have not yet added anything to retrieve the current task
+std::string current_task = "vampire";
 
+void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
+{
+    int number_of_objects = sizeof(msg.bounding_boxes)/sizeof(msg.bounding_boxes[0]);
+    for(int i = 0; i < number_of_objects; i++)
+    {
+        if(msg.bounding_boxes[i].Class == current_task)
+        {
+            ROS_INFO("Inside ML Callback");
+            y_ml = (msg.bounding_boxes[i].xmin + msg.bounding_boxes[i].xmax)/2 - 320; 
+            z_ml = 320 - (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2 ; 
+        }
+    }
+}
 
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                         master_layer::ChangeOdom::Response &res) {
@@ -111,8 +125,9 @@ int main (int argc, char** argv) {
     ros::Subscriber z_sub = nh.subscribe("/anahita/front_camera/z_coordinate", 100, &zCallback);
     ros::Subscriber y_sub = nh.subscribe("/anahita/front_camera/y_coordinate", 100, &yCallback);
     ros::Subscriber odom_sub = nh.subscribe("/anahita/pose_gt/relay", 100, &dvlCallback);
-
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+    ros::Subscriber ml_sub = nh.subscribe("/anahita/bounding_boxes", 1, &ml_callback);
+
     ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
     ros::Rate loop_rate(20);
 
@@ -135,7 +150,6 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_ml;
             odom_msg.pose.pose.position.z = z_ml;
-
         }
         else {
             ROS_INFO("Invalid odom source");
