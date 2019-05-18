@@ -7,6 +7,8 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Point.h>
 
+#include <darknet_ros_msgs/BoundingBox.h>
+#include <darknet_ros_msgs/BoundingBoxes.h>
 #include <master_layer/ChangeOdom.h>
 #include <Eigen/Dense>
 
@@ -26,12 +28,13 @@ int x_count = 0;
 double thres = 10;
 bool odom_init = false;
 
-std::string odom_source = "vision";
-
 Eigen::Matrix3f quaternion_matrix;
 
+std::string odom_source = "dvl";
+std::string current_task = "";
+
 bool changeOdom (master_layer::ChangeOdom::Request &req,
-                        master_layer::ChangeOdom::Response &res) {
+                master_layer::ChangeOdom::Response &res) {
     odom_source = req.odom;
     res.success = true;
     return true;
@@ -65,7 +68,6 @@ void zCallback (const std_msgs::Float32 msg) {
             z_coord[9] = z;
         }
     }
-    // ROS_INFO("Calculated from z_callback: %f", z_avg);
 }
 
 void yCallback (const std_msgs::Float32 msg) {
@@ -82,8 +84,6 @@ void yCallback (const std_msgs::Float32 msg) {
             y_coord[9] = y;
         }
     }
-    // ROS_INFO("Calculated from y_callback: %f", y_avg);
-
 }
 
 void xCallback (const geometry_msgs::Point msg) {
@@ -100,8 +100,6 @@ void xCallback (const geometry_msgs::Point msg) {
             x_coord[9] = x;
         }
     }
-    // ROS_INFO("Calculated from x_callback: %f", x_avg);
-
 }
 
 void dvlCallback (const nav_msgs::Odometry msg) {
@@ -161,7 +159,6 @@ int main (int argc, char** argv) {
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
     ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
-
     ros::Rate loop_rate(20);
 
     nav_msgs::Odometry odom_msg;
@@ -186,6 +183,12 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.y = y_avg/100.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
+        }
+        else if (odom_source == "vision_ml"){
+            odom_msg = odom_data;
+            odom_msg.pose.pose.position.y = y_ml;
+            odom_msg.pose.pose.position.z = z_ml;
+
         }
         else {
             ROS_INFO("Invalid odom source");

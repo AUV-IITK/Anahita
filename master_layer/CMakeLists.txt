@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  darknet_ros_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -80,7 +81,7 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs std_msgs anahita_msgs geometry_msgs
+  actionlib_msgs std_msgs anahita_msgs geometry_msgs darknet_ros_msgs 
 )
 
 ################################################
