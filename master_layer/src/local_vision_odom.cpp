@@ -15,6 +15,8 @@
 double z, y, x;
 double z_avg, y_avg, x_avg;
 
+double y_ml, z_ml;
+
 nav_msgs::Odometry odom_data;
 
 std::vector<double> z_coord;
@@ -31,7 +33,23 @@ bool odom_init = false;
 Eigen::Matrix3f quaternion_matrix;
 
 std::string odom_source = "dvl";
-std::string current_task = "";
+
+//I have not yet added anything to retrieve the current task
+std::string current_task = "vampire";
+
+void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
+{
+    int number_of_objects = sizeof(msg.bounding_boxes)/sizeof(msg.bounding_boxes[0]);
+    for(int i = 0; i < number_of_objects; i++)
+    {
+        if(msg.bounding_boxes[i].Class == current_task)
+        {
+            ROS_INFO("Inside ML Callback");
+            y_ml = (msg.bounding_boxes[i].xmin + msg.bounding_boxes[i].xmax)/2 - 320; 
+            z_ml = 320 - (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2 ; 
+        }
+    }
+}
 
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                 master_layer::ChangeOdom::Response &res) {
@@ -158,6 +176,8 @@ int main (int argc, char** argv) {
     ros::Subscriber mean_coord_sub = nh.subscribe("/anahita/mean_coord", 100, &xCallback);
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
+    ros::Subscriber ml_sub = nh.subscribe("/anahita/bounding_boxes", 1, &ml_callback);
+
     ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
     ros::Rate loop_rate(20);
 
@@ -188,7 +208,6 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_ml;
             odom_msg.pose.pose.position.z = z_ml;
-
         }
         else {
             ROS_INFO("Invalid odom source");
