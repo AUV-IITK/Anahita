@@ -5,8 +5,10 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Quaternion.h>
-
+#include <darknet_ros_msgs/BoundingBox.h>
+#include <darknet_ros_msgs/BoundingBoxes.h>
 #include <master_layer/ChangeOdom.h>
+
 
 double z, y;
 double z_avg, y_avg;
@@ -22,6 +24,9 @@ int y_count = 0;
 double thres = 10;
 
 std::string odom_source = "dvl";
+std::string current_task;
+
+
 
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                         master_layer::ChangeOdom::Response &res) {
@@ -109,7 +114,6 @@ int main (int argc, char** argv) {
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
     ros::ServiceServer service = nh.advertiseService("odom_source", changeOdom);
-
     ros::Rate loop_rate(20);
 
     nav_msgs::Odometry odom_msg;
@@ -126,6 +130,12 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/100.0;
             odom_msg.pose.pose.position.z = z_avg/100.0;
+        }
+        else if (odom_source == "vision_ml"){
+            odom_msg = odom_data;
+            odom_msg.pose.pose.position.y = y_ml;
+            odom_msg.pose.pose.position.z = z_ml;
+
         }
         else {
             ROS_INFO("Invalid odom source");
