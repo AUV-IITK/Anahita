@@ -47,7 +47,4 @@ target_link_libraries(image_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_c
 add_executable(image_save helper_nodes/image_save.cpp)
 target_link_libraries(image_save ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
-add_executable(depth_image_pub helper_nodes/depth_image_pub.cpp)
-target_link_libraries(depth_image_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons ${PCL_LIBRARIES})
-
 install(DIRECTORY include/vision_commons/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
