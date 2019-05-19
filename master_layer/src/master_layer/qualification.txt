@@ -1,7 +1,0 @@
-1. uuv_gazebo_worlds
-2. anahita_description
-3. vision_tasks
-4. elas_ros
-5. cascaded_dp_controller/cascaded_pid_controller
-6. odom_dvl_imu
-7. master_layer qual_gate.py
