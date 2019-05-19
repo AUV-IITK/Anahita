@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(task_handler_layer REQUIRED)
 find_package(motion_layer REQUIRED)
+find_package (Eigen3 REQUIRED NO_MODULE)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -129,6 +130,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${task_handler_layer_INCLUDE_DIRS}
   ${motion_layer_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -182,7 +184,7 @@ target_link_libraries(motion_server
 )
 
 add_executable(local_vision_odom src/local_vision_odom.cpp)
-target_link_libraries(local_vision_odom ${catkin_LIBRARIES})
+target_link_libraries(local_vision_odom ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

@@ -8,6 +8,7 @@
 #include <geometry_msgs/Point.h>
 
 #include <master_layer/ChangeOdom.h>
+#include <Eigen/Dense>
 
 double z, y, x;
 double z_avg, y_avg, x_avg;
@@ -23,8 +24,11 @@ int y_count = 0;
 int x_count = 0;
 
 double thres = 10;
+bool odom_init = false;
 
-std::string odom_source = "dvl";
+std::string odom_source = "vision";
+
+Eigen::Matrix3f quaternion_matrix;
 
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                         master_layer::ChangeOdom::Response &res) {
@@ -117,6 +121,32 @@ void dvlCallback (const nav_msgs::Odometry msg) {
     odom_data.header.frame_id = msg.header.frame_id;
     odom_data.child_frame_id = msg.child_frame_id;
     odom_data.header.stamp = odom_data.header.stamp;
+    odom_init = true;
+}
+
+void qmatrixUpdate () {
+    geometry_msgs::Quaternion q = odom_data.pose.pose.orientation;
+    quaternion_matrix(0, 0) = 1 - 2*q.y*q.y - 2*q.z*q.z;
+    quaternion_matrix(0, 1) = 2*q.x*q.y - 2*q.z*q.w;
+    quaternion_matrix(0, 2) = 2*q.x*q.z + 2*q.y*q.w;
+    quaternion_matrix(1, 0) = 2*q.x*q.y + 2*q.z*q.w;
+    quaternion_matrix(1, 1) = 1 - 2*q.x*q.x - 2*q.z*q.z;
+    quaternion_matrix(1, 2) = 2*q.y*q.z - 2*q.x*q.w;
+    quaternion_matrix(2, 0) = 2*q.x*q.z - 2*q.y*q.w;
+    quaternion_matrix(2, 1) = 2*q.y*q.z + 2*q.x*q.w;
+    quaternion_matrix(2, 2) = 1 - 2*q.x*q.x - 2*q.y*q.y;
+}
+
+void transform (geometry_msgs::Point& p) {
+    Eigen::Vector3f p_world;
+    p_world(0) = p.x;
+    p_world(1) = p.y;
+    p_world(2) = p.z;
+    qmatrixUpdate ();
+    Eigen::Vector3f p_body = quaternion_matrix.transpose()*p_world;
+    p.x = p_body(0);
+    p.y = p_body(1);
+    p.z = p_body(2);
 }
 
 int main (int argc, char** argv) {
@@ -149,10 +179,12 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/100.0;
             odom_msg.pose.pose.position.z = z_avg/100.0;
+            if (odom_init) transform (odom_msg.pose.pose.position);
         }
         else if (odom_source == "stereo") {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/100.0;
+            if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
         }
         else {
