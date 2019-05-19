@@ -56,8 +56,11 @@ void Gate::spinThreadFront()
                                         front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
             vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1,
                                          front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
-
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
+            if (!largest_contour.size()) {
+                ROS_INFO("No contour found");
+                continue;
+            }
             bound_rect = cv::boundingRect(cv::Mat(largest_contour));
             ROS_INFO("Center of bound_rect_tl: %d %d", (bound_rect.tl()).x, (bound_rect.tl()).y);
             ROS_INFO("Center of bound_rect_tr: %d %d", (bound_rect.br()).x, (bound_rect.br()).y);
