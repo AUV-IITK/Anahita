@@ -31,8 +31,13 @@ int main(int argc, char *argv[])
     Torpedo torpedo;
     PathMarker path_marker;
     Marker marker;
+<<<<<<< HEAD
     ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
 
+=======
+    ros::ServiceServer service = nh.advertiseService("current_task", changeCurrentTask);
+    nh.setParam("/current_task", current_task);
+>>>>>>> e271c3137dd6de74f48add4668694bd96c9199ce
     ros::Rate loop_rate(10);
 
     ROS_INFO("Vision Node started");

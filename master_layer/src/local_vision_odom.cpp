@@ -14,7 +14,6 @@
 
 double z, y, x;
 double z_avg, y_avg, x_avg;
-
 double y_ml, z_ml;
 
 nav_msgs::Odometry odom_data;
@@ -203,6 +202,11 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.y = y_avg/100.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
+        }
+        else if (odom_source == "vision_ml"){
+            odom_msg = odom_data;
+            odom_msg.pose.pose.position.y = y_ml;
+            odom_msg.pose.pose.position.z = z_ml;
         }
         else if (odom_source == "vision_ml"){
             odom_msg = odom_data;
