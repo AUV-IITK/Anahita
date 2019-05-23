@@ -21,6 +21,33 @@ Torpedo::Torpedo(){
 
 Torpedo::~Torpedo() {}
 
+cv::Point2f Torpedo::threshROI (const cv::Rect2d& bounding_rect, const cv::Mat& img, int padding) {
+    cv::Rect2d roi (bounding_rect.x, bounding_rect.y, bounding_rect.width + 2*padding, bounding_rect.height + 2*padding);
+    cv::Mat roi_img = img(roi);
+    cv::Mat thresholded;
+    thresholded = vision_commons::Threshold::threshold(roi_img, front_low_b_, front_high_b_,
+                                                       front_low_g_, front_high_g_,
+                                                       front_low_r_, front_high_r_);
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours (thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+    float area = 0;
+    cv::Point2f center_;
+    float radius_;
+    
+    for (int i = 0; i < contours.size(); i++) {
+        area = cv::contourArea (contours[i], false);
+        if (area > 0.2*roi_img.rows*roi_img.cols) {
+            if (hierarchy[i][2] < 0 && hierarchy[i][3] > 0) continue;
+            cv::minEnclosingCircle (cv::Mat(contours[i]), center_, radius_);
+            center_.x = center_.x - roi_img.cols/2 + bounding_rect.x;
+            center_.y = roi_img.rows/2 - center_.y + bounding_rect.y;
+            return center_;
+        } 
+    }
+}
+
 void Torpedo::loadParams(){
 	nh.getParam("/anahita/vision/torpedo_holes/b_min", front_low_b_);
 	nh.getParam("/anahita/vision/torpedo_holes/b_max", front_high_b_);
@@ -121,6 +148,7 @@ void Torpedo::spinThreadFront() {
     sensor_msgs::ImagePtr front_image_thresholded_msg;
     ros::Rate loop_rate(15);
     std::vector<cv::Vec3f> circles;
+    cv::Mat roi;
 
 	while (ros::ok())
 	{
@@ -154,11 +182,6 @@ void Torpedo::spinThreadFront() {
             cv::Point bound_rect_center;
             bound_rect_center.x = ((bbox1.br()).x + (bbox1.tl()).x) / 2;
             bound_rect_center.y = ((bbox1.tl()).y + (bbox1.br()).y) / 2;
-
-            // cv::circle(temp_src, bound_rect.tl(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
-            // cv::circle(temp_src, bound_rect.br(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
-            // cv::circle(temp_src, bound_rect_center, 10, cv::Scalar(0, 250, 0), -1, 8, 1);
-            // cv::circle(temp_src, cv::Point(temp_src.cols/2, temp_src.rows/2), 4, cv::Scalar(150, 150, 150), -1, 8, 0);
 
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);

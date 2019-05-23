@@ -16,6 +16,8 @@ class Torpedo : public Base_class
         void findCircles (cv::Mat& src_img, cv::Mat& thres_img, double circle_threshold);
         void InitTracker (cv::Mat& src_img, cv::Mat& thres_img, double circle_threshold);
         void updateTracker (cv::Mat& src_img);
+        cv::Point2f threshROI (const cv::Rect2d& bounding_rect, const cv::Mat& img, int padding);
+
     private:
         image_transport::Publisher front_roi_pub;
         cv::Mat marked_img;
