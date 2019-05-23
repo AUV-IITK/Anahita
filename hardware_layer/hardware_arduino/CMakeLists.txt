@@ -37,16 +37,4 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-  include/
-  ${ROS_LIB_DIR}
-  ${catkin_INCLUDE_DIRS}
-)
-
-## For building arduino firmware
-add_dependencies(${PROJECT_NAME}_ros_lib
-  anahita_msgs_generate_messages
-  anahita_msgs_generate_messages_cpp
-)
-
 
