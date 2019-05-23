@@ -21,6 +21,85 @@ Torpedo::Torpedo(){
 
 Torpedo::~Torpedo() {}
 
+void Torpedo::recogniseHoles (cv::Mat& thres_img) {
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+    std::vector<int> idx;
+    float area = 0;
+
+    for (int i = 0; i < contours.size(); i++) {
+        area = cv::contourArea (contours[i], false);
+        if (area > 200) {
+            if (hierarchy[i][2] < 0 && hierarchy[i][3] > 0) continue;
+            idx.push_back (i);
+        }
+    }
+    
+    ROS_ASSERT (idx.size() <= 3 && idx.size() > 0);
+
+    std::vector<cv::Point> points;
+    cv::Point2f center_;
+    float radius_;
+
+    for (int i = 0; i < idx.size(); i++) {
+        cv::minEnclosingCircle (cv::Mat(contours[i]), center_, radius_);
+        points.push_back(center_);
+    }
+
+    updateCoordinates (points);
+}
+
+bool x_cmp (cv::Point a, cv::Point b) {
+    return a.x < b.x;
+}
+
+bool y_cmp (cv::Point a, cv::Point b) {
+    return a.y < b.y;
+}
+
+void Torpedo::updateCoordinates (std::vector<cv::Point> points) {
+    if (points.size() == 3) {
+        std::sort (points.begin(), points.end(), x_cmp);
+        TR.x = points[2].x;
+        TR.y = points[2].y;
+        TL.x = points[0].x;
+        TL.y = points[0].y;
+        BOT.x = points[1].x;
+        BOT.y = points[1].y;
+    }
+    else if (points.size() == 2) {
+        std::sort (points.begin(), points.end(), x_cmp);
+        if (points[0].y < points[1].y + 50) {
+            TR.x = points[1].x;
+            TR.y = points[1].y;
+            BOT.x = points[0].x;
+            BOT.y = points[0].y;
+        }
+        else if (points[1].y < points[0].y + 50) {
+            TL.x = points[0].x;
+            TL.y = points[0].y;
+            BOT.x = points[1].x;
+            BOT.y = points[1].y;
+        }
+        else {
+            TL.x = points[0].x;
+            TL.y = points[0].y;
+            TR.x = points[1].x;
+            TR.y = points[1].y;
+        }
+    }
+    else {
+        TR.x = points[0].x;
+        TR.y = points[0].y;
+        TL.x = points[0].x;
+        TL.y = points[0].y;
+        BOT.x = points[0].x;
+        BOT.y = points[0].y;
+    }
+}
+
 cv::Point2f Torpedo::threshROI (const cv::Rect2d& bounding_rect, const cv::Mat& img, int padding) {
     cv::Rect2d roi (bounding_rect.x, bounding_rect.y, bounding_rect.width + 2*padding, bounding_rect.height + 2*padding);
     cv::Mat roi_img = img(roi);
