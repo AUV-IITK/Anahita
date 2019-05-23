@@ -208,10 +208,12 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.y = y_ml;
             odom_msg.pose.pose.position.z = z_ml;
         }
-        else if (odom_source == "vision_ml"){
+        else if (odom_source == "stereo_vision"){
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_ml;
-            odom_msg.pose.pose.position.z = z_ml;
+            odom_msg.pose.pose.position.y = y_avg/100.0;
+            odom_msg.pose.pose.position.z = z_avg/100.0;
+            if (odom_init) transform (odom_msg.pose.pose.position);
+            odom_msg.pose.pose.position.x = -x_avg;
         }
         else {
             ROS_INFO("Invalid odom source");

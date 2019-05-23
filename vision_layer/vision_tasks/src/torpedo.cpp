@@ -148,13 +148,12 @@ void Torpedo::spinThreadFront() {
             }
             findCircles (temp_src, image_front_thresholded, 300);
             updateTracker (temp_src);
-            // bound_rect = cv::boundingRect(cv::Mat(largest_contour));
-            // ROS_INFO("Center of bound_rect_tl: %d %d", (bound_rect.tl()).x, (bound_rect.tl()).y);
-            // ROS_INFO("Center of bound_rect_tr: %d %d", (bound_rect.br()).x, (bound_rect.br()).y);
+            ROS_INFO("Center of bound_rect_tl: %d %d", (bbox1.tl()).x, (bbox1.tl()).y);
+            ROS_INFO("Center of bound_rect_tr: %d %d", (bbox1.br()).x, (bbox1.br()).y);
 
-            // cv::rectangle(temp_src, bound_rect.tl(), bound_rect.br(), bound_rect_color, 2, 8, 0);
-            // bound_rect_center.x = ((bound_rect.br()).x + (bound_rect.tl()).x) / 2;
-            // bound_rect_center.y = ((bound_rect.tl()).y + (bound_rect.br()).y) / 2;
+            cv::Point bound_rect_center;
+            bound_rect_center.x = ((bbox1.br()).x + (bbox1.tl()).x) / 2;
+            bound_rect_center.y = ((bbox1.tl()).y + (bbox1.br()).y) / 2;
 
             // cv::circle(temp_src, bound_rect.tl(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
             // cv::circle(temp_src, bound_rect.br(), 10, cv::Scalar(0, 250, 0), -1, 8, 1);
@@ -168,15 +167,15 @@ void Torpedo::spinThreadFront() {
             front_thresholded_pub.publish(front_image_thresholded_msg);
             front_roi_pub.publish(front_image_thresholded_msg);
 
-            // front_x_coordinate.data = 0;
-            // front_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;
-            // front_z_coordinate.data = temp_src.rows/2 - bound_rect_center.y;
+            front_x_coordinate.data = 0;
+            front_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;
+            front_z_coordinate.data = temp_src.rows/2 - bound_rect_center.y;
 
-            // std::cout << "Center of bound_rect_center: " <<  front_y_coordinate.data << ", " << front_z_coordinate.data << std::endl;
+            std::cout << "Center of bound_rect_center: " <<  front_y_coordinate.data << ", " << front_z_coordinate.data << std::endl;
 
-            // front_x_coordinate_pub.publish(front_x_coordinate);
-            // front_y_coordinate_pub.publish(front_y_coordinate);
-            // front_z_coordinate_pub.publish(front_z_coordinate);
+            front_x_coordinate_pub.publish(front_x_coordinate);
+            front_y_coordinate_pub.publish(front_y_coordinate);
+            front_z_coordinate_pub.publish(front_z_coordinate);
 		}
 		else
 			ROS_INFO("Image empty");
