@@ -8,7 +8,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "gate";
+std::string current_task = "torpedo";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -57,6 +57,14 @@ int main(int argc, char *argv[])
             if (previous_task == "marker") {
                 marker.frontTaskHandling(false);
             }
+            if (current_task == "torpedo") {
+                ROS_INFO("torpedo task");
+                torpedo.frontTaskHandling(true);
+            }
+            if (previous_task == "torpedo") {
+                torpedo.frontTaskHandling(false);
+            }
+
             previous_task = current_task;
         }
         loop_rate.sleep();
