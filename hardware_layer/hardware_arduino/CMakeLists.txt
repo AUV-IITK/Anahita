@@ -11,8 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslint
   rospy
-  rosserial_arduino
-  rosserial_client
   anahita_msgs
   std_msgs
 )
@@ -29,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   # INCLUDE_DIRS include
   # LIBRARIES hardware_arduino
-  CATKIN_DEPENDS roscpp rospy rosserial_arduino rosserial_client std_msgs anahita_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs anahita_msgs
   # DEPENDS system_lib
 )
 
@@ -46,20 +44,9 @@ include_directories(
 )
 
 ## For building arduino firmware
-rosserial_generate_ros_lib(
-  PACKAGE rosserial_arduino
-  SCRIPT make_libraries.py
-)
-
 add_dependencies(${PROJECT_NAME}_ros_lib
   anahita_msgs_generate_messages
   anahita_msgs_generate_messages_cpp
 )
 
-rosserial_configure_client(
-  DIRECTORY firmware
-  TOOLCHAIN_FILE ${ROSSERIAL_ARDUINO_TOOLCHAIN}
-)
 
-#rosserial_add_client_target(firmware arduino_node ALL)
-#rosserial_add_client_target(firmware arduino_node-upload)
