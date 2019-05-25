@@ -63,109 +63,115 @@ if __name__ == '__main__':
     sub_odometry = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), odometry_callback)
     pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10, latch=True)
 
-    try:
-        go_to_incremental = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
-        go_to = rospy.ServiceProxy('anahita/go_to', GoTo)
-        current_task = rospy.ServiceProxy('anahita/current_task', CurrentTask)
-        change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
-        go_to_pose = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
-        init_circular_trajectory = rospy.ServiceProxy('anahita/start_circular_trajectory', InitCircularTrajectory)
-        hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
-        trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
-        pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+    go_to_incremental = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
+    go_to = rospy.ServiceProxy('anahita/go_to', GoTo)
+    current_task = rospy.ServiceProxy('anahita/current_task', CurrentTask)
+    change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
+    go_to_pose = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+    init_circular_trajectory = rospy.ServiceProxy('anahita/start_circular_trajectory', InitCircularTrajectory)
+    hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
+    trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
+    pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
 
-        pose = Pose()
-        step_point = Point()
+    pose = Pose()
+    step_point = Point()
 
-        current_task_resp = current_task(current_task="torpedo")
-        change_odom_response = change_odom(odom="vision")
+    current_task_resp = current_task(current_task="torpedo")
+    change_odom_response = change_odom(odom="vision")
+    rospy.sleep(0.05)
 
-        # 1st torpedo shoot
+    # 1st torpedo shoot
 
-        pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('Publishing cmd to align')
+    pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('Publishing cmd to align')
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Aligned center')
+    pose_reach(time_out=20)
+    rospy.sleep(5)
+    rospy.loginfo('Aligned center')
 
-        change_odom(odom="stereo_vision")
+    change_odom(odom="stereo_vision")
 
-        pose = fill_pose(0, 0, -1.5, 0, 0, 0, 1)
-        go_to_pose(targest_pose=pose)
-        rospy.loginfo('cmd to move near the torpedo hole')
+    pose = fill_pose(-2.0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to move near the torpedo hole')
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Infront of the torpedo hole')
+    pose_reach(time_out=20)
+    rospy.sleep(1)
+    rospy.loginfo('Infront of the torpedo hole')
 
-        # fire in the hole
+    # fire in the hole
 
-        change_odom(odom="dvl")
-        step_point = fill_point(-5, 0, 0)
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        rospy.loginfo('cmd to go back')
+    change_odom(odom="dvl")
+    rospy.sleep(0.1)
 
-        target_complete(time_out=30)
-        rospy.loginfo('bot is back')        
+    pose = fill_pose(current_p.x - 1, current_p.y, current_p.z, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to go back')
 
-        # 2nd torpedo shoot
+    pose_reach(time_out=20)
+    rospy.loginfo('Bot is back')
 
-        pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('Publishing cmd to align')
+    # 2nd torpedo shoot
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Aligned center')
+    pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('Publishing cmd to align')
 
-        change_odom(odom="stereo_vision")
+    pose_reach(time_out=20)
+    rospy.sleep(5)
+    rospy.loginfo('Aligned center')
 
-        pose = fill_pose(0, 0, -1.5, 0, 0, 0, 1)
-        go_to_pose(targest_pose=pose)
-        rospy.loginfo('cmd to move near the torpedo hole')
+    change_odom(odom="stereo_vision")
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Infront of the torpedo hole')
+    pose = fill_pose(-2.0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to move near the torpedo hole')
 
-        # fire in the hole
+    pose_reach(time_out=20)
+    rospy.sleep(1)
+    rospy.loginfo('Infront of the torpedo hole')
 
-        change_odom(odom="dvl")
-        step_point = fill_point(-5, 0, 0)
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        rospy.loginfo('cmd to go back')
+    # fire in the hole
 
-        target_complete(time_out=30)
-        rospy.loginfo('bot is back')        
+    change_odom(odom="dvl")
+    rospy.sleep(0.1)
 
-        # 3rd torpedo shoot
+    pose = fill_pose(current_p.x - 1, current_p.y, current_p.z, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to go back')
 
-        pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('Publishing cmd to align')
+    pose_reach(time_out=20)
+    rospy.loginfo('Bot is back')
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Aligned center')
+    # 3rd torpedo shoot
 
-        change_odom(odom="stereo_vision")
+    pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('Publishing cmd to align')
 
-        pose = fill_pose(0, 0, -1.5, 0, 0, 0, 1)
-        go_to_pose(targest_pose=pose)
-        rospy.loginfo('cmd to move near the torpedo hole')
+    pose_reach(time_out=20)
+    rospy.sleep(5)
+    rospy.loginfo('Aligned center')
 
-        pose_reach(time_out=20)
-        rospy.sleep(5)
-        rospy.loginfo('Infront of the torpedo hole')
+    change_odom(odom="stereo_vision")
 
-        # fire in the hole
+    pose = fill_pose(-2.0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to move near the torpedo hole')
 
-        change_odom(odom="dvl")
-        step_point = fill_point(-5, 0, 0)
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        rospy.loginfo('cmd to go back')
+    pose_reach(time_out=20)
+    rospy.sleep(1)
+    rospy.loginfo('Infront of the torpedo hole')
 
-        target_complete(time_out=30)
-        rospy.loginfo('bot is back')        
+    # fire in the hole
+
+    change_odom(odom="dvl")
+    rospy.sleep(0.1)
+
+    pose = fill_pose(current_p.x - 1, current_p.y, current_p.z, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to go back')
+
+    pose_reach(time_out=20)
+    rospy.loginfo('Bot is back')

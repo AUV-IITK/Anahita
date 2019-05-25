@@ -7,7 +7,6 @@ class Marker : public Base_class
 {
 public:
     Marker();
-    ~Marker();
     virtual void loadParams () override;
     virtual void spinThreadFront () override;
     virtual void spinThreadBottom () override;

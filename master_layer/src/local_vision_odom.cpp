@@ -26,14 +26,13 @@ int z_count = 0;
 int y_count = 0;
 int x_count = 0;
 
-double thres = 10;
 bool odom_init = false;
 
 Eigen::Matrix3f quaternion_matrix;
 
-std::string odom_source = "dvl";
+std::string odom_source = "stereo_vision";
 
-//I have not yet added anything to retrieve the current task
+// I have not yet added anything to retrieve the current task
 std::string current_task = "vampire";
 
 void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
@@ -58,14 +57,18 @@ bool changeOdom (master_layer::ChangeOdom::Request &req,
 }
 
 double avg (std::vector<double> array) {
-    double sum = std::accumulate(array.begin(), array.end(), 0);
+    double sum = 0;
+    for (int i = 0; i < array.size(); i++) {
+        sum += array[i];
+    }
     double size = array.size();
+    double avg_ = sum/size;
 
-    return sum/size;
+    return avg_;
 }
 
-bool inRange (double x, double avg) {
-    if (std::abs(avg) + thres >= x || std::abs(avg) - thres <= x) {
+bool inRange (double x, double avg, double thres) {
+    if (avg + thres >= x || avg - thres <= x) {
         return true;
     }
     return false;
@@ -80,7 +83,7 @@ void zCallback (const std_msgs::Float32 msg) {
     }
     else {
         z_avg = avg (z_coord);
-        if (inRange(z, z_avg)) {
+        if (inRange(z, z_avg, 15)) {
             std::rotate (z_coord.begin(), z_coord.begin() + 1, z_coord.end());
             z_coord[9] = z;
         }
@@ -96,7 +99,7 @@ void yCallback (const std_msgs::Float32 msg) {
     }
     else {
         y_avg = avg (y_coord);
-        if (inRange(y, y_avg)) {
+        if (inRange(y, y_avg, 15)) {
             std::rotate (y_coord.begin(), y_coord.begin() + 1, y_coord.end());
             y_coord[9] = y;
         }
@@ -112,7 +115,7 @@ void xCallback (const geometry_msgs::Point msg) {
     }
     else {
         x_avg = avg (x_coord);
-        if (inRange(x, x_avg)) {
+        if (inRange(x, x_avg, 1)) {
             std::rotate (x_coord.begin(), x_coord.begin() + 1, x_coord.end());
             x_coord[9] = x;
         }
@@ -193,13 +196,13 @@ int main (int argc, char** argv) {
         }
         else if (odom_source == "vision") {
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/100.0;
-            odom_msg.pose.pose.position.z = z_avg/100.0;
+            odom_msg.pose.pose.position.y = y_avg/200.0;
+            odom_msg.pose.pose.position.z = z_avg/200.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
         }
         else if (odom_source == "stereo") {
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/100.0;
+            odom_msg.pose.pose.position.y = y_avg/200.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
         }
@@ -210,8 +213,8 @@ int main (int argc, char** argv) {
         }
         else if (odom_source == "stereo_vision"){
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/100.0;
-            odom_msg.pose.pose.position.z = z_avg/100.0;
+            odom_msg.pose.pose.position.y = y_avg/200.0;
+            odom_msg.pose.pose.position.z = z_avg/200.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
         }

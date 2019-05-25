@@ -9,7 +9,6 @@ class Torpedo : public Base_class
 {
 	public:
 		Torpedo();
-		~Torpedo();
 		virtual void loadParams () override;
 		virtual void spinThreadFront () override;
 		virtual void spinThreadBottom () override;
@@ -36,6 +35,10 @@ class Torpedo : public Base_class
         cv::Point TR;
         cv::Point TL;
         cv::Point BOT;
+        
+        bool TR_init = false;
+        bool TL_init = false;
+        bool BOT_init = false;
 };
 #endif // TORPEDO_TASK_H
 

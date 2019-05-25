@@ -4,8 +4,6 @@ PathMarker::PathMarker() {
 	this->loadParams ();
 }
 
-PathMarker::~PathMarker() {}
-
 void PathMarker::loadParams () {
 	nh.getParam("/anahita/vision/path_marker/b_min", bottom_low_b_);
 	nh.getParam("/anahita/vision/path_marker/b_max", bottom_high_b_);

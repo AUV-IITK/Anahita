@@ -7,8 +7,7 @@ class Gate : public Base_class
 {
 public:
     Gate();
-    ~Gate();
-    virtual void loadParams() override;
+   virtual void loadParams() override;
     virtual void spinThreadFront() override;
     virtual void spinThreadBottom() override;
 

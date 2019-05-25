@@ -19,7 +19,19 @@ Torpedo::Torpedo(){
     }
 }
 
-Torpedo::~Torpedo() {}
+void Torpedo::loadParams(){
+	nh.getParam("/anahita/vision/torpedo_holes/b_min", front_low_b_);
+	nh.getParam("/anahita/vision/torpedo_holes/b_max", front_high_b_);
+	nh.getParam("/anahita/vision/torpedo_holes/g_min", front_low_g_);
+	nh.getParam("/anahita/vision/torpedo_holes/g_max", front_high_g_);
+	nh.getParam("/anahita/vision/torpedo_holes/r_min", front_low_r_);
+	nh.getParam("/anahita/vision/torpedo_holes/r_max", front_high_r_);
+	nh.getParam("/anahita/vision/torpedo_holes/closing_mat_point", front_closing_mat_point_);
+	nh.getParam("/anahita/vision/torpedo_holes/closing_iter", front_closing_iter_);
+	nh.getParam("/anahita/vision/torpedo_holes/opening_mat_point", front_opening_mat_point_);
+	nh.getParam("/anahita/vision/torpedo_holes/opening_iter", front_opening_iter_);
+	nh.getParam("/anahita/vision/torpedo_holes/bilateral_iter", front_bilateral_iter_);
+}
 
 void Torpedo::recogniseHoles (cv::Mat& thres_img) {
     std::vector<std::vector<cv::Point> > contours;
@@ -32,19 +44,24 @@ void Torpedo::recogniseHoles (cv::Mat& thres_img) {
     for (int i = 0; i < contours.size(); i++) {
         area = cv::contourArea (contours[i], false);
         if (area > 200) {
-            if (hierarchy[i][2] < 0 && hierarchy[i][3] > 0) continue;
+            if (hierarchy[i][2] < 0 && hierarchy[i][3] >= 0) continue;
             idx.push_back (i);
         }
     }
     
-    ROS_ASSERT (idx.size() <= 3 && idx.size() > 0);
-
+    ROS_INFO ("No. of contours: %d", idx.size());
+    if (idx.size() > 3) ROS_ERROR ("No. of contours greater than 3");
+    if (idx.size() == 0) return;
+    
     std::vector<cv::Point> points;
     cv::Point2f center_;
     float radius_;
 
     for (int i = 0; i < idx.size(); i++) {
-        cv::minEnclosingCircle (cv::Mat(contours[i]), center_, radius_);
+        cv::minEnclosingCircle (cv::Mat(contours[idx[i]]), center_, radius_);
+        cv::circle(marked_img, center_, (int)radius_, cv::Scalar(0, 0, 255), 2, 8, 0);
+        center_.x = center_.x - thres_img.cols/2;
+        center_.y = thres_img.rows/2 - center_.y;
         points.push_back(center_);
     }
 
@@ -68,6 +85,10 @@ void Torpedo::updateCoordinates (std::vector<cv::Point> points) {
         TL.y = points[0].y;
         BOT.x = points[1].x;
         BOT.y = points[1].y;
+
+        TL_init = true;
+        TR_init = true;
+        BOT_init = true;
     }
     else if (points.size() == 2) {
         std::sort (points.begin(), points.end(), x_cmp);
@@ -76,18 +97,27 @@ void Torpedo::updateCoordinates (std::vector<cv::Point> points) {
             TR.y = points[1].y;
             BOT.x = points[0].x;
             BOT.y = points[0].y;
+            TL_init = false;
+            TR_init = true;
+            BOT_init = true;
         }
         else if (points[1].y < points[0].y + 50) {
             TL.x = points[0].x;
             TL.y = points[0].y;
             BOT.x = points[1].x;
             BOT.y = points[1].y;
+            TL_init = true;
+            TR_init = false;
+            BOT_init = true;
         }
         else {
             TL.x = points[0].x;
             TL.y = points[0].y;
             TR.x = points[1].x;
             TR.y = points[1].y;
+            TL_init = true;
+            TR_init = true;
+            BOT_init = false;
         }
     }
     else {
@@ -97,6 +127,9 @@ void Torpedo::updateCoordinates (std::vector<cv::Point> points) {
         TL.y = points[0].y;
         BOT.x = points[0].x;
         BOT.y = points[0].y;
+        TL_init = true;
+        TR_init = true;
+        BOT_init = true;
     }
 }
 
@@ -125,20 +158,6 @@ cv::Point2f Torpedo::threshROI (const cv::Rect2d& bounding_rect, const cv::Mat& 
             return center_;
         } 
     }
-}
-
-void Torpedo::loadParams(){
-	nh.getParam("/anahita/vision/torpedo_holes/b_min", front_low_b_);
-	nh.getParam("/anahita/vision/torpedo_holes/b_max", front_high_b_);
-	nh.getParam("/anahita/vision/torpedo_holes/g_min", front_low_g_);
-	nh.getParam("/anahita/vision/torpedo_holes/g_max", front_high_g_);
-	nh.getParam("/anahita/vision/torpedo_holes/r_min", front_low_r_);
-	nh.getParam("/anahita/vision/torpedo_holes/r_max", front_high_r_);
-	nh.getParam("/anahita/vision/torpedo_holes/closing_mat_point", front_closing_mat_point_);
-	nh.getParam("/anahita/vision/torpedo_holes/closing_iter", front_closing_iter_);
-	nh.getParam("/anahita/vision/torpedo_holes/opening_mat_point", front_opening_mat_point_);
-	nh.getParam("/anahita/vision/torpedo_holes/opening_iter", front_opening_iter_);
-	nh.getParam("/anahita/vision/torpedo_holes/bilateral_iter", front_bilateral_iter_);
 }
 
 void Torpedo::findCircles (cv::Mat& src_img, cv::Mat& thres_img, double circle_threshold) {
@@ -253,14 +272,22 @@ void Torpedo::spinThreadFront() {
                 ROS_INFO("No contour found");
                 continue;
             }
-            findCircles (temp_src, image_front_thresholded, 300);
-            updateTracker (temp_src);
-            ROS_INFO("Center of bound_rect_tl: %d %d", (bbox1.tl()).x, (bbox1.tl()).y);
-            ROS_INFO("Center of bound_rect_tr: %d %d", (bbox1.br()).x, (bbox1.br()).y);
+            // findCircles (temp_src, image_front_thresholded, 300);
+            // updateTracker (temp_src);
+            recogniseHoles (image_front_thresholded);
 
-            cv::Point bound_rect_center;
-            bound_rect_center.x = ((bbox1.br()).x + (bbox1.tl()).x) / 2;
-            bound_rect_center.y = ((bbox1.tl()).y + (bbox1.br()).y) / 2;
+            // ROS_INFO("Center of bound_rect_tl: %d %d", (bbox1.tl()).x, (bbox1.tl()).y);
+            // ROS_INFO("Center of bound_rect_tr: %d %d", (bbox1.br()).x, (bbox1.br()).y);
+
+            cv::Point bound_circle_center;
+            // bound_rect_center.x = ((bbox1.br()).x + (bbox1.tl()).x) / 2;
+            // bound_rect_center.y = ((bbox1.tl()).y + (bbox1.br()).y) / 2;
+            if (!TL_init) {
+                ROS_INFO ("Not visible TL hole");
+                continue;
+            }
+            bound_circle_center.x = TL.x;
+            bound_circle_center.y = TL.y;
 
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
@@ -270,8 +297,8 @@ void Torpedo::spinThreadFront() {
             front_roi_pub.publish(front_image_thresholded_msg);
 
             front_x_coordinate.data = 0;
-            front_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;
-            front_z_coordinate.data = temp_src.rows/2 - bound_rect_center.y;
+            front_y_coordinate.data = bound_circle_center.x;
+            front_z_coordinate.data = bound_circle_center.y;
 
             std::cout << "Center of bound_rect_center: " <<  front_y_coordinate.data << ", " << front_z_coordinate.data << std::endl;
 

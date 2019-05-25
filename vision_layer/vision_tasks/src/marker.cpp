@@ -5,8 +5,6 @@ Marker::Marker() {
 	this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-Marker::~Marker() {}
-
 void Marker::loadParams () {
 	nh.getParam("/anahita/vision/marker/b_min", front_low_b_);
 	nh.getParam("/anahita/vision/marker/b_max", front_high_b_);

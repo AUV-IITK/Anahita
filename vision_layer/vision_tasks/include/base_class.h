@@ -22,7 +22,7 @@
 #include <geometry_msgs/Point32.h>
 #include <stdlib.h>
 #include <string>
-#include <boost/thread.hpp> 
+#include <boost/thread.hpp>
 
 #include <filter.h>
 #include <contour.h>
@@ -30,89 +30,88 @@
 #include <threshold.h>
 #include <geometry.h>
 
-class Base_class{
+class Base_class
+{
 
-    protected:
-        int front_low_g_;
-        int front_high_g_;
-        int front_low_r_;
-        int front_high_r_;
-        int front_low_b_;
-        int front_high_b_;
-        int front_opening_mat_point_;	
-	int front_opening_iter_ ;
-        int front_closing_mat_point_;
-        int front_closing_iter_;
-        int front_bilateral_iter_;
+protected:
+    int front_low_g_;
+    int front_high_g_;
+    int front_low_r_;
+    int front_high_r_;
+    int front_low_b_;
+    int front_high_b_;
+    int front_opening_mat_point_;
+    int front_opening_iter_;
+    int front_closing_mat_point_;
+    int front_closing_iter_;
+    int front_bilateral_iter_;
 
-        int bottom_low_g_ ;
-        int bottom_low_r_;
-        int bottom_low_b_;
-        int bottom_high_g_;
-        int bottom_high_r_;
-        int bottom_high_b_;
-        int bottom_closing_mat_point_;
-        int bottom_closing_iter_;
-        int bottom_opening_iter_;    
-        int bottom_opening_mat_point_;
-        int bottom_bilateral_iter_;
+    int bottom_low_g_;
+    int bottom_low_r_;
+    int bottom_low_b_;
+    int bottom_high_g_;
+    int bottom_high_r_;
+    int bottom_high_b_;
+    int bottom_closing_mat_point_;
+    int bottom_closing_iter_;
+    int bottom_opening_iter_;
+    int bottom_opening_mat_point_;
+    int bottom_bilateral_iter_;
 
-        bool close_task= false;
+    bool close_task = false;
 
-        image_transport::Subscriber front_image_sub;
-        image_transport::Subscriber bottom_image_sub;
+    image_transport::Subscriber front_image_sub;
+    image_transport::Subscriber bottom_image_sub;
 
-        image_transport::Subscriber enhanced_image_sub;
+    image_transport::Subscriber enhanced_image_sub;
 
-	image_transport::Publisher bottom_thresholded_pub;
-	image_transport::Publisher bottom_marked_pub;
-	
-	image_transport::Publisher front_thresholded_pub;
-	image_transport::Publisher front_marked_pub;
+    image_transport::Publisher bottom_thresholded_pub;
+    image_transport::Publisher bottom_marked_pub;
 
-        ros::Publisher front_x_coordinate_pub;
-        ros::Publisher front_y_coordinate_pub;
-        ros::Publisher front_z_coordinate_pub;
-        ros::Publisher bottom_x_coordinate_pub;
-        ros::Publisher bottom_y_coordinate_pub;
-        ros::Publisher bottom_z_coordinate_pub;
+    image_transport::Publisher front_thresholded_pub;
+    image_transport::Publisher front_marked_pub;
 
-   	ros::Publisher detection_pub;
-    
-      public:
-        Base_class();
-        ros::NodeHandle nh;
-        image_transport::ImageTransport it;
+    ros::Publisher front_x_coordinate_pub;
+    ros::Publisher front_y_coordinate_pub;
+    ros::Publisher front_z_coordinate_pub;
+    ros::Publisher bottom_x_coordinate_pub;
+    ros::Publisher bottom_y_coordinate_pub;
+    ros::Publisher bottom_z_coordinate_pub;
 
-        std_msgs::Float32 front_x_coordinate;
-	std_msgs::Float32 front_y_coordinate;
-        std_msgs::Float32 front_z_coordinate;
+    ros::Publisher detection_pub;
 
-        std_msgs::Float32 bottom_x_coordinate;
-	std_msgs::Float32 bottom_y_coordinate;
-        std_msgs::Float32 bottom_z_coordinate;
+public:
+    Base_class();
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it;
 
+    std_msgs::Float32 front_x_coordinate;
+    std_msgs::Float32 front_y_coordinate;
+    std_msgs::Float32 front_z_coordinate;
 
-        cv::Mat image_front;
-        cv::Mat image_bottom;
-	cv::Mat image_front_marked;
-        cv::Mat image_bottom_marked;
-        cv::Mat image_front_thresholded;
-        cv::Mat image_bottom_thresholded;
-        cv::Mat enhanced_image;
+    std_msgs::Float32 bottom_x_coordinate;
+    std_msgs::Float32 bottom_y_coordinate;
+    std_msgs::Float32 bottom_z_coordinate;
 
-        virtual void spinThreadFront() = 0;
-        virtual void spinThreadBottom() = 0;
-        void bottomTaskHandling(bool status);
-        void frontTaskHandling(bool status);
-        void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
-        void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
-        void fusionCallback(const sensor_msgs::Image::ConstPtr &msg);
-        virtual void loadParams() = 0;
-        void init();
+    cv::Mat image_front;
+    cv::Mat image_bottom;
+    cv::Mat image_front_marked;
+    cv::Mat image_bottom_marked;
+    cv::Mat image_front_thresholded;
+    cv::Mat image_bottom_thresholded;
+    cv::Mat enhanced_image;
 
-        boost::thread* spin_thread_bottom; 
-        boost::thread* spin_thread_front; 
+    virtual void spinThreadFront() = 0;
+    virtual void spinThreadBottom() = 0;
+    void bottomTaskHandling(bool status);
+    void frontTaskHandling(bool status);
+    void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
+    void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
+    void fusionCallback(const sensor_msgs::Image::ConstPtr &msg);
+    virtual void loadParams() = 0;
+    void init();
+
+    boost::thread *spin_thread_bottom;
+    boost::thread *spin_thread_front;
 };
-#endif 
-
+#endif

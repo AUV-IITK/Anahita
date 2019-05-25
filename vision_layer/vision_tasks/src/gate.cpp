@@ -6,8 +6,6 @@ Gate::Gate()
     this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-Gate::~Gate() {}
-
 void Gate::loadParams()
 {
     nh.getParam("/anahita/vision/gate/b_min", front_low_b_);
