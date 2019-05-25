@@ -12,6 +12,7 @@ from master_layer.srv import InitCircularTrajectory
 from master_layer.srv import Hold
 from master_layer.srv import TrajectoryComplete
 from master_layer.srv import PoseReach
+from master_layer.srv import ChangeTorpedoHole
 
 import time
 from std_msgs.msg import Time, String
@@ -72,6 +73,7 @@ if __name__ == '__main__':
     hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
     trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
     pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+    change_torpedo_hole = rospy.ServiceProxy('anahita/change_torpedo_hole', ChangeTorpedoHole)
 
     pose = Pose()
     step_point = Point()
@@ -81,7 +83,7 @@ if __name__ == '__main__':
     rospy.sleep(0.05)
 
     # 1st torpedo shoot
-
+    change_torpedo_hole(hole="TL")
     pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
     go_to_pose(target_pose=pose)
     rospy.loginfo('Publishing cmd to align')
@@ -114,6 +116,7 @@ if __name__ == '__main__':
 
     # 2nd torpedo shoot
 
+    change_torpedo_hole(hole="TR")
     pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
     go_to_pose(target_pose=pose)
     rospy.loginfo('Publishing cmd to align')
@@ -146,6 +149,7 @@ if __name__ == '__main__':
 
     # 3rd torpedo shoot
 
+    change_torpedo_hole(hole="BOT")
     pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
     go_to_pose(target_pose=pose)
     rospy.loginfo('Publishing cmd to align')

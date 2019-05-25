@@ -3,6 +3,7 @@
 Torpedo::Torpedo(){
 	this->loadParams ();
     this->front_roi_pub = it.advertise("/anahita/roi", 1);
+    service = nh.advertiseService("/anahita/change_torpedo_hole", &Torpedo::changeTorpedoHole, this);
 
     std::string trackerTypes[8] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN", "MOSSE", "CSRT"};
     std::string trackerType = trackerTypes[1];
@@ -17,6 +18,13 @@ Torpedo::Torpedo(){
         tracker2 = cv::TrackerMIL::create();
         tracker3 = cv::TrackerMIL::create();
     }
+}
+
+bool Torpedo::changeTorpedoHole (master_layer::ChangeTorpedoHole::Request &req,
+                        master_layer::ChangeTorpedoHole::Response &resp) {
+    current_hole = req.hole;
+    ROS_INFO ("Torpedo target changed to: %s", current_hole);
+    return true;
 }
 
 void Torpedo::loadParams(){
@@ -276,18 +284,17 @@ void Torpedo::spinThreadFront() {
             // updateTracker (temp_src);
             recogniseHoles (image_front_thresholded);
 
-            // ROS_INFO("Center of bound_rect_tl: %d %d", (bbox1.tl()).x, (bbox1.tl()).y);
-            // ROS_INFO("Center of bound_rect_tr: %d %d", (bbox1.br()).x, (bbox1.br()).y);
-
             cv::Point bound_circle_center;
-            // bound_rect_center.x = ((bbox1.br()).x + (bbox1.tl()).x) / 2;
-            // bound_rect_center.y = ((bbox1.tl()).y + (bbox1.br()).y) / 2;
-            if (!TL_init) {
-                ROS_INFO ("Not visible TL hole");
+
+            if (!(TL_init||BOT_init||TR_init)) {
+                ROS_INFO ("Not visible hole");
                 continue;
             }
-            bound_circle_center.x = TL.x;
-            bound_circle_center.y = TL.y;
+
+            if (current_hole == "") continue;
+            else if (current_hole == "TR") {bound_circle_center.x = TR.x; bound_circle_center.y = TR.y;}
+            else if (current_hole == "TL") {bound_circle_center.x = TL.x; bound_circle_center.y = TL.y;}
+            else if (current_hole == "BOT") {bound_circle_center.x = BOT.x; bound_circle_center.y = BOT.y;}
 
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
@@ -300,7 +307,7 @@ void Torpedo::spinThreadFront() {
             front_y_coordinate.data = bound_circle_center.x;
             front_z_coordinate.data = bound_circle_center.y;
 
-            std::cout << "Center of bound_rect_center: " <<  front_y_coordinate.data << ", " << front_z_coordinate.data << std::endl;
+            std::cout << "Center of bound_circle_center: " <<  front_y_coordinate.data << ", " << front_z_coordinate.data << std::endl;
 
             front_x_coordinate_pub.publish(front_x_coordinate);
             front_y_coordinate_pub.publish(front_y_coordinate);

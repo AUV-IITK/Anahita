@@ -73,6 +73,7 @@ add_service_files(
   Hold.srv
   TrajectoryComplete.srv
   PoseReach.srv
+  ChangeTorpedoHole.srv
 )
 
 ## Generate actions in the 'action' folder

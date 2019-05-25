@@ -4,6 +4,7 @@
 #include "base_class.h"
 #include <opencv2/tracking.hpp>
 #include <opencv2/core/ocl.hpp>
+#include <master_layer/ChangeTorpedoHole.h>
 
 class Torpedo : public Base_class
 {
@@ -17,6 +18,8 @@ class Torpedo : public Base_class
         cv::Point2f threshROI (const cv::Rect2d& bounding_rect, const cv::Mat& img, int padding);
         void recogniseHoles (cv::Mat& thres_img);
         void updateCoordinates (std::vector<cv::Point> points);
+        bool changeTorpedoHole (master_layer::ChangeTorpedoHole::Request &req,
+                                master_layer::ChangeTorpedoHole::Response &resp);
 
     private:
         image_transport::Publisher front_roi_pub;
@@ -38,6 +41,9 @@ class Torpedo : public Base_class
         bool TR_init = false;
         bool TL_init = false;
         bool BOT_init = false;
+
+        std::string current_hole = "";
+        ros::ServiceServer service;
 };
 #endif // TORPEDO_TASK_H
 
