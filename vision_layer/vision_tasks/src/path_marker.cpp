@@ -2,6 +2,7 @@
 
 PathMarker::PathMarker() {
 	this->loadParams ();
+    service = nh.advertiseService("/anahita/marker_angle", &PathMarker::markerAngle, this);
 }
 
 void PathMarker::loadParams () {
@@ -16,6 +17,13 @@ void PathMarker::loadParams () {
 	nh.getParam("/anahita/vision/path_marker/opening_mat_point", bottom_opening_mat_point_);
 	nh.getParam("/anahita/vision/path_marker/opening_iter", bottom_opening_iter_);
 	nh.getParam("/anahita/vision/path_marker/bilateral_iter", bottom_bilateral_iter_);
+}
+
+bool PathMarker::markerAngle (master_layer::RequestMarkerAngle::Request &req,
+                               master_layer::RequestMarkerAngle::Response &res) {
+    res.major_angle = MAJOR;
+    res.minor_angle = MINOR;
+    return true;
 }
 
 void PathMarker::spinThreadBottom()
@@ -42,7 +50,6 @@ void PathMarker::spinThreadBottom()
 			break;
 		}
 		if (!image_bottom.empty()) {
-			// ROS_INFO("Found Image");
 			temp_src = image_bottom.clone();
 			vision_commons::Filter::bilateral(temp_src, bottom_bilateral_iter_);
 			image_bottom_thresholded = vision_commons::Threshold::threshold(temp_src, bottom_low_b_, bottom_high_b_,
@@ -57,15 +64,12 @@ void PathMarker::spinThreadBottom()
             cv::Canny(image_bottom_thresholded, canny_edge, 50, 200, 3);
             HoughLinesP(canny_edge, lines, 1, CV_PI/180, 50, 50, 10 );
             
-            // std::cout << "No. of lines: " << lines.size() << std::endl;
             for( size_t i = 0; i < lines.size(); i++ )
             {
                 double theta = atan(static_cast<double>(lines[i][2] - lines[i][0]) / (lines[i][1] - lines[i][3])) * 180.0 / 3.14159;
                 angles.push_back(theta);
-                // std::cout << "angle, " << i << ": " << theta << std::endl;
                 cv::line(temp_src, cv::Point(lines[i][0], lines[i][1]), 
-                        cv::Point(lines[i][2], lines[i][3]), 
-                        cv::Scalar(0, 0, 255), 1, CV_AA);
+                        cv::Point(lines[i][2], lines[i][3]), cv::Scalar(0, 0, 255), 1, CV_AA);
             }
 
             std::sort(angles.begin(), angles.end());
@@ -89,6 +93,9 @@ void PathMarker::spinThreadBottom()
             std::cout << "angle 1 avg: " << angles1_avg << std::endl;
             std::cout << "angle 2 avg: " << angles2_avg << std::endl;
 
+            MAJOR = std::abs(angles1_avg) > std::abs(angles2_avg)?angles1_avg : angles2_avg;
+            MINOR = std::abs(angles1_avg) > std::abs(angles2_avg)?angles2_avg : angles1_avg;
+
 			largest_contour = vision_commons::Contour::getLargestContour(image_bottom_thresholded);
 			bound_rect = cv::boundingRect(cv::Mat(largest_contour));
 			cv::rectangle(temp_src, bound_rect.tl(), bound_rect.br(), bound_rect_color, 2, 8, 0);
@@ -104,9 +111,9 @@ void PathMarker::spinThreadBottom()
 			bottom_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_bottom_thresholded).toImageMsg();
         	bottom_thresholded_pub.publish(bottom_image_thresholded_msg);
 
-			bottom_x_coordinate.data = 0;
+			bottom_x_coordinate.data = bound_rect_center.y - temp_src.rows/2;
 			bottom_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;
-			bottom_z_coordinate.data = temp_src.rows/2 - bound_rect_center.y;
+			bottom_z_coordinate.data = 0;
 
 			bottom_x_coordinate_pub.publish(bottom_x_coordinate);
 			bottom_y_coordinate_pub.publish(bottom_y_coordinate);
