@@ -105,3 +105,6 @@ void Base_class::bottomTaskHandling(bool status) {
 	}
 }
 
+void Base_class::spinThreadBottom () {}
+void Base_class::spinThreadFront () {}
+void Base_class::loadParams () {}

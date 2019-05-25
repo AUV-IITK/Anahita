@@ -52,7 +52,7 @@ void Torpedo::recogniseHoles (cv::Mat& thres_img) {
     ROS_INFO ("No. of contours: %d", idx.size());
     if (idx.size() > 3) ROS_ERROR ("No. of contours greater than 3");
     if (idx.size() == 0) return;
-    
+
     std::vector<cv::Point> points;
     cv::Point2f center_;
     float radius_;
@@ -312,5 +312,3 @@ void Torpedo::spinThreadFront() {
 		ros::spinOnce();
 	}
 }
-
-void Torpedo::spinThreadBottom () {}

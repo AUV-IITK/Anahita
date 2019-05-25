@@ -101,14 +101,14 @@ public:
     cv::Mat image_bottom_thresholded;
     cv::Mat enhanced_image;
 
-    virtual void spinThreadFront() = 0;
-    virtual void spinThreadBottom() = 0;
+    virtual void spinThreadFront();
+    virtual void spinThreadBottom();
     void bottomTaskHandling(bool status);
     void frontTaskHandling(bool status);
     void imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg);
     void imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg);
     void fusionCallback(const sensor_msgs::Image::ConstPtr &msg);
-    virtual void loadParams() = 0;
+    virtual void loadParams();
     void init();
 
     boost::thread *spin_thread_bottom;

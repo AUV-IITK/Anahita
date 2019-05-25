@@ -83,5 +83,3 @@ void Marker::spinThreadFront()
 		ros::spinOnce();
 	}
 }
-
-void Marker::spinThreadBottom () {}

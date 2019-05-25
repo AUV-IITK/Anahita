@@ -97,5 +97,3 @@ void Gate::spinThreadFront()
         ros::spinOnce();
     }
 }
-
-void Gate::spinThreadBottom() {}

@@ -11,7 +11,6 @@ class Torpedo : public Base_class
 		Torpedo();
 		virtual void loadParams () override;
 		virtual void spinThreadFront () override;
-		virtual void spinThreadBottom () override;
         void findCircles (cv::Mat& src_img, cv::Mat& thres_img, double circle_threshold);
         void InitTracker (cv::Mat& src_img, cv::Mat& thres_img, double circle_threshold);
         void updateTracker (cv::Mat& src_img);

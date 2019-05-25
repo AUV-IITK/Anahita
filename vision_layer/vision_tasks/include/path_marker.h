@@ -8,7 +8,6 @@ class PathMarker : public Base_class
 public:
     PathMarker();
     virtual void loadParams () override;
-    virtual void spinThreadFront () override;
     virtual void spinThreadBottom () override;
 };
 

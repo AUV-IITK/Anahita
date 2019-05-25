@@ -119,5 +119,3 @@ void PathMarker::spinThreadBottom()
 		ros::spinOnce();
 	}
 }
-
-void PathMarker::spinThreadFront () {}
