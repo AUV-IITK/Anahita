@@ -1,38 +1,66 @@
 <launch>
+  <!-- cameras to launch -->
+  <arg name="camera1_on" default="true"/>
+  <arg name="camera2_on" default="true"/>
+  <arg name="camera3_on" default="false"/>
 
   <!-- camera image configuration -->
   <arg name="image_width"   default="640"/>
   <arg name="image_height"  default="480"/>
   <arg name="framerate"     default="20"/>
+
+  <arg name="camera1" default="front_camera"/>
+  <arg name="camera2" default="bottom_camera"/>
+  <arg name="camera3" default="right_camera"/>
+
+  <!-- dev ports for the cameras -->
+  <arg name="camera1_dev" default="dev/front_cam"/>
+  <arg name="camera2_dev" default="dev/bottom_cam"/>
+  <arg name="camera3_dev" default="dev/right_cam"/>
+
   <!-- camera calibration files -->
-  <arg name="front_camera_info_url"   default=""/>
-  <arg name="bottom_camera_info_url"  default=""/>
+  <arg name="camera_info_url"  default="package://hardware_camera/cfg/logitech.yaml"/>
 
   <group ns = "anahita">
     <!-- front camera -->
-    <node name="front_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"      value="/dev/front_cam" />
+    <node name="$(arg camera1)" pkg="usb_cam" type="usb_cam_node">
+      <param name="video_device"      value="/$(arg camera1_dev)" />
       <param name="image_width"       value="$(arg image_width)" />
       <param name="image_height"      value="$(arg image_height)" />
       <param name="framerate"         value="$(arg framerate)"/>
-      <param name="camera_name"       value="anahita/front_camera"/>
-      <param name="camera_frame_id"   value="front_cam_link" />
-      <param name="camera_info_url"   value="$(arg front_camera_info_url)" />
+      <param name="camera_name"       value="anahita/$(arg camera1)"/>
+      <param name="camera_frame_id"   value="$(arg camera1)_link" />
+      <param name="camera_info_url"   value="$(arg camera_info_url)" />
       <param name="pixel_format"      value="mjpeg" />
       <param name="autofocus"         value="true" />
     </node>
 
     <!-- bottom camera -->
-    <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"    value="/dev/bottom_cam" />
+    <node name="$(arg camera2)" pkg="usb_cam" type="usb_cam_node">
+      <param name="video_device"    value="/$(arg camera2_dev)" />
       <param name="image_width"     value="$(arg image_width)" />
       <param name="image_height"    value="$(arg image_height)" />
       <param name="framerate"       value="$(arg framerate)"/>
-      <param name="camera_name"     value="anahita/bottom_camera"/>
-      <param name="camera_frame_id" value="bottom_cam_link" />
-      <param name="camera_info_url" value="$(arg bottom_camera_info_url)"/>
+      <param name="camera_name"     value="anahita/$(arg camera2_dev)"/>
+      <param name="camera_frame_id" value="$(arg camera2)_link" />
+      <param name="camera_info_url" value="$(arg camera_info_url)"/>
       <param name="pixel_format"    value="mjpeg" />
       <param name="autofocus"       value="true" />
     </node>
+
+    <!--third camera -->
+    <node name="$(arg camera3)" pkg="usb_cam" type="usb_cam_node" if="$(eval env == 'real')">
+      <param name="video_device"      value="/$(arg camera3_dev)" />
+      <param name="image_width"       value="$(arg image_width)" />
+      <param name="image_height"      value="$(arg image_height)" />
+      <param name="framerate"         value="$(arg framerate)"/>
+      <param name="camera_name"       value="anahita/$(arg camera3_dev)"/>
+      <param name="camera_frame_id"   value="$(arg camera3)_link" />
+      <param name="camera_info_url"   value="$(arg camera_info_url)" />
+      <param name="pixel_format"      value="mjpeg" />
+      <param name="autofocus"         value="true" />
+    </node>
+
   </group>
+
 </launch>

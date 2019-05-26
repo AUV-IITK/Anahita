@@ -1,9 +1,22 @@
 <launch>
 
     <!-- Arguments -->
-    <arg name="camera" default="anahita"/>
+    <arg name="namespace" default="anahita"/>
+    <arg name="env" default="real"/>
 
+    <!-- <include file="$(find hardware_camera)/launch/camera_logitech.launch">
+        <arg name="camera1" value="left_camera"/>
+        <arg name="camera1_dev" value="dev/video0"/>
+        <arg name="camera2" value="right_camera"/>
+        <arg name="camera2_dev" value="dev/video1"/>
+    </include> -->
     <!-- Run the stereo image proc -->
-    <node ns="$(arg camera)" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" />
+    <node ns="$(arg namespace)" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
+        <remap from="left/image_raw" to="/anahita/left_camera/image_raw" />
+        <remap from="left/camera_info" to="/anahita/left_camera/camera_info" />
+        <remap from="right/image_raw" to="/anahita/right_camera/image_raw" />
+        <remap from="right/camera_info" to="/anahita/right_camera/camera_info" />
+        <param name="_approximate_sync" value="True"/>
+    </node>
 
 </launch>
