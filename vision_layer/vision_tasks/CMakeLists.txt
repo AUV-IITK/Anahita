@@ -46,6 +46,10 @@ add_library(marker SHARED src/marker.cpp include/marker.h include/base_class.h)
 add_dependencies(marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_library(start_gate SHARED src/start_gate.cpp include/start_gate.h include/base_class.h)
+add_dependencies(start_gate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 add_executable(vision_node src/vision_node.cpp)
 add_dependencies(vision_node ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vision_node 
