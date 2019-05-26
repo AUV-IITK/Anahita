@@ -7,10 +7,8 @@ class Gate : public Base_class
 {
 public:
     Gate();
-    ~Gate();
-    virtual void loadParams() override;
-    virtual void spinThreadFront() override;
-    virtual void spinThreadBottom() override;
+   void loadParams() override;
+    void spinThreadFront() override;
 
 private:
     image_transport::Publisher front_roi_pub;

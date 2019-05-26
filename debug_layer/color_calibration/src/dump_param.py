@@ -40,7 +40,7 @@ def dump_paramters(req):
             }
         }
     }
-    file_location = "/home/ironman/anahita_ws/src/Anahita/debug_layer/color_calibration/params/" + req.filename + "_" + env + ".yaml"
+    file_location = "/home/ayush/Projects/anahita_ws/src/Anahita/debug_layer/color_calibration/params/" + req.filename + "_" + env + ".yaml"
     stream = file(file_location, 'w')
     yaml.dump(params, stream,  default_flow_style=False)
     return DumpResponse(True)

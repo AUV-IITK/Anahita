@@ -22,6 +22,28 @@ _depth_target = 0
 num_objects = 0
 detected_once = False
 
+def fill_pose (p_x, p_y, p_z, q_x, q_y, q_z, q_w):
+    
+    pose = Pose()
+    pose.position.x = p_x
+    pose.position.y = p_y
+    pose.position.z = p_z
+    pose.orientation.x = q_x
+    pose.orientation.y = q_y
+    pose.orientation.z = q_z
+    pose.orientation.w = q_w
+
+    return pose 
+
+def fill_point (x, y, z):
+
+    point = Point()
+    point.x = x
+    point.y = y
+    point.z = z
+
+    return point
+
 def has_reached_with_yaw(target_pose, curr_pose, pos_threshold, yaw_threshold):
     while (not status or rospy.is_shutdown()):
         return False
@@ -84,6 +106,9 @@ if __name__ == '__main__':
         change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
         set_odom_xy = rospy.ServiceProxy('/nav/set_world_x_y_offset', SetWorldXYOffset)
         set_odom_depth = rospy.ServiceProxy('/nav/set_depth_offset', SetDepthOffset)
+        go_to_pose = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+        pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
     
@@ -119,6 +144,44 @@ if __name__ == '__main__':
     rospy.loginfo('At a stable location')
 
     rospy.sleep(3)
+
+    # buoy hitting
+
+    pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('Publishing cmd to align')
+
+    pose_reach(time_out=20)
+    rospy.sleep(5)
+    rospy.loginfo('Aligned center')
+
+    change_odom(odom="stereo_vision")
+
+    pose = fill_pose(-2.1, 0, 0, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to move near the torpedo hole')
+
+    pose_reach(time_out=20)
+    rospy.sleep(1)
+    rospy.loginfo('Infront of the torpedo hole')
+
+    change_odom(odom="dvl")
+    rospy.sleep(0.1)
+    pose = fill_pose(2.3 + _current_p.x, _current_p.y, _current_p.z, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to hit the buoy')
+
+    pose_reach(time_out=20)
+    rospy.loginfo('Buoy is hit!')
+    rospy.sleep(1)
+
+    pose = fill_pose(_current_p.x - 2, _current_p.y, _current_p.z, 0, 0, 0, 1)
+    go_to_pose(target_pose=pose)
+    rospy.loginfo('cmd to go back')
+
+    pose_reach(time_out=20)
+    rospy.loginfo('Bot is back')
+
 
 
     

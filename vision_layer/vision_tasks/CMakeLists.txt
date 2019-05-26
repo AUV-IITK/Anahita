@@ -30,14 +30,6 @@ add_library(base_class SHARED src/base_class.cpp include/base_class.h)
 add_dependencies(base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
-# add_library(buoy_task SHARED src/buoy.cpp include/buoy.h include/base_class.h)
-# add_dependencies(buoy_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(buoy_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
-# add_library(line_task SHARED src/line.cpp include/line.h include/base_class.h)
-# add_dependencies( line_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(line_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
 add_library(torpedo_task SHARED src/torpedo.cpp include/torpedo.h include/base_class.h)
 add_dependencies(torpedo_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(torpedo_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -53,6 +45,10 @@ target_link_libraries(path_marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRA
 add_library(marker SHARED src/marker.cpp include/marker.h include/base_class.h)
 add_dependencies(marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(crucifix_task SHARED src/crucifix.cpp include/crucifix.h include/base_class.h)
+add_dependencies(crucifix_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(crucifix_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
 
 # add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
 # add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -72,4 +68,5 @@ target_link_libraries(vision_node
   path_marker
   marker
   torpedo_task
+  crucifix_task
 )

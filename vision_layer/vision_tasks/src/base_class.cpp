@@ -7,8 +7,8 @@ Base_class::Base_class() : it(nh) {
 void Base_class::init(){
 	
 	this->front_thresholded_pub = it.advertise("/anahita/front_camera/thresholded", 1);
-	this->front_marked_pub = it.advertise("/anahita/front_camera/marked", 1);
-	
+	this->front_marked_pub = it.advertise("/anahita/front_camera/image_raw", 1);
+
     this->bottom_thresholded_pub = it.advertise("/anahita/bottom_camera/thresholded", 1);
     this->bottom_marked_pub = it.advertise("/anahita/bottom_camera/marked", 1);
 
@@ -21,7 +21,7 @@ void Base_class::init(){
 
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1);
 
-	this->front_image_sub = it.subscribe("/anahita/left/image_raw", 1, &Base_class::imageFrontCallback, this);
+	//this->front_image_sub = it.subscribe("/anahita/left/image_raw", 1, &Base_class::imageFrontCallback, this);
 	this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Base_class::imageBottomCallback, this);
 
 	this->enhanced_image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &Base_class::fusionCallback, this);
@@ -32,7 +32,7 @@ void Base_class::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
-		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		//image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 		// ROS_INFO("Found a new image and stored it in image_front!");
 	}
 	catch (cv_bridge::Exception &e)
@@ -105,3 +105,6 @@ void Base_class::bottomTaskHandling(bool status) {
 	}
 }
 
+void Base_class::spinThreadBottom () {}
+void Base_class::spinThreadFront () {}
+void Base_class::loadParams () {}
