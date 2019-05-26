@@ -16,7 +16,7 @@
         <remap from="left/camera_info" to="/anahita/left_camera/camera_info" />
         <remap from="right/image_raw" to="/anahita/right_camera/image_raw" />
         <remap from="right/camera_info" to="/anahita/right_camera/camera_info" />
-        <param name="_approximate_sync" value="True"/>
+        <param name="approximate_sync" value="True"/>
     </node>
 
 </launch>
