@@ -75,6 +75,8 @@ add_service_files(
   PoseReach.srv
   ChangeTorpedoHole.srv
   RequestMarkerAngle.srv
+  PingerBottomTarget.srv
+  PingerFrontTarget.srv
 )
 
 ## Generate actions in the 'action' folder

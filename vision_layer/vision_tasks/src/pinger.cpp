@@ -3,6 +3,20 @@
 Pinger::Pinger () {
     loadParams ();
     front_roi_pub = it.advertise("/anahita/roi", 1);
+    front_service = nh.advertiseService("/anahita/pinger_front_target", &Pinger::frontTarget, this);
+    bottom_service = nh.advertiseService("/anahita/pinger_bottom_target", &Pinger::bottomTarget, this);
+}
+
+bool Pinger::bottomTarget (master_layer::PingerBottomTarget::Request &req,
+                           master_layer::PingerBottomTarget::Response &resp) {
+    resp.success = bottom_visible;
+    return true;
+}
+
+bool Pinger::frontTarget (master_layer::PingerFrontTarget::Request &req,
+                          master_layer::PingerFrontTarget::Response &resp) {
+    resp.success = front_visible;
+    return true;
 }
 
 void Pinger::loadParams () {
