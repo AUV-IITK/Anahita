@@ -50,6 +50,10 @@ add_library(start_gate SHARED src/start_gate.cpp include/start_gate.h include/ba
 add_dependencies(start_gate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_library(pinger SHARED src/pinger.cpp include/pinger.h include/base_class.h)
+add_dependencies(pinger base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(pinger base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 add_executable(vision_node src/vision_node.cpp)
 add_dependencies(vision_node ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vision_node 
