@@ -7,8 +7,8 @@ Base_class::Base_class() : it(nh) {
 void Base_class::init(){
 	
 	this->front_thresholded_pub = it.advertise("/anahita/front_camera/thresholded", 1);
-	this->front_marked_pub = it.advertise("/anahita/front_camera/marked", 1);
-	
+	this->front_marked_pub = it.advertise("/anahita/front_camera/image_raw", 1);
+
     this->bottom_thresholded_pub = it.advertise("/anahita/bottom_camera/thresholded", 1);
     this->bottom_marked_pub = it.advertise("/anahita/bottom_camera/marked", 1);
 
@@ -33,7 +33,7 @@ void Base_class::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	try
 	{
 		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
-		// ROS_INFO("Found a new image and stored it in image_front!");
+		ROS_INFO("Found a new image and stored it in image_front!");
 	}
 	catch (cv_bridge::Exception &e)
 	{

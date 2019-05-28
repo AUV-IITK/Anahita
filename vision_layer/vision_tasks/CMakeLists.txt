@@ -46,6 +46,17 @@ add_library(marker SHARED src/marker.cpp include/marker.h include/base_class.h)
 add_dependencies(marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_library(crucifix_task SHARED src/crucifix.cpp include/crucifix.h include/base_class.h)
+add_dependencies(crucifix_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(crucifix_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
+
+# add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
+# add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(markerDropper_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+# add_library(octagon_task SHARED src/octagon.cpp include/octagon.h include/base_class.h)
+# add_dependencies(octagon_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(base_class octagon_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 add_library(start_gate SHARED src/start_gate.cpp include/start_gate.h include/base_class.h)
 add_dependencies(start_gate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -64,4 +75,5 @@ target_link_libraries(vision_node
   path_marker
   marker
   torpedo_task
+  crucifix_task
 )
