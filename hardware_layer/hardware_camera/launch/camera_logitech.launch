@@ -7,14 +7,14 @@
   <!-- camera image configuration -->
   <arg name="image_width"   default="640"/>
   <arg name="image_height"  default="480"/>
-  <arg name="framerate"     default="20"/>
+  <arg name="framerate"     default="15"/>
 
   <arg name="camera1" default="front_camera"/>
   <arg name="camera2" default="bottom_camera"/>
   <arg name="camera3" default="right_camera"/>
 
   <!-- dev ports for the cameras -->
-  <arg name="camera1_dev" default="dev/front_cam"/>
+  <arg name="camera1_dev" default="dev/video0"/>
   <arg name="camera2_dev" default="dev/bottom_cam"/>
   <arg name="camera3_dev" default="dev/right_cam"/>
 

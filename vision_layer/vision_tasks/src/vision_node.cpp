@@ -9,7 +9,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "marker";
+std::string current_task = "crucifix";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,

@@ -70,6 +70,7 @@ protected:
 
     image_transport::Publisher front_thresholded_pub;
     image_transport::Publisher front_marked_pub;
+    image_transport::Publisher front_edges_pub;
 
     ros::Publisher front_x_coordinate_pub;
     ros::Publisher front_y_coordinate_pub;

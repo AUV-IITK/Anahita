@@ -1,13 +1,13 @@
 vision:
   crucifix:
-    b_max: 94
-    b_min: 49
+    b_max: 109
+    b_min: 90
     bilateral_iter: 0
-    closing_iter: 2
+    closing_iter: 0
     closing_mat_point: 1
-    g_max: 255
-    g_min: 102
-    opening_iter: 3
+    g_max: 192
+    g_min: 98
+    opening_iter: 1
     opening_mat_point: 1
-    r_max: 239
-    r_min: 86
+    r_max: 101
+    r_min: 25
