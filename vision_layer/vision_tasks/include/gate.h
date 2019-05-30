@@ -7,7 +7,7 @@ class Gate : public Base_class
 {
 public:
     Gate();
-   void loadParams() override;
+    void loadParams() override;
     void spinThreadFront() override;
 
 private:

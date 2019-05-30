@@ -31,9 +31,6 @@ current_p = Point()
 def odometry_callback(msg):
     global current_p
     current_p = msg.pose.pose.position
-    global status
-    status = True    
-
 
 def fill_pose (p_x, p_y, p_z, q_x, q_y, q_z, q_w):
     

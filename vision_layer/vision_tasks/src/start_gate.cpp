@@ -1,13 +1,11 @@
 #include <start_gate.h>
 
-StartGate::StartGate()
-{
+StartGate::StartGate() {
     this->loadParams();
     this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-void StartGate::loadParams()
-{
+void StartGate::loadParams() {
     nh.getParam("/anahita/vision/start_gate/b_min", front_low_b_);
     nh.getParam("/anahita/vision/start_gate/b_max", front_high_b_);
     nh.getParam("/anahita/vision/start_gate/g_min", front_low_g_);
@@ -87,8 +85,7 @@ cv::Point StartGate::findGateCenter (cv::Mat& thres_img) {
     return center;
 }
 
-void StartGate::spinThreadFront()
-{
+void StartGate::spinThreadFront() {
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
     cv::Point center;
