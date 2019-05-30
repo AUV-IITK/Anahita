@@ -61,7 +61,8 @@ void Crucifix::spinThreadFront()
 
 			cv::Mat edges(image_front_thresholded.rows, image_front_thresholded.cols, CV_8UC1, cv::Scalar::all(0));
     		contours = vision_commons::Contour::getBestX(image_front_thresholded, 2);
-            
+    		cv::drawContours(edges, contours, 0, edge_color, 1, 8);
+
             if(contours.size()!= 0)
             {
                 ROS_INFO("Contour size");

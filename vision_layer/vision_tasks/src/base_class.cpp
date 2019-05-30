@@ -32,8 +32,8 @@ void Base_class::imageFrontCallback(const sensor_msgs::Image::ConstPtr &msg)
 	cv_bridge::CvImagePtr cv_img_ptr;
 	try
 	{
-		image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
-		ROS_INFO("Found a new image and stored it in image_front!");
+		// image_front = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		// ROS_INFO("Found a new image and stored it in image_front!");
 	}
 	catch (cv_bridge::Exception &e)
 	{
