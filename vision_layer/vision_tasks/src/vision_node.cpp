@@ -3,13 +3,14 @@
 #include "marker.h"
 #include "torpedo.h"
 #include "crucifix.h"
+#include "grabber.h"
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "crucifix";
+std::string current_task = "grabber_test";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
     PathMarker path_marker;
     Marker marker;
     Crucifix crucifix;
+    Grabber grabber;
     ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
 
     ros::Rate loop_rate(10);
@@ -43,6 +45,11 @@ int main(int argc, char *argv[])
     {
         if (current_task != previous_task)
         {
+            if(current_task == "grabber_test")
+            {
+                ROS_INFO("grabber_test");
+                grabber.frontTaskHandling(true);
+            }
             if(current_task == "crucifix")
             {
                 ROS_INFO("crucfix_task");

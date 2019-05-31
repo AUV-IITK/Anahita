@@ -50,6 +50,10 @@ add_library(crucifix_task SHARED src/crucifix.cpp include/crucifix.h include/bas
 add_dependencies(crucifix_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(crucifix_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
 
+add_library(grabber_test SHARED src/grabber.cpp include/grabber.h include/base_class.h)
+add_dependencies(grabber_test base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(grabber_test base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
+
 # add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
 # add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(markerDropper_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -76,4 +80,5 @@ target_link_libraries(vision_node
   marker
   torpedo_task
   crucifix_task
+  grabber_test
 )
