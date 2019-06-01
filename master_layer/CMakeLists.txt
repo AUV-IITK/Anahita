@@ -78,6 +78,7 @@ add_service_files(
   PingerBottomTarget.srv
   PingerFrontTarget.srv
   TargetNormal.srv
+  GetMaxDepth.srv
 )
 
 ## Generate actions in the 'action' folder

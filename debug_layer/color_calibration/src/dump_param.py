@@ -4,6 +4,7 @@ from color_calibration.srv import *
 import rospy
 import subprocess
 import yaml
+import os
 
 def dump_paramters(req):
     print "Dumping Request, filename: [%s]"%(req.filename)

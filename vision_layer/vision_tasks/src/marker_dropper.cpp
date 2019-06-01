@@ -44,8 +44,6 @@ void MarkerDropper::spinThreadBottom()
 	cv::Mat temp_src;
     ros::Rate loop_rate(20);
     cv::Point center;
-    sensor_msgs::ImagePtr bottom_image_marked_msg;
-    sensor_msgs::ImagePtr bottom_image_thresholded_msg;
 
 	while (ros::ok())
 	{
@@ -59,21 +57,18 @@ void MarkerDropper::spinThreadBottom()
             center = findCenter ();
             if (center == cv::Point(-1, -1)) continue;
 
-            bottom_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
-            bottom_marked_pub.publish(bottom_image_marked_msg);
+            bottom_marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg());
+            bottom_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
 
-            bottom_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
-            bottom_thresholded_pub.publish(bottom_image_thresholded_msg);
-
-            bottom_x_coordinate.data = 0;
+            bottom_x_coordinate.data = center.y - temp_src.rows/2;
             bottom_y_coordinate.data = center.x - temp_src.cols/2;
-            bottom_z_coordinate.data = center.y - temp_src.rows/2;
-
-            std::cout << "Center of Pinger: " <<  bottom_y_coordinate.data << ", " << bottom_z_coordinate.data << std::endl;
+            bottom_z_coordinate.data = 0;
 
             bottom_x_coordinate_pub.publish(bottom_x_coordinate);
             bottom_y_coordinate_pub.publish(bottom_y_coordinate);
             bottom_z_coordinate_pub.publish(bottom_z_coordinate);
+
+            std::cout << "Center of Pinger: " <<  bottom_y_coordinate.data << ", " << bottom_z_coordinate.data << std::endl;
 		}
 		else ROS_INFO("Image empty");
 		loop_rate.sleep();

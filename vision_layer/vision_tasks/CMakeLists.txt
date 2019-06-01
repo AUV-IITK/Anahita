@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   image_transport
   message_generation
+  geometry_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -79,6 +80,10 @@ target_link_libraries(startgate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARI
 add_library(md SHARED src/marker_dropper.cpp include/marker_dropper.h include/base_class.h)
 add_dependencies(md base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(md base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(triangular_buoy SHARED src/triangular_buoy.cpp include/triangular_buoy.h include/base_class.h)
+add_dependencies(triangular_buoy base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(triangular_buoy base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_executable(vision_node src/vision_node.cpp)
 add_dependencies(vision_node ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
