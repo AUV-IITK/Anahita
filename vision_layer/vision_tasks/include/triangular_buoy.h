@@ -11,6 +11,7 @@ public:
     void spinThreadFront () override;
     void preProcess (cv::Mat& temp_src);
     cv::Point findCenterAndSpeed ();
+    float blackout ();
     void depthCallback (const geometry_msgs::Point msg);
     bool depthRequest (master_layer::GetMaxDepth::Request& req,
                        master_layer::GetMaxDepth::Response& res);
@@ -24,4 +25,5 @@ private:
 
     float max_depth = 0;
     float rotation_speed = 0;
+    float blackout_time = 0;
 };

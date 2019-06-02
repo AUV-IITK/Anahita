@@ -66,6 +66,29 @@ cv::Point TriangularBuoy::findCenterAndSpeed () {
                         ((bound_rect.tl()).y + (bound_rect.br()).y)/2);
 }
 
+float TriangularBuoy::blackout () {
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    bool init = false;
+    float init_time = 0;
+    float contour_init = false;
+
+    while (ros::ok()) {
+        cv::findContours (image_front_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+        contours = vision_commons::Contour::filterContours (contours, 100);
+        vision_commons::Contour::sortFromBigToSmall (contours);
+        if (!init && contours.size() != 0) {
+            countour_init = true;
+            init = true;
+        }
+        else if (countour_init && contours.size() == 0) {
+            init_time = ros::Time::now().toSec();
+            ros::Duration(1).sleep();
+        }
+        else if (contours.size() != 0) return ros::Time::now().toSec() - init_time;
+    }
+}
+
 void TriangularBuoy::spinThreadFront () {
 	cv::Mat temp_src;
     ros::Rate loop_rate(20);

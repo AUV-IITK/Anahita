@@ -112,6 +112,7 @@ bool contour_cmp (std::vector<cv::Point> contour_a, std::vector<cv::Point> conto
 }
 
 void vision_commons::Contour::sortFromBigToSmall (std::vector<std::vector<cv::Point> >& contours) {
+    if (contours.size() == 0) return;
     std::sort (contours.begin(), contours.end(), contour_cmp);
 }
 
