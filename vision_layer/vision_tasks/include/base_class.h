@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <mutex>
 
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
@@ -114,5 +115,7 @@ public:
 
     boost::thread *spin_thread_bottom;
     boost::thread *spin_thread_front;
+
+    std::mutex vision_mutex;
 };
 #endif

@@ -165,6 +165,7 @@ public:
     {
         try
         {
+            if (inliers.size() <= 0) return;
             cv_bridge::CvImageConstPtr cv_ptr;
             cv_ptr = cv_bridge::toCvShare(l_image_msg, sensor_msgs::image_encodings::RGB8);
             image_geometry::StereoCameraModel model;
@@ -269,6 +270,7 @@ public:
         }
         if (vision_layer_init)
             roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
+        else return;
         ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
         ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
         ROS_ASSERT(l_image_msg->height == roi_image_msg->height);

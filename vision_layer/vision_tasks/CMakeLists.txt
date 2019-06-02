@@ -95,6 +95,7 @@ target_link_libraries(vision_node
   path_marker
   marker
   torpedo_task
+  triangular_buoy
   crucifix_task
   grabber_test
   startgate

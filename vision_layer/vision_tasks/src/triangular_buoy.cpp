@@ -5,6 +5,7 @@ TriangularBuoy::TriangularBuoy () {
     roi_pub = it.advertise("/anahita/roi", 1);
     depth_sub = nh.subscribe("/anahita/mean_coord", 100, &TriangularBuoy::depthCallback, this);
     service = nh.advertiseService("/anahita/get_max_depth", &TriangularBuoy::depthRequest, this);
+    ROS_INFO ("Triangular Buoy Vision node initialise");
 }
 
 void TriangularBuoy::depthCallback (const geometry_msgs::Point msg) {
@@ -40,13 +41,26 @@ void TriangularBuoy::preProcess (cv::Mat& temp_src) {
                                 front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
 }
 
-cv::Point TriangularBuoy::findCenter () {
+cv::Point TriangularBuoy::findCenterAndSpeed () {
     static std::vector<std::vector<cv::Point> > contours;
     static std::vector<cv::Vec4i> hierarchy;
+    
+    static float dt = 0;
+    static float then = 0;
+    static float contour_area = 0;
+    static float da = 0;
+    
     cv::findContours (image_front_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
     contours = vision_commons::Contour::filterContours (contours, 100);
     if (!contours.size()) return cv::Point(-1, -1);
     vision_commons::Contour::sortFromBigToSmall (contours);
+    
+    dt = ros::Time::now().toSec() - then;
+    then = ros::Time::now().toSec();
+    da = cv::contourArea(contours[0], false) - contour_area;
+    contour_area = cv::contourArea(contours[0], false);
+    rotation_speed = da/dt;
+
     cv::Rect bound_rect = cv::boundingRect (cv::Mat(contours[0]));
     return cv::Point (((bound_rect.br()).x + (bound_rect.tl()).x)/2,
                         ((bound_rect.tl()).y + (bound_rect.br()).y)/2);
@@ -64,13 +78,20 @@ void TriangularBuoy::spinThreadFront () {
 			break;
 		}
 		if (!image_front.empty()) {
-			temp_src = image_front.clone();
+            vision_mutex.lock();
+            image_front.copyTo(temp_src);
+            vision_mutex.unlock();
+
             preProcess (temp_src);
-            center = findCenter ();
+
+            front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
+            roi_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
+
+            center = findCenterAndSpeed ();
+
             if (center == cv::Point(-1, -1)) continue;
 
             front_marked_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg());
-            front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
 
             front_x_coordinate.data = 0;
             front_y_coordinate.data = center.x - temp_src.cols/2;

@@ -42,8 +42,6 @@ int main(int argc, char *argv[])
 
     ros::Rate loop_rate(10);
 
-    ROS_INFO("Vision Node started");
-
     while (ros::ok())
     {
         if (current_task != previous_task)
@@ -63,9 +61,8 @@ int main(int argc, char *argv[])
                 ROS_INFO("gate_task");
                 gate.frontTaskHandling(true);
             }
-            if (previous_task == "gate")
-            {
-                gate.frontTaskHandling(false);
+            if (previous_task == "buoy") {
+                triangular_buoy.frontTaskHandling(false);
             }
             if (current_task == "marker") {
                 ROS_INFO("marker task");
