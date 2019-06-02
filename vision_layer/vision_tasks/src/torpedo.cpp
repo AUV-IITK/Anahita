@@ -264,8 +264,10 @@ void Torpedo::spinThreadFront() {
 		}
 		if (!image_front.empty())
 		{
+            vision_mutex.lock();
             temp_src = image_front.clone();
             marked_img = image_front.clone();
+            vision_mutex.unlock();
 
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
             image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,

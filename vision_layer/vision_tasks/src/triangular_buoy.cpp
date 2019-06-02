@@ -78,10 +78,10 @@ float TriangularBuoy::blackout () {
         contours = vision_commons::Contour::filterContours (contours, 100);
         vision_commons::Contour::sortFromBigToSmall (contours);
         if (!init && contours.size() != 0) {
-            countour_init = true;
+            contour_init = true;
             init = true;
         }
-        else if (countour_init && contours.size() == 0) {
+        else if (contour_init && contours.size() == 0) {
             init_time = ros::Time::now().toSec();
             ros::Duration(1).sleep();
         }

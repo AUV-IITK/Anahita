@@ -103,8 +103,9 @@ void StartGate::spinThreadFront() {
         if (!image_front.empty())
         {
             ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
-
+            vision_mutex.lock();
             temp_src = image_front.clone();
+            vision_mutex.unlock();
             ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
 
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
