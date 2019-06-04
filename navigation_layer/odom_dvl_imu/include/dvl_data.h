@@ -30,6 +30,13 @@ namespace navigation{
         void DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg);
         void DvlPressureCallback(sensor_msgs::FluidPressure msg);
 
+        std::vector<double> x_vel;
+        std::vector<double> y_vel;
+        std::vector<double> z_vel;
+        int x_count = 0;
+        int y_count = 0;
+        int z_count = 0;
+        int vel_count = 0;
 
         Eigen::Vector3d GetPositionXYZ();
         Eigen::Vector3d GetVelocityXYZ();
@@ -39,6 +46,8 @@ namespace navigation{
     private:
         void StdIntegrationMethod(const double &dt_sec);
         void RKIntegrationMethod(const double &dt_sec);
+        double Average(std::vector<double> array);
+        bool inRange (double x, double avg, double thres);
 
         ros::Time last_timestamp_;
 

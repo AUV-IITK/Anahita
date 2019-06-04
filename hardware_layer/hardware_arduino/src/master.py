@@ -24,8 +24,8 @@ if __name__ == '__main__':
     rospy.Subscriber("/pwm", Thrust, callback)
     depth_publisher = rospy.Publisher("/depth", Float32, queue_size=10)
 
-    # serial_port_id = rospy.get_param("~serial_port_id", "/dev/arduino")
-    # baud_rate = rospy.get_param("~baud_rate", 115200)
+    serial_port_id = rospy.get_param("~serial_port_id", "/dev/arduino")
+    baud_rate = rospy.get_param("~baud_rate", 115200)
 
     sensor_msg = Float32()
 

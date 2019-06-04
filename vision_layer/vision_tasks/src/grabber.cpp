@@ -72,19 +72,23 @@ void Grabber::spinThreadFront()
                 continue;
             }
 			cv::minEnclosingCircle((cv::Mat)largest_contour, center, radius);
-
 			ROS_INFO("Center of the circle: %f %f, radius: %f", center.x, center.y, radius);
 			cv::circle(image_marked, center, radius, cv::Scalar(0, 250, 0), 2, 8, 0);
 			cv::circle(image_marked, center, 2, cv::Scalar(255, 250, 0), 2, 8, 0);
 			cv::circle(image_marked, grabber_target, 3, cv::Scalar(255, 0, 0), 2, 8, 0);
-
+			
+			front_x_coordinate.data = 0;
+            front_y_coordinate.data = center.x - image_front.cols/2;
+            front_z_coordinate.data = image_front.rows/2 - center.y;
+			
+						
 			double dist = sqrt((grabber_target.x - center.x)*(grabber_target.x - center.x) + (grabber_target.y - center.y)*(grabber_target.y - center.y));
 
-			if(dist < grabber_threshold)
-			{
-				ROS_INFO("GRABB KAR BEHENCHOD");
-			}
-			
+			front_x_coordinate_pub.publish(front_x_coordinate);
+            front_y_coordinate_pub.publish(front_y_coordinate);
+            front_z_coordinate_pub.publish(front_z_coordinate);
+
+
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_marked).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
 
