@@ -1,0 +1,5 @@
+<launch>
+<include file="$(find hardware_arduino)/launch/hardware_arduino.launch"/>
+<include file="$(find teledyne_navigator)/launch/teledyne_navigator.launch"/>
+<include file="$(find xsens_driver)/launch/xsens_driver.launch"/>
+</launch>
