@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>hardware_bringup</name>
+  <version>0.0.1</version>
+  <description>The hardware_bringup package contains launch files to bring up the hardware</description>
+
+  <maintainer email="akashsingh049811@gmail.com">Akash</maintainer>
+  <maintainer email="7ayushgupta@gmail.com">Ayush</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>usb_cam</build_depend>
+  <run_depend>usb_cam</run_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <build_depend>image_transport</build_depend>
+  <run_depend>image_transport</run_depend>
+
+</package>
