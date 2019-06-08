@@ -7,13 +7,12 @@
     <include file="$(find hardware_camera)/launch/camera_logitech.launch">
     </include>
 
-    <include file="$(find hardware_arduino)/launch/hardware_arduino.launch"/>
+    <include file="$(find hardware_arduino)/launch/hardware_arduino.launch" output="screen"/>
 
     <include file="$(find teledyne_navigator)/launch/teledyne_navigator.launch">
-        <arg name="baudrate" value="115200">
-        <arg name="port" value="/dev/ttyUSB0">
+        <arg name="baudrate" value="115200"/>
+        <arg name="port" value="/dev/ttyUSB0"/>
+    </include>
 
     <include file="$(find xsens_driver)/launch/xsens_driver.launch"/>
 </launch> 
-
-</launch>
