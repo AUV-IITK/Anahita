@@ -1,0 +1,5 @@
+<launch>
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find anahita_rviz)/anahita.rviz" />
+
+  <rosparam command="load" file="$(find anahita_rviz)/anahita_default.sdf" param="/anahita/robot_description"/>	
+</launch>

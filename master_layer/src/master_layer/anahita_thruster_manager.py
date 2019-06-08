@@ -11,8 +11,8 @@ class AnahitaThrusterManager(object):
 
         self.n_thrusters = 0
         self.configuration_matrix = None
-        if rospy.has_param('/anahita/thruster_allocator/tam'):
-            tam = rospy.get_param('/anahita/thruster_allocator/tam')
+       if rospy.has_param('~tam'):
+            tam = rospy.get_param('~tam')
             self.configuration_matrix = numpy.array(tam)
             self.n_thrusters = self.configuration_matrix.shape[1]
 
@@ -42,8 +42,8 @@ class AnahitaThrusterManager(object):
         self._input = kwargs['input']
         self._output = kwargs['output']
 
-        self._max_pwm = 1600
-        self._min_pwm = 1400
+        self._max_pwm = 1900
+	self._min_pwm = 1100
 
 
     def compute_pwm(self, thrust):
