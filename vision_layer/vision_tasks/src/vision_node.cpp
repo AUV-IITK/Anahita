@@ -10,7 +10,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "grabber_test";
+std::string current_task = "gate";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,

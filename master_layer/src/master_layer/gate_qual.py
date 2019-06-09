@@ -25,22 +25,11 @@ from nav_msgs.msg import Odometry
 from rospy.numpy_msg import numpy_msg
 import tf.transformations as trans
 
-status = False
 current_p = Pose()
 
 def odometry_callback(msg):
     global current_p
     current_p = msg.pose.pose
-    global status
-    status = True    
-
-def has_reached (pos, threshold):
-    
-    while (not status or rospy.is_shutdown()):
-        continue
-    while (calc_dist(pos, current_p) > threshold or rospy.is_shutdown()):
-        # print status
-        continue
 
 if __name__ == '__main__':
 

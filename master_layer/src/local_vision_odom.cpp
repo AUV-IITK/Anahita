@@ -30,7 +30,7 @@ bool odom_init = false;
 
 Eigen::Matrix3f quaternion_matrix;
 
-std::string odom_source = "stereo_vision";
+std::string odom_source = "dvl";
 
 // I have not yet added anything to retrieve the current task
 std::string current_task = "vampire";
