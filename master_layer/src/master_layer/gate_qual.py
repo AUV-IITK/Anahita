@@ -54,8 +54,9 @@ if __name__ == '__main__':
 
         current_task_resp = current_task(current_task="gate")
         change_odom_response = change_odom(odom="vision")
-
         intial_orientation = quaternion_to_eulerRPY(current_p.orientation)
+        opp_q = eulerRPY_to_quaternion (intial_orientation[0], intial_orientation[1], intial_orientation[2] - 3.14285714286)
+
         pose = current_p
         pose.position.y = 0
         pose.position.z = 0
@@ -74,7 +75,7 @@ if __name__ == '__main__':
         step_point.z = 0
 
         rospy.loginfo('cmd to cross the gate')
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
         trajectory_complete(time_out=60)
 
         rospy.loginfo("past the gate")
@@ -147,8 +148,6 @@ if __name__ == '__main__':
         rospy.loginfo('changing the odom source to vision')
         rospy.sleep(1)
 
-        opp_q = eulerRPY_to_quaternion (intial_orientation[0], intial_orientation[1], intial_orientation[2] - 180)
-
         pose = fill_pose(current_p.position.x, current_p.position.y, -2, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
         go_to_pose(target_pose=pose)
         rospy.loginfo('cmd sent for turning back')
@@ -182,7 +181,7 @@ if __name__ == '__main__':
         step_point = fill_point(-4, 0, 0)
 
         rospy.loginfo('cmd to go near the gate')
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
         trajectory_complete(time_out=60)
         rospy.loginfo('infront of the gate')
 
