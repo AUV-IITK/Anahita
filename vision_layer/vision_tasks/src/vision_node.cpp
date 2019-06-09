@@ -4,13 +4,15 @@
 #include "torpedo.h"
 #include "crucifix.h"
 #include "grabber.h"
+#include "testgate.h"
+
 #include "ros/ros.h"
 #include <string>
 #include <std_msgs/String.h>
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "gate";
+std::string current_task = "startgate";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -35,6 +37,7 @@ int main(int argc, char *argv[])
     Marker marker;
     Crucifix crucifix;
     Grabber grabber;
+    StartGate startgate;
     ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
 
     ros::Rate loop_rate(10);
@@ -77,6 +80,12 @@ int main(int argc, char *argv[])
             }
             if (previous_task == "torpedo") {
                 torpedo.frontTaskHandling(false);
+            }
+            if (current_task == "startgate") {
+                startgate.frontTaskHandling(true);
+            }
+            if (previous_task == "startgate") {
+                startgate.frontTaskHandling(false);
             }
 
             previous_task = current_task;

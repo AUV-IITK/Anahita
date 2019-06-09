@@ -11,11 +11,22 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   dynamic_reconfigure
   image_transport
+  message_generation
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(vision_commons REQUIRED)
+
+add_service_files (
+    FILES
+    ContourCenter.srv
+)
+
+generate_messages (
+    DEPENDENCIES
+    std_msgs   
+)
 
 catkin_package(LIBRARIES vision_commons)
 
@@ -54,13 +65,6 @@ add_library(grabber_test SHARED src/grabber.cpp include/grabber.h include/base_c
 add_dependencies(grabber_test base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(grabber_test base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
 
-# add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
-# add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(markerDropper_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
-# add_library(octagon_task SHARED src/octagon.cpp include/octagon.h include/base_class.h)
-# add_dependencies(octagon_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(base_class octagon_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 add_library(start_gate SHARED src/start_gate.cpp include/start_gate.h include/base_class.h)
 add_dependencies(start_gate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -68,6 +72,10 @@ target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRAR
 add_library(pinger SHARED src/pinger.cpp include/pinger.h include/base_class.h)
 add_dependencies(pinger base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(pinger base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(startgate SHARED src/testgate.cpp include/testgate.h include/base_class.h)
+add_dependencies(startgate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(startgate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_executable(vision_node src/vision_node.cpp)
 add_dependencies(vision_node ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -81,4 +89,5 @@ target_link_libraries(vision_node
   torpedo_task
   crucifix_task
   grabber_test
+  startgate
 )

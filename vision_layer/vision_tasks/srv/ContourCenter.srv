@@ -1,0 +1,8 @@
+int32 tl_x
+int32 br_x
+int32 tl_y
+int32 br_y
+---
+float32 x
+float32 y
+float32 z
