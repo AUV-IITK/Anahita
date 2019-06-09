@@ -5,8 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Status1
         - /Odometry1
-        - /RobotModel1/Links1
+        - /RobotModel1
       Splitter Ratio: 0.5
     Tree Height: 638
   - Class: rviz/Selection
@@ -306,25 +307,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 2.20075178
+      Distance: 2.23544431
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.174138069
-        Y: -0.488002479
-        Z: -1.78813934e-07
+        X: -4.04247856
+        Y: 2.48746896
+        Z: -2.38418579e-07
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: -0.041865468
+      Pitch: 0.43020314
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.23854685
+      Yaw: 2.99355364
     Saved: ~
 Window Geometry:
   Displays:
