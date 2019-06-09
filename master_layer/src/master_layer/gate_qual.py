@@ -18,7 +18,7 @@ from std_msgs.msg import Time, String
 
 from anahita_utils import *
 
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Quaternion
 from geometry_msgs.msg import Pose
 
 from nav_msgs.msg import Odometry
@@ -26,11 +26,11 @@ from rospy.numpy_msg import numpy_msg
 import tf.transformations as trans
 
 status = False
-current_p = Point()
+current_p = Pose()
 
 def odometry_callback(msg):
     global current_p
-    current_p = msg.pose.pose.position
+    current_p = msg.pose.pose
     global status
     status = True    
 
@@ -66,87 +66,55 @@ if __name__ == '__main__':
         current_task_resp = current_task(current_task="gate")
         change_odom_response = change_odom(odom="vision")
 
-        pose.position.x = 0
+        intial_orientation = quaternion_to_eulerRPY(current_p.orientation)
+        pose = current_p
         pose.position.y = 0
         pose.position.z = 0
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 1
 
-        go_to_pose_response = go_to_pose(target_pose=pose)
-        rospy.loginfo('Publishing to the cmd pose')
-
-        point = Point()
-
-        point = pose.position
-        has_reached(point, 0.2)
-
-        rospy.loginfo("Aligned to the center of the gate")
+        go_to_pose(target_pose=pose)
+        rospy.loginfo('cmd to align to the gate center')
+        pose_reach(time_out=20)
+        rospy.loginfo("aligned to the center of the gate")
         rospy.sleep(5)
         
         change_odom_response = change_odom(odom="dvl")
+        rospy.sleep(0.1)
 
-        pose.position.x = 6
-        pose.position.y = current_p.y
-        pose.position.z = -2.5
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 1
+        step_point.x = 6
+        step_point.y = 0
+        step_point.z = 0
 
-        rospy.loginfo('publishing to the cmd pose')
+        rospy.loginfo('cmd to cross the gate')
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=60)
 
-        go_to_pose_response = go_to_pose(target_pose=pose)
-
-        point = pose.position
-        has_reached(point, 0.2)
-
-        rospy.loginfo("Past the gate")
-        rospy.sleep(10)
+        rospy.loginfo("past the gate")
+        rospy.sleep(5)
         
         current_task_resp = current_task(current_task="marker")
         rospy.sleep(1)
         change_odom_response = change_odom(odom="stereo")
-        rospy.sleep(1)
+        rospy.sleep(0.1)
 
-        rospy.loginfo("aligned to the center")
-
+        pose = current_p
         pose.position.x = -1.7
         pose.position.y = 0
         pose.position.z = -2.5
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 1
-
-        rospy.loginfo('publishing to the cmd pose')
-
-        go_to_pose_response = go_to_pose(target_pose=pose)
-
-        point = pose.position
-        has_reached(point, 0.2)
-
-        rospy.loginfo("Infront of the marker")
+        rospy.loginfo('cmd to approach marker')
+        
+        go_to_pose(target_pose=pose)
+        trajectory_complete(time_out=30)
+        rospy.loginfo("infront of the marker")
         rospy.sleep(4)
 
         change_odom_response = change_odom(odom="dvl")
         rospy.sleep(0.1)
 
         rospy.loginfo("publishing cmd for turning")
-        rospy.loginfo("current coordinates: %f, %f", current_p.x, current_p.y)
 
-        pose.position.x = current_p.x
-        pose.position.y = current_p.y
-        pose.position.z = -2.5
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0.7071068
-        pose.orientation.w = 0.7071068
-
-        go_to_pose_response = go_to_pose(target_pose=pose)
-
-        rospy.sleep(10)
+        pose = fill_pose(current_p.position.x, current_p.position.y, -2.5, 0, 0, 0.7071068, 0.7071068)
+        go_to_pose(target_pose=pose)
+        pose_reach(time_out=20)    
         rospy.loginfo("bot turned 90 degrees")
 
         rospy.loginfo("starting the circle")
@@ -154,44 +122,34 @@ if __name__ == '__main__':
         change_odom_response = change_odom(odom="dvl")
         rospy.sleep(2)
 
-        step_point = Point()
+        step_point = fill_point(2, 1.5, 0)
 
-        step_point.x = 2
-        step_point.y = 1.5
-        step_point.z = 0
-
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=200)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
 
         rospy.loginfo("reached first quarter of the circle")
         rospy.sleep(1)
 
-        step_point.x = 2.5
-        step_point.y = -1.7
-        step_point.z = 0
+        step_point = fill_point(2.5, -1.7, 0)
 
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=200)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
 
         rospy.loginfo("reached second quarter of the circle")
         rospy.sleep(1)
 
-        step_point.x = -1.5
-        step_point.y = -1.5
-        step_point.z = 0
+        step_point = fill_point(-1.5, -1.5, 0)
 
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=200)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
 
         rospy.loginfo("reached third quarter of the circle")
         rospy.sleep(1)
 
-        step_point.x = -1.5
-        step_point.y = 1.5
-        step_point.z = 0
+        step_point = fill_point(-1.5, 1.5, 0)
 
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=200)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
 
         rospy.loginfo("reached fourth quarter of the circle")
         rospy.sleep(1)
@@ -200,84 +158,67 @@ if __name__ == '__main__':
         rospy.loginfo('changing the odom source to vision')
         rospy.sleep(1)
 
-        pose.position.x = current_p.x
-        pose.position.y = current_p.y
-        pose.position.z = -2
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 1
-        pose.orientation.w = 0
+        opp_q = eulerRPY_to_quaternion (intial_orientation[0], intial_orientation[1], intial_orientation[2] - 180)
 
-        go_to_pose_response = go_to_pose(target_pose=pose)
+        pose = fill_pose(current_p.position.x, current_p.position.y, -2, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
+        go_to_pose(target_pose=pose)
         rospy.loginfo('cmd sent for turning back')
-        # rospy.sleep(10)
 
-        pose_reach_response = pose_reach(time_out=20)
+        pose_reach(time_out=20)
         rospy.loginfo('turned back')
 
-        current_task_resp = current_task(current_task="gate")
+        current_task(current_task="gate")
         rospy.loginfo('changing the vision target to gate')
         rospy.sleep(1)
-        change_odom_response = change_odom(odom="vision")
+        change_odom(odom="vision")
         rospy.loginfo('changing the odom source to vision')
-        rospy.sleep(1)
+        rospy.sleep(0.1)
 
-        pose.position.x = current_p.x
+        pose.position.x = current_p.position.x
         pose.position.y = 0
         pose.position.z = 0
 
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 1
-        pose.orientation.w = 0
-
+        pose.orientation = opp_q
         rospy.loginfo("present coordinate: %f", current_p.x)
 
-        go_to_pose_response = go_to_pose(target_pose=pose)
+        go_to_pose(target_pose=pose)
         rospy.loginfo('cmd to align to the center of the gate')
-        pose_reach_response = pose_reach(time_out=20)
+        pose_reach(time_out=20)
         rospy.loginfo('bot aligned to gate center now')
 
-        change_odom_response = change_odom(odom="dvl")
+        change_odom(odom="dvl")
         rospy.loginfo('changind the odom source to dvl')
         rospy.sleep(0.1)
 
-        step_point.x = -3
-        step_point.y = 0
-        step_point.z = 0
+        step_point = fill_point(-4, 0, 0)
 
         rospy.loginfo('cmd to go near the gate')
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=60)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=60)
         rospy.loginfo('infront of the gate')
 
-        change_odom_response = change_odom(odom="vision")
+        change_odom(odom="vision")
         rospy.loginfo('changind the odom source to vision')
         rospy.sleep(0.1)
 
         pose.position.x = current_p.x
         pose.position.y = 0
         pose.position.z = 0
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 1
-        pose.orientation.w = 0
+        pose.orientation = opp_q
 
-        go_to_pose_response = go_to_pose(target_pose=pose)
+        go_to_pose(target_pose=pose)
         rospy.loginfo('cmd to align to the center of the gate')
-        pose_reach_response = pose_reach(time_out=30)
+        pose_reach(time_out=30)
         rospy.loginfo('aligned to the center')
 
-        change_odom_response = change_odom(odom="dvl")
+        change_odom(odom="dvl")
         rospy.loginfo('changind the odom source to dvl')
         rospy.sleep(0.1)
 
-        step_point.x = -5
-        step_point.y = 0
-        step_point.z = 0
+        step_point = fill_point(-5, 0, 0)
 
-        go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete_resp = trajectory_complete(time_out=60)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=60)
         rospy.loginfo('past the gate')
 
     except rospy.ServiceException, e:
