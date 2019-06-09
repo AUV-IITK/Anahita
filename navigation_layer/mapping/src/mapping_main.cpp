@@ -26,7 +26,7 @@ namespace mapping{
   MappingNode::MappingNode(const ros::NodeHandlePtr &nh) : nh_(nh)
   {
       map_publisher = nh_->advertise<grid_map_msgs::GridMap>("/grid_map", 1, true);
-      odom_subscriber = nh_->subscribe("/anahita/pose_gt/relay", 10, odometry_update_cb);
+      odom_subscriber = nh_->subscribe("/anahita/pose_gt/relay", 10, &odometry_update_cb, this);
       ROS_INFO("Created map with size %f x %f m (%i x %i cells).", _map.getLength().x(), _map.getLength().y(), _map.getSize()(0), _map.getSize()(1));
 
     for (grid_map::GridMapIterator it(_map); !it.isPastEnd(); ++it) {

@@ -20,7 +20,12 @@ public:
     MappingNode(const ros::NodeHandlePtr &nh);
     ~MappingNode();
 
+    void transform_broadcaster_initial(tf::TransformBroadcaster& map_to_odom_broadcaster);
+    void odometry_update_cb(const nav_msgs::Odometry::ConstPtr& msg);
+    void loadMapFromYAML(grid_map::GridMap &map);
+    void PublishMap()
     void Spin();
+
 private:
     ros::NodeHandlePtr nh_;
     
