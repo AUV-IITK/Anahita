@@ -29,8 +29,9 @@ private:
     grid_map::GridMap _map({"elevation", "occupancy"});
 
     tf::TransformBroadcaster map_to_odom_broadcaster;
-    map.setFrameId("map");
-    map.setGeometry(Length(30,30), 1);
+    
+    _map.setFrameId("map");
+    _map.setGeometry(Length(30,30), 1);
 
     std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
     /*
