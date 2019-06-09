@@ -25,7 +25,7 @@ find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS signals)
 find_package(PCL REQUIRED)
 
-add_message_files( DIRECTORY msg FILES ElasFrameData.msg)
+add_message_files (DIRECTORY msg FILES ElasFrameData.msg)
 
 generate_messages(
   DEPENDENCIES
