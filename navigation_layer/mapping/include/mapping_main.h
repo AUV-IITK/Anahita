@@ -18,12 +18,11 @@ class MappingNode
 {
 public:
     MappingNode(const ros::NodeHandlePtr &nh);
-    ~MappingNode();
 
     void transform_broadcaster_initial(tf::TransformBroadcaster& map_to_odom_broadcaster);
     void odometry_update_cb(const nav_msgs::Odometry::ConstPtr& msg);
     void loadMapFromYAML(grid_map::GridMap &map);
-    void PublishMap()
+    void PublishMap();
     void Spin();
 
 private:
@@ -31,13 +30,10 @@ private:
     
     ros::Subscriber odom_subscriber;
     ros::Publisher map_publisher;
-    grid_map::GridMap _map({"elevation", "occupancy"});
+    grid_map::GridMap _map;
 
     tf::TransformBroadcaster map_to_odom_broadcaster;
     
-    _map.setFrameId("map");
-    _map.setGeometry(Length(30,30), 1);
-
     std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
     /*
     ros::Subscriber dvlTwistSubscriber_;
