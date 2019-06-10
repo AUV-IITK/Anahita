@@ -308,8 +308,8 @@ public:
             r_image_data = r_cv_ptr->image.data;
             r_step = r_cv_ptr->image.step[0];
         }
-        ROS_ASSERT(vision_layer_init == true);
-        roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
+        if (vision_layer_init)
+            roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
         ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
         ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
         ROS_ASSERT(l_image_msg->height == roi_image_msg->height);
@@ -369,7 +369,7 @@ public:
 
             if (l_disp_data[i] > 0)
             {
-                if (roi_image_data[i] == 255)
+                if (vision_layer_init && roi_image_data[i] == 255)
                 {
                     inliers.push_back(i);
                 }
@@ -452,9 +452,9 @@ public:
                 disp_max = r_disp_data[i];
         }
         std::vector<int32_t> inliers;
-        int x_sum = 0;
-        int y_sum = 0;
-        int z_sum = 0;
+        float x_sum = 0;
+        float y_sum = 0;
+        float z_sum = 0;
         int cnt = 0;
         for (int32_t i = tl_y; i < br_y; i++) {
             for (int32_t j = tl_x; j < br_x; j++) {

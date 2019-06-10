@@ -2,6 +2,7 @@
 #include "base_class.h"
 #include <vision_tasks/ContourCenter.h>
 #include <master_layer/TargetNormal.h>
+#include <cmath>
 
 class StartGate : public Base_class
 {

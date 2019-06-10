@@ -11,6 +11,7 @@ StartGate::StartGate()
 
 bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
                            master_layer::TargetNormal::Response &resp) {
+    ROS_INFO ("Service called");
     ros::Rate loop_rate(20);
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
@@ -23,7 +24,7 @@ bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
         if (!rect_thresholded.empty()) {
             cv::findContours (rect_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
             contours = vision_commons::Contour::filterContours (contours, 100);
-            if (contours.empty()) continue;
+            if (contours.size() < 2) continue;
             vision_commons::Contour::sortFromBigToSmall (contours);
             std::vector<cv::Point> contour1 = contours[0];
             std::vector<cv::Point> contour2 = contours[1];
@@ -48,6 +49,9 @@ bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
             cv::Point3d point1 (srv1.response.x, srv1.response.y, srv1.response.z);
             cv::Point3d point2 (srv2.response.x, srv2.response.y, srv2.response.z);
 
+            ROS_INFO ("Point 1: %f %f %f", srv1.response.x, srv1.response.y, srv1.response.z);
+            ROS_INFO ("Point 2: %f %f %f", srv2.response.x, srv2.response.y, srv2.response.z);
+            resp.angle = atan((srv2.response.z - srv1.response.z)/(srv2.response.x - srv1.response.x));
             break;
         }
         else ROS_INFO("Image empty");
@@ -98,12 +102,12 @@ void StartGate::spinThreadFront() {
         
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
             image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
-                                                                           front_low_g_, front_high_g_,
-                                                                           front_low_r_, front_high_r_);
+                                                                           front_low_g_, front_high_g_, front_low_r_, 
+                                                                           front_high_r_);
             if (!rect_image.empty()) {
                 rect_thresholded = vision_commons::Threshold::threshold(rect_image, front_low_b_, front_high_b_,
-                                                                            front_low_g_, front_high_g_,
-                                                                            front_low_r_, front_high_r_);
+                                                                        front_low_g_, front_high_g_, front_low_r_, 
+                                                                        front_high_r_);
                 front_roi_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", rect_thresholded).toImageMsg());
             }
             vision_commons::Morph::open(image_front_thresholded, 2 * front_opening_mat_point_ + 1,
