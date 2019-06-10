@@ -13,7 +13,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "startgate";
+std::string current_task = "testgate";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     Marker marker;
     Crucifix crucifix;
     Grabber grabber;
-    StartGate startgate;
+    TestGate testgate;
     TriangularBuoy triangular_buoy;
 
     ros::Rate loop_rate(10);
@@ -95,11 +95,11 @@ int main(int argc, char *argv[])
             if (previous_task == "torpedo") {
                 torpedo.frontTaskHandling(false);
             }
-            if (current_task == "startgate") {
-                startgate.frontTaskHandling(true);
+            if (current_task == "testgate") {
+                testgate.frontTaskHandling(true);
             }
-            if (previous_task == "startgate") {
-                startgate.frontTaskHandling(false);
+            if (previous_task == "testgate") {
+                testgate.frontTaskHandling(false);
             }
             previous_task = current_task;
         }

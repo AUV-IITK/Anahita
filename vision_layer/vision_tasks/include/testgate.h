@@ -4,10 +4,10 @@
 #include <master_layer/TargetNormal.h>
 #include <cmath>
 
-class StartGate : public Base_class
+class TestGate : public Base_class
 {
 public:
-    StartGate();
+    TestGate();
     void loadParams() override;
     void spinThreadFront() override;
     void rectCB (const sensor_msgs::Image::ConstPtr &msg);

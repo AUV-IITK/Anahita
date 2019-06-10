@@ -1,15 +1,15 @@
 #include <testgate.h>
 
-StartGate::StartGate()
+TestGate::TestGate()
 {
     loadParams();
     front_roi_pub = it.advertise("/anahita/roi", 1);
-    image_rect_sub = it.subscribe("/anahita/left/image_rect_color", 1, &StartGate::rectCB, this);
+    image_rect_sub = it.subscribe("/anahita/left/image_rect_color", 1, &TestGate::rectCB, this);
     contour_center_client = nh.serviceClient<vision_tasks::ContourCenter>("contour_center");
-    normal_server = nh.advertiseService("/anahita/target_normal", &StartGate::getNormal, this);
+    normal_server = nh.advertiseService("/anahita/target_normal", &TestGate::getNormal, this);
 }
 
-bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
+bool TestGate::getNormal (master_layer::TargetNormal::Request &req,
                            master_layer::TargetNormal::Response &resp) {
     ROS_INFO ("Service called");
     ros::Rate loop_rate(20);
@@ -60,7 +60,7 @@ bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
     return true;
 }
 
-void StartGate::rectCB (const sensor_msgs::Image::ConstPtr &msg) {
+void TestGate::rectCB (const sensor_msgs::Image::ConstPtr &msg) {
 	try {
 		rect_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image; 
     }
@@ -72,7 +72,7 @@ void StartGate::rectCB (const sensor_msgs::Image::ConstPtr &msg) {
     }
 }
 
-void StartGate::loadParams()
+void TestGate::loadParams()
 {
     nh.getParam("/anahita/vision/startgate/b_min", front_low_b_);
     nh.getParam("/anahita/vision/startgate/b_max", front_high_b_);
@@ -87,7 +87,7 @@ void StartGate::loadParams()
     nh.getParam("/anahita/vision/startgate/bilateral_iter", front_bilateral_iter_);
 }
 
-void StartGate::spinThreadFront() {
+void TestGate::spinThreadFront() {
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
     ros::Rate loop_rate(15);
