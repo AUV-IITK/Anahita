@@ -461,9 +461,9 @@ public:
                 if (l_disp_data[i*width + j] > 0) {
                     if (roi_image_data[i*width + j] == 255) {
                         cv::Point2d left_uv;
-                        int32_t index = i;
-                        left_uv.x = index % width;
-                        left_uv.y = index / width;
+                        int32_t index = i*width + j;
+                        left_uv.x = j;
+                        left_uv.y = i;
                         cv::Point3d point;
                         model_.projectDisparityTo3d(left_uv, l_disp_data[index], point);
                         x_sum += point.x;

@@ -6,6 +6,54 @@ StartGate::StartGate()
     front_roi_pub = it.advertise("/anahita/roi", 1);
     image_rect_sub = it.subscribe("/anahita/left/image_rect_color", 1, &StartGate::rectCB, this);
     contour_center_client = nh.serviceClient<vision_tasks::ContourCenter>("contour_center");
+    normal_server = nh.advertiseService("/anahita/target_normal", &StartGate::getNormal, this);
+}
+
+bool StartGate::getNormal (master_layer::TargetNormal::Request &req,
+                           master_layer::TargetNormal::Response &resp) {
+    ros::Rate loop_rate(20);
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    
+    while (ros::ok()) {
+        if (close_task) {
+            close_task = false;
+            break;
+        }
+        if (!rect_thresholded.empty()) {
+            cv::findContours (rect_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+            contours = vision_commons::Contour::filterContours (contours, 100);
+            if (contours.empty()) continue;
+            vision_commons::Contour::sortFromBigToSmall (contours);
+            std::vector<cv::Point> contour1 = contours[0];
+            std::vector<cv::Point> contour2 = contours[1];
+            cv::Rect rect1 = cv::boundingRect (cv::Mat(contour1));
+            cv::Rect rect2 = cv::boundingRect (cv::Mat(contour2));
+            vision_tasks::ContourCenter srv1;
+            vision_tasks::ContourCenter srv2;
+
+            srv1.request.br_x = rect1.br().x; 
+            srv1.request.br_y = rect1.br().y;
+            srv1.request.tl_x = rect1.tl().x;
+            srv1.request.tl_y = rect1.tl().y;
+
+            srv2.request.br_x = rect2.br().x; 
+            srv2.request.br_y = rect2.br().y;
+            srv2.request.tl_x = rect2.tl().x;
+            srv2.request.tl_y = rect2.tl().y;
+
+            contour_center_client.call(srv1);
+            contour_center_client.call(srv2);
+
+            cv::Point3d point1 (srv1.response.x, srv1.response.y, srv1.response.z);
+            cv::Point3d point2 (srv2.response.x, srv2.response.y, srv2.response.z);
+
+            break;
+        }
+        else ROS_INFO("Image empty");
+        loop_rate.sleep();
+    }
+    return true;
 }
 
 void StartGate::rectCB (const sensor_msgs::Image::ConstPtr &msg) {
@@ -35,22 +83,17 @@ void StartGate::loadParams()
     nh.getParam("/anahita/vision/startgate/bilateral_iter", front_bilateral_iter_);
 }
 
-void StartGate::spinThreadFront()
-{
+void StartGate::spinThreadFront() {
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
     ros::Rate loop_rate(15);
-    cv::Mat rect_thresholded;
 
-    while (ros::ok())
-    {
-        if (close_task)
-        {
+    while (ros::ok()) {
+        if (close_task) {
             close_task = false;
             break;
         }
-        if (!image_front.empty())
-        {
+        if (!image_front.empty()) {
             temp_src = image_front.clone();
         
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
@@ -77,8 +120,7 @@ void StartGate::spinThreadFront()
             front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
             
         }
-        else
-        {
+        else {
             ROS_INFO("Image empty");
         }
         loop_rate.sleep();

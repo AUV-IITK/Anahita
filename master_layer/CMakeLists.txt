@@ -77,6 +77,7 @@ add_service_files(
   RequestMarkerAngle.srv
   PingerBottomTarget.srv
   PingerFrontTarget.srv
+  TargetNormal.srv
 )
 
 ## Generate actions in the 'action' folder
