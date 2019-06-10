@@ -5,6 +5,7 @@
 #include "crucifix.h"
 #include "grabber.h"
 #include "testgate.h"
+#include "triangular_buoy.h"
 
 #include "ros/ros.h"
 #include <string>
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "vision_node");
     ros::NodeHandle nh;
     ros::Time::init();
+    ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
 
     ros::Duration(1).sleep();
 
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     Crucifix crucifix;
     Grabber grabber;
     StartGate startgate;
-    ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
+    TriangularBuoy triangular_buoy;
 
     ros::Rate loop_rate(10);
 
@@ -51,15 +53,30 @@ int main(int argc, char *argv[])
                 ROS_INFO("grabber_test");
                 grabber.frontTaskHandling(true);
             }
+            if(previous_task == "grabber_test")
+            {
+                grabber.frontTaskHandling(false);
+            }
             if(current_task == "crucifix")
             {
                 ROS_INFO("crucfix_task");
                 crucifix.frontTaskHandling(true);
             }
+            if(previous_task == "crucifix")
+            {
+                crucifix.frontTaskHandling(false);
+            }
             if (current_task == "gate")
             {
                 ROS_INFO("gate_task");
                 gate.frontTaskHandling(true);
+            }
+            if (previous_task == "gate")
+            {
+                gate.frontTaskHandling(false);
+            }
+            if (current_task == "buoy") {
+                triangular_buoy.frontTaskHandling(true);
             }
             if (previous_task == "buoy") {
                 triangular_buoy.frontTaskHandling(false);
@@ -84,7 +101,6 @@ int main(int argc, char *argv[])
             if (previous_task == "startgate") {
                 startgate.frontTaskHandling(false);
             }
-
             previous_task = current_task;
         }
         loop_rate.sleep();
