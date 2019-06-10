@@ -32,28 +32,6 @@ def odometry_callback(msg):
     global current_p
     current_p = msg.pose.pose.position
 
-def fill_pose (p_x, p_y, p_z, q_x, q_y, q_z, q_w):
-    
-    pose = Pose()
-    pose.position.x = p_x
-    pose.position.y = p_y
-    pose.position.z = p_z
-    pose.orientation.x = q_x
-    pose.orientation.y = q_y
-    pose.orientation.z = q_z
-    pose.orientation.w = q_w
-
-    return pose 
-
-def fill_point (x, y, z):
-
-    point = Point()
-    point.x = x
-    point.y = y
-    point.z = z
-
-    return point
-
 if __name__ == '__main__':
 
     rospy.init_node('gate_qual')
