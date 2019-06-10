@@ -178,39 +178,6 @@ public:
             point_cloud->height = inliers.size();
             point_cloud->points.resize(inliers.size());
 
-            elas_ros::ElasFrameData data;
-            data.header.frame_id = l_info_msg->header.frame_id;
-            data.header.stamp = l_info_msg->header.stamp;
-            data.width = l_width;
-            data.height = l_height;
-            data.disparity.resize(l_width * l_height);
-            data.r.resize(l_width * l_height);
-            data.g.resize(l_width * l_height);
-            data.b.resize(l_width * l_height);
-            data.x.resize(l_width * l_height);
-            data.y.resize(l_width * l_height);
-            data.z.resize(l_width * l_height);
-            data.left = *l_info_msg;
-            data.right = *r_info_msg;
-
-            // Copy into the data
-            for (int32_t u = 0; u < l_width; u++)
-            {
-                for (int32_t v = 0; v < l_height; v++)
-                {
-                    int index = v * l_width + u;
-                    data.disparity[index] = l_disp_data[index];
-#ifdef DOWN_SAMPLE
-                    cv::Vec3b col = cv_ptr->image.at<cv::Vec3b>(v * 2, u * 2);
-#else
-                    cv::Vec3b col = cv_ptr->image.at<cv::Vec3b>(v, u);
-#endif
-                    data.r[index] = col[0];
-                    data.g[index] = col[1];
-                    data.b[index] = col[2];
-                }
-            }
-
             for (size_t i = 0; i < inliers.size(); i++)
             {
                 cv::Point2d left_uv;
@@ -227,17 +194,9 @@ public:
                 point_cloud->points[i].x = point.x;
                 point_cloud->points[i].y = point.y;
                 point_cloud->points[i].z = point.z;
-                point_cloud->points[i].r = data.r[index];
-                point_cloud->points[i].g = data.g[index];
-                point_cloud->points[i].b = data.b[index];
-
-                data.x[index] = point.x;
-                data.y[index] = point.y;
-                data.z[index] = point.z;
             }
 
             pc_pub_->publish(point_cloud);
-            elas_fd_pub_->publish(data);
         }
         catch (cv_bridge::Exception &e)
         {
