@@ -73,10 +73,11 @@ int main (int argc, char** argv) {
 
     image_transport::ImageTransport it(nh);
 
-    std::string camera = "front";
+    bool convertToHSV = false;
+    std::string camera = "left";
     nh.getParam("camera", camera);
-
-    image_transport::Subscriber image_sub = it.subscribe("/anahita/" + camera + "_camera/preprocessed", 1, &callback);
+    nh.getParam("convertToHSV", convertToHSV);
+    image_transport::Subscriber image_sub = it.subscribe("/anahita/" + camera + "/image_raw", 1, &callback);
     image_transport::Publisher image_pub = it.advertise("/color_calibration/thresholded", 1);
 
     ros::ServiceClient client = nh.serviceClient<color_calibration::Dump>("dump_parameters");
@@ -100,6 +101,11 @@ int main (int argc, char** argv) {
         }
         if (!image.empty()) {
             temp_src = image.clone();
+            if(convertToHSV)
+            {
+                cv::cvtColor(temp_src, temp_src, CV_BGR2HSV);
+                ROS_INFO("Being converted to HSV format");
+            }
             vision_commons::Filter::bilateral(temp_src, bilateral_iter);
             image_thresholded = vision_commons::Threshold::threshold(temp_src, b_min, b_max,
                                                                     g_min, g_max, r_min, r_max);

@@ -99,3 +99,28 @@ std::vector<cv::Point> vision_commons::Contour::getLargestContour(cv::Mat &raw)
 
     return contours[largest_contour_index];
 }
+
+void vision_commons::Contour::filterContours (const std::vector<std::vector<cv::Point> >& contours, std::vector<int>& idx, double threshold) {
+    for (int i = 0; i < contours.size(); i++) {
+        if (cv::contourArea (contours[i], false) < threshold) continue;
+        idx.push_back (i);
+    }
+}
+
+bool contour_cmp (std::vector<cv::Point> contour_a, std::vector<cv::Point> contour_b) {
+    return cv::contourArea (contour_a, false) > cv::contourArea (contour_b, false);
+}
+
+void vision_commons::Contour::sortFromBigToSmall (std::vector<std::vector<cv::Point> >& contours) {
+    if (contours.size() == 0) return;
+    std::sort (contours.begin(), contours.end(), contour_cmp);
+}
+
+std::vector<std::vector<cv::Point> > vision_commons::Contour::filterContours (const std::vector<std::vector<cv::Point> >& contours, double threshold) {
+    std::vector<std::vector<cv::Point> > filtered_contours;
+    for (int i = 0; i < contours.size(); i++) {
+        if (cv::contourArea (contours[i], false) < threshold) continue;
+        filtered_contours.push_back (contours[i]);
+    }
+    return filtered_contours;
+}

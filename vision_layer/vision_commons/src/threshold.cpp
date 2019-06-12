@@ -15,3 +15,12 @@ cv::Mat vision_commons::Threshold::threshold(cv::Mat &raw, int low_a,
     image_thresholded = raw.clone();
   return image_thresholded;
 }
+
+cv::Mat vision_commons::Threshold::threshold (const cv::Mat& raw, const cv::Scalar& bgr_min, const cv::Scalar& bgr_max) {
+    cv::Mat img_thres;
+    if (bgr_max[0] > bgr_min[0] && bgr_max[1] > bgr_min[1] && bgr_max[2] > bgr_min[2])
+        inRange(raw, bgr_min, bgr_max, img_thres);
+    else 
+        img_thres = raw.clone();
+    return img_thres;
+}

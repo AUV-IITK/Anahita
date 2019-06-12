@@ -6,8 +6,6 @@ Gate::Gate()
     this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-Gate::~Gate() {}
-
 void Gate::loadParams()
 {
     nh.getParam("/anahita/vision/gate/b_min", front_low_b_);
@@ -45,7 +43,9 @@ void Gate::spinThreadFront()
         {
             ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
 
+            vision_mutex.lock();
             temp_src = image_front.clone();
+            vision_mutex.unlock();
             ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
 
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
@@ -99,5 +99,3 @@ void Gate::spinThreadFront()
         ros::spinOnce();
     }
 }
-
-void Gate::spinThreadBottom() {}

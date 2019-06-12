@@ -138,7 +138,7 @@ class TeledyneNavigator(object):
         # Set PD5 output format.
         self.write("PD5\n")
 
-        # Set earth coordinate transformation.
+        # Set ship coordinate transformation.
         self.write("EX11111\n")
 
         # Start pinging.

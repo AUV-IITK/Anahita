@@ -4,6 +4,10 @@ project(mapping)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+
+set(SRC_DIR "src")
+set(INCLUDE_DIR "include")  
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -69,9 +73,9 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## Generate actions in the 'action' folder
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs nav_msgs
-)
+# generate_messages(
+#   DEPENDENCIES actionlib_msgs std_msgs nav_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -109,6 +113,20 @@ catkin_package(
   # DEPENDS system_lib
 )
 
+
+# Include all the directories where source can be found.
+include_directories(
+        ${catkin_INCLUDE_DIRS}
+        ${SRC_DIR}
+        ${INCLUDE_DIR}
+)
+
+file(GLOB_RECURSE FILES
+        "${SRC_DIR}/*.cpp"
+        "${SRC_DIR}/*.h"
+        "${INCLUDE_DIR}/*.h"
+)
+
 ###########
 ## Build ##
 ###########
@@ -120,8 +138,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(map_publisher_node src/mapping_main.cpp include/mapping_main.h)
-target_link_libraries(map_publisher_node ${catkin_LIBRARIES} yaml-cpp)
+add_executable(mapping_node src/mapping_node.cpp include/mapping_main.h ${FILES})
+target_link_libraries(mapping_node ${catkin_LIBRARIES} yaml-cpp)
+add_dependencies(mapping_node mapping_gencpp)
+
 
 ## Declare a C++ library
 

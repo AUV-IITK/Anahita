@@ -10,5 +10,5 @@
     
     <node name="color_calibrate" type="color_calibrate" pkg="color_calibration" output="screen" />
     <node name="fusion_node" type="fusion_node" pkg="vision_fusion" if="$(eval env == 'real')"/>
-    <node name="save_params" type="dump_param.py" pkg="color_calibration" />
+    <node name="save_params" type="dump_param.py" pkg="color_calibration" output="screen" />
 </launch>

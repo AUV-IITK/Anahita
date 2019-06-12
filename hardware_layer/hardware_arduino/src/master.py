@@ -50,9 +50,14 @@ if __name__ == '__main__':
             rospy.loginfo(pwm_str)
             rospy.sleep(0.05)
 
+            msg = 0
             # Serial read section
             msg = serial_connection.read(serial_connection.inWaiting()) # read all characters in buffer
-            rospy.loginfo("Recieved: " + str(msg)) 
+
+            print(msg)
+        except:
+            rospy.logerr('Some error has occured')
+            rospy.loginfo("Recieved: " + str(msg))  
             try:
                 data = list(map(float,[x.strip() for x in msg.split(',')]))
                 print("Data:" + str(data))

@@ -4,12 +4,17 @@ namespace navigation
 {
 NavigationNode::NavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh), quaternion_(0.0, 0.0, 0.0, 0.0)
 {
-    dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100, &DvlData::DvlTwistCallback, &dvlData_);
-    dvlPressureSubscriber_ = nh_->subscribe("/anahita/depth", 100, &DvlData::DvlPressureCallback, &dvlData_);
-    imuSubscriber_ = nh_->subscribe("/anahita/imu", 100,&IMUData::IMUMsgCallback, &imuData_);
+    dvlTwistSubscriber_ = nh_->subscribe("/anahita/dvl_twist", 100,
+                                         &DvlData::DvlTwistCallback, &dvlData_);
+    dvlPressureSubscriber_ = nh_->subscribe("/anahita/pressure", 100,
+                                            &DvlData::DvlPressureCallback, &dvlData_);
+    imuSubscriber_ = nh_->subscribe("/anahita/imu", 100,
+                                    &IMUData::IMUMsgCallback, &imuData_);
 
-    navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset", &navigation::NavigationNode::SetDepthOffsetCallback, this);
-    navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset", &navigation::NavigationNode::SetWorldXYOffsetCallback, this);
+    navigationDepthOffsetServer_ = nh_->advertiseService("/nav/set_depth_offset",
+                                                         &navigation::NavigationNode::SetDepthOffsetCallback, this);
+    navigationXYOffsetServer_ = nh_->advertiseService("/nav/set_world_x_y_offset",
+                                                      &navigation::NavigationNode::SetWorldXYOffsetCallback, this);
 
     navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/anahita/pose_gt/relay", 100);
     position_ = Eigen::Vector3d::Zero();
@@ -64,14 +69,6 @@ bool NavigationNode::SetWorldXYOffsetCallback(
 
 void NavigationNode::ProcessCartesianPose()
 {
-        Eigen::AngleAxisd rollAngle(0, Eigen::Vector3d::UnitY());
-        Eigen::AngleAxisd yawAngle(-M_PI/2, Eigen::Vector3d::UnitZ());
-        Eigen::AngleAxisd pitchAngle(0, Eigen::Vector3d::UnitX());
-
-        Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
-
-        Eigen::Matrix3d imu_dvl_translate = q.matrix();
-
     if (dvlData_.IsNewDataReady() || imuData_.IsNewDataReady())
     {
         dvlData_.SetNewDataUsed();
@@ -83,9 +80,17 @@ void NavigationNode::ProcessCartesianPose()
         angularVelocity_ = imuData_.GetAngularVelocity();
         eulerAngel_ = imuData_.GetOrientation();
         quaternion_ = imuData_.GetQuaternion();
+<<<<<<< HEAD
         ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f", incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
         position_ += quaternion_.toRotationMatrix() * incrementPosition_;
         ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f", position_.x(), position_.y(), position_.z());
+=======
+        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f",
+                 incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
+        position_ += quaternion_.toRotationMatrix() * incrementPosition_;
+        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f, Position.z: %.2f",
+                 position_.x(), position_.y(), position_.z());
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
         position_.z() = positionFromDepth_ - zOffset_;
 
@@ -93,7 +98,7 @@ void NavigationNode::ProcessCartesianPose()
 
         ros::Time currentTime = ros::Time::now();
 
-        PublishData(currentTime);                                           
+        PublishData(currentTime);
         BroadcastTransform(poseEstimation_, quaternion_, currentTime);
     }
 }
@@ -106,7 +111,11 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
     odom_trans.header.frame_id = "world";
+<<<<<<< HEAD
     odom_trans.child_frame_id = "anahita/base_link";
+=======
+    odom_trans.child_frame_id = "base_link";
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
     odom_trans.transform.translation.x = position.x();
     odom_trans.transform.translation.y = position.y();
@@ -117,7 +126,7 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
     odom_trans.transform.rotation.z = quaternion.z();
 
     // send the transform
-    odom_broadcaster.sendTransform(odom_trans);
+    // odom_broadcaster.sendTransform(odom_trans);
     ROS_INFO("Published the transform");
 }
 
@@ -125,7 +134,11 @@ void NavigationNode::PublishData(ros::Time &current_time)
 {
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.frame_id = "world";
+<<<<<<< HEAD
     odometry_msg.child_frame_id = "anahita/base_link";
+=======
+    odometry_msg.child_frame_id = "base_link";
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
     odometry_msg.header.stamp = current_time;
 
     FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);

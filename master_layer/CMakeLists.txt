@@ -73,6 +73,12 @@ add_service_files(
   Hold.srv
   TrajectoryComplete.srv
   PoseReach.srv
+  ChangeTorpedoHole.srv
+  RequestMarkerAngle.srv
+  PingerBottomTarget.srv
+  PingerFrontTarget.srv
+  TargetNormal.srv
+  GetMaxDepth.srv
 )
 
 ## Generate actions in the 'action' folder

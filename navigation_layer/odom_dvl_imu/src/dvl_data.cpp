@@ -24,29 +24,10 @@ namespace navigation{
     }
 
     DvlData::~DvlData() { }
-
-    bool DvlData::inRange (double x, double avg, double thres) {
-        if (avg + thres >= x || avg - thres <= x) {
-            return true;
-        }
-        return false;
-    }
-
-
-    double DvlData::Average(std::vector<double> array) {
-        double sum = 0;
-        for (int i = 0; i < array.size(); i++) {
-            sum += array[i];
-        }
-        double size = array.size();
-        double avg_ = sum/size;
-
-        return avg_;
-    }
-
     void DvlData::DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg)
     {
         dvl_twist_ = msg;
+<<<<<<< HEAD
         ROS_INFO("Inside callback");
 
         
@@ -93,6 +74,12 @@ namespace navigation{
         dvl_twist_.twist.twist.linear.x = Average (x_vel);
         dvl_twist_.twist.twist.linear.y = Average (y_vel);
         dvl_twist_.twist.twist.linear.z = Average (z_vel);
+=======
+        // dvl_twist_.header = msg.header;
+        // dvl_twist_.twist = msg.twist;
+        dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.z;
+        dvl_twist_.twist.twist.linear.z = -msg.twist.twist.linear.x;
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
         SetNewDataReady();
     }
@@ -100,7 +87,10 @@ namespace navigation{
     void DvlData::DvlPressureCallback(std_msgs::Float32 msg)
     {
         dvl_pressure_ = msg;
+<<<<<<< HEAD
         ROS_INFO("pressure sensor: %f ", dvl_pressure_.data);
+=======
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
         SetNewDataReady();
     }
 

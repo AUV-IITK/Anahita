@@ -102,9 +102,17 @@ void StartGate::spinThreadFront() {
         }
         if (!image_front.empty())
         {
+<<<<<<< HEAD
             vision_mutex.lock();
             temp_src = image_front.clone();
             vision_mutex.unlock();
+=======
+            ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
+            vision_mutex.lock();
+            temp_src = image_front.clone();
+            vision_mutex.unlock();
+            ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
+>>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
             image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,

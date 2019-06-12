@@ -4,6 +4,7 @@ from color_calibration.srv import *
 import rospy
 import subprocess
 import yaml
+import os
 
 def dump_paramters(req):
     print "Dumping Request, filename: [%s]"%(req.filename)
@@ -40,8 +41,8 @@ def dump_paramters(req):
             }
         }
     }
-    file_location = "/home/auviitk/anahita_ws/src/Anahita/debug_layer/color_calibration/params/" + req.filename + "_" + env + ".yaml"
-    stream = file(file_location, 'w')
+    file_location = "/home/ironman/anahita_ws/src/Anahita/debug_layer/color_calibration/params/" + req.filename + "_" + env + ".yaml"
+    stream = file(file_location, 'w+')
     yaml.dump(params, stream,  default_flow_style=False)
     return DumpResponse(True)
 

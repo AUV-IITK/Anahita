@@ -49,6 +49,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <libelas/elas.h>
 #include <elas_ros/paramsConfig.h>
+#include <vision_tasks/ContourCenter.h>
 
 // #define DOWN_SAMPLE
 
@@ -100,6 +101,8 @@ public:
                                             left_sub_, right_sub_, left_info_sub_, right_info_sub_));
             exact_sync_->registerCallback(boost::bind(&Elas_Proc::process, this, _1, _2, _3, _4));
         }
+
+        center_server = nh.advertiseService("/contour_center", &Elas_Proc::GetContourCenterCB, this);
 
         // Create the elas processing class
         // param.reset(new Elas::parameters(Elas::MIDDLEBURY));
@@ -162,6 +165,7 @@ public:
     {
         try
         {
+            if (inliers.size() <= 0) return;
             cv_bridge::CvImageConstPtr cv_ptr;
             cv_ptr = cv_bridge::toCvShare(l_image_msg, sensor_msgs::image_encodings::RGB8);
             image_geometry::StereoCameraModel model;
@@ -174,39 +178,6 @@ public:
             point_cloud->width = 1;
             point_cloud->height = inliers.size();
             point_cloud->points.resize(inliers.size());
-
-            elas_ros::ElasFrameData data;
-            data.header.frame_id = l_info_msg->header.frame_id;
-            data.header.stamp = l_info_msg->header.stamp;
-            data.width = l_width;
-            data.height = l_height;
-            data.disparity.resize(l_width * l_height);
-            data.r.resize(l_width * l_height);
-            data.g.resize(l_width * l_height);
-            data.b.resize(l_width * l_height);
-            data.x.resize(l_width * l_height);
-            data.y.resize(l_width * l_height);
-            data.z.resize(l_width * l_height);
-            data.left = *l_info_msg;
-            data.right = *r_info_msg;
-
-            // Copy into the data
-            for (int32_t u = 0; u < l_width; u++)
-            {
-                for (int32_t v = 0; v < l_height; v++)
-                {
-                    int index = v * l_width + u;
-                    data.disparity[index] = l_disp_data[index];
-#ifdef DOWN_SAMPLE
-                    cv::Vec3b col = cv_ptr->image.at<cv::Vec3b>(v * 2, u * 2);
-#else
-                    cv::Vec3b col = cv_ptr->image.at<cv::Vec3b>(v, u);
-#endif
-                    data.r[index] = col[0];
-                    data.g[index] = col[1];
-                    data.b[index] = col[2];
-                }
-            }
 
             for (size_t i = 0; i < inliers.size(); i++)
             {
@@ -224,17 +195,9 @@ public:
                 point_cloud->points[i].x = point.x;
                 point_cloud->points[i].y = point.y;
                 point_cloud->points[i].z = point.z;
-                point_cloud->points[i].r = data.r[index];
-                point_cloud->points[i].g = data.g[index];
-                point_cloud->points[i].b = data.b[index];
-
-                data.x[index] = point.x;
-                data.y[index] = point.y;
-                data.z[index] = point.z;
             }
 
             pc_pub_->publish(point_cloud);
-            elas_fd_pub_->publish(data);
         }
         catch (cv_bridge::Exception &e)
         {
@@ -249,6 +212,12 @@ public:
     {
         ROS_INFO("Getting Callbacks");
         ROS_DEBUG("Received images and camera info.");
+
+        l_img_ = l_image_msg;
+        r_img_ = r_image_msg;
+
+        l_info_ = l_info_msg;
+        r_info_ = r_info_msg;
 
         // Update the camera model
         model_.fromCameraInfo(l_info_msg, r_info_msg);
@@ -299,8 +268,9 @@ public:
             r_image_data = r_cv_ptr->image.data;
             r_step = r_cv_ptr->image.step[0];
         }
-        ROS_ASSERT(vision_layer_init == true);
-        roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
+        if (vision_layer_init)
+            roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
+        else return;
         ROS_ASSERT(roi_image_msg->encoding == sensor_msgs::image_encodings::MONO8)
         ROS_ASSERT(l_image_msg->width == roi_image_msg->width);
         ROS_ASSERT(l_image_msg->height == roi_image_msg->height);
@@ -360,7 +330,7 @@ public:
 
             if (l_disp_data[i] > 0)
             {
-                if (roi_image_data[i] == 255)
+                if (vision_layer_init && roi_image_data[i] == 255)
                 {
                     inliers.push_back(i);
                 }
@@ -383,6 +353,104 @@ public:
     {
         roi_image_msg_ = msg;
         vision_layer_init = true;
+    }
+
+    void GetContourCenter (int tl_x, int tl_y, int br_x, int br_y, cv::Point3d& center) {
+        // Stereo parameters
+        float f = model_.right().fx();
+        float T = model_.baseline();
+        float depth_fact = T * f * 1000.0f;
+        uint16_t bad_point = std::numeric_limits<uint16_t>::max();
+
+        // Have a synchronised pair of images, now to process using elas
+        // convert images if necessary
+        uint8_t *l_image_data, *r_image_data, *roi_image_data;
+        int32_t l_step, r_step;
+        cv_bridge::CvImageConstPtr l_cv_ptr, r_cv_ptr;
+        if (l_img_->encoding == sensor_msgs::image_encodings::MONO8)
+        {
+            l_image_data = const_cast<uint8_t *>(&(l_img_->data[0]));
+            l_step = l_img_->step;
+        }
+        else
+        {
+            l_cv_ptr = cv_bridge::toCvShare(l_img_, sensor_msgs::image_encodings::MONO8);
+            l_image_data = l_cv_ptr->image.data;
+            l_step = l_cv_ptr->image.step[0];
+        }
+        if (r_img_->encoding == sensor_msgs::image_encodings::MONO8)
+        {
+            r_image_data = const_cast<uint8_t *>(&(r_img_->data[0]));
+            r_step = r_img_->step;
+        }
+        else
+        {
+            r_cv_ptr = cv_bridge::toCvShare(r_img_, sensor_msgs::image_encodings::MONO8);
+            r_image_data = r_cv_ptr->image.data;
+            r_step = r_cv_ptr->image.step[0];
+        }
+        roi_image_data = const_cast<uint8_t *>(&(roi_image_msg_->data[0]));
+
+        int32_t width = l_img_->width;
+        int32_t height = l_img_->height;
+
+        // Allocate
+        const int32_t dims[3] = {l_img_->width, l_img_->height, l_step};
+        float* l_disp_data = new float[width*height*sizeof(float)];
+        // float *l_disp_data = reinterpret_cast<float *>(&disp_msg->image.data[0]);
+        float *r_disp_data = new float[width * height * sizeof(float)];
+
+        // Process
+        elas_->process(l_image_data, r_image_data, l_disp_data, r_disp_data, dims);
+
+        // Find the max for scaling the image colour
+        float disp_max = 0;
+        for (int32_t i = 0; i < width * height; i++)
+        {
+            if (l_disp_data[i] > disp_max)
+                disp_max = l_disp_data[i];
+            if (r_disp_data[i] > disp_max)
+                disp_max = r_disp_data[i];
+        }
+        std::vector<int32_t> inliers;
+        float x_sum = 0;
+        float y_sum = 0;
+        float z_sum = 0;
+        int cnt = 0;
+        for (int32_t i = tl_y; i < br_y; i++) {
+            for (int32_t j = tl_x; j < br_x; j++) {
+                if (l_disp_data[i*width + j] > 0) {
+                    if (roi_image_data[i*width + j] == 255) {
+                        cv::Point2d left_uv;
+                        int32_t index = i*width + j;
+                        left_uv.x = j;
+                        left_uv.y = i;
+                        cv::Point3d point;
+                        model_.projectDisparityTo3d(left_uv, l_disp_data[index], point);
+                        x_sum += point.x;
+                        y_sum += point.y;
+                        z_sum += point.z;
+                        cnt++;
+                    }
+                }
+            }
+        }
+        float x_avg = x_sum/cnt;
+        float y_avg = y_sum/cnt;
+        float z_avg = z_sum/cnt;
+        center.x = x_avg;
+        center.y = y_avg;
+        center.z = z_avg;
+    }
+
+    bool GetContourCenterCB (vision_tasks::ContourCenter::Request &req,
+                           vision_tasks::ContourCenter::Response &resp) {
+        cv::Point3d center;
+        GetContourCenter (req.tl_x, req.tl_y, req.br_x, req.br_y, center);
+        resp.x = center.x;
+        resp.y = center.y;
+        resp.z = center.z; 
+        return true;
     }
 
     void callback(elas_ros::paramsConfig &config, uint32_t level)
@@ -428,6 +496,12 @@ private:
     boost::shared_ptr<ApproximateSync> approximate_sync_;
     boost::shared_ptr<Elas> elas_;
     boost::shared_ptr<const sensor_msgs::Image> roi_image_msg_;
+
+    boost::shared_ptr<const sensor_msgs::Image> l_img_;
+    boost::shared_ptr<const sensor_msgs::Image> r_img_;
+    boost::shared_ptr<const sensor_msgs::CameraInfo> l_info_;
+    boost::shared_ptr<const sensor_msgs::CameraInfo> r_info_;
+
     int queue_size_;
     bool vision_layer_init = false;
 
@@ -437,6 +511,8 @@ private:
 
     dynamic_reconfigure::Server<elas_ros::paramsConfig> server;
     dynamic_reconfigure::Server<elas_ros::paramsConfig>::CallbackType f;
+
+    ros::ServiceServer center_server;
 };
 
 int main(int argc, char **argv)

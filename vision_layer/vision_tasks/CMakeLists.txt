@@ -11,11 +11,23 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   dynamic_reconfigure
   image_transport
+  message_generation
+  geometry_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(vision_commons REQUIRED)
+
+add_service_files (
+    FILES
+    ContourCenter.srv
+)
+
+generate_messages (
+    DEPENDENCIES
+    std_msgs   
+)
 
 catkin_package(LIBRARIES vision_commons)
 
@@ -29,14 +41,6 @@ include_directories(
 add_library(base_class SHARED src/base_class.cpp include/base_class.h)
 add_dependencies(base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
-# add_library(buoy_task SHARED src/buoy.cpp include/buoy.h include/base_class.h)
-# add_dependencies(buoy_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(buoy_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
-
-# add_library(line_task SHARED src/line.cpp include/line.h include/base_class.h)
-# add_dependencies( line_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(line_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_library(torpedo_task SHARED src/torpedo.cpp include/torpedo.h include/base_class.h)
 add_dependencies(torpedo_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -54,13 +58,33 @@ add_library(marker SHARED src/marker.cpp include/marker.h include/base_class.h)
 add_dependencies(marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
-# add_library(markerDropper_task SHARED src/markerDropper.cpp include/markerDropper.h include/base_class.h)
-# add_dependencies(markerDropper_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(markerDropper_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+add_library(crucifix_task SHARED src/crucifix.cpp include/crucifix.h include/base_class.h)
+add_dependencies(crucifix_task base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(crucifix_task base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
 
-# add_library(octagon_task SHARED src/octagon.cpp include/octagon.h include/base_class.h)
-# add_dependencies(octagon_task ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(base_class octagon_task ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+add_library(grabber_test SHARED src/grabber.cpp include/grabber.h include/base_class.h)
+add_dependencies(grabber_test base_class ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(grabber_test base_class ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons)
+
+add_library(start_gate SHARED src/start_gate.cpp include/start_gate.h include/base_class.h)
+add_dependencies(start_gate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(start_gate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(pinger SHARED src/pinger.cpp include/pinger.h include/base_class.h)
+add_dependencies(pinger base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(pinger base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(startgate SHARED src/testgate.cpp include/testgate.h include/base_class.h)
+add_dependencies(startgate base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(startgate base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(md SHARED src/marker_dropper.cpp include/marker_dropper.h include/base_class.h)
+add_dependencies(md base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(md base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
+add_library(triangular_buoy SHARED src/triangular_buoy.cpp include/triangular_buoy.h include/base_class.h)
+add_dependencies(triangular_buoy base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(triangular_buoy base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
 add_executable(vision_node src/vision_node.cpp)
 add_dependencies(vision_node ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -72,4 +96,8 @@ target_link_libraries(vision_node
   path_marker
   marker
   torpedo_task
+  triangular_buoy
+  crucifix_task
+  grabber_test
+  startgate
 )

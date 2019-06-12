@@ -5,8 +5,6 @@ Marker::Marker() {
 	this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-Marker::~Marker() {}
-
 void Marker::loadParams () {
 	nh.getParam("/anahita/vision/marker/b_min", front_low_b_);
 	nh.getParam("/anahita/vision/marker/b_max", front_high_b_);
@@ -40,7 +38,9 @@ void Marker::spinThreadFront()
 		}
 		if (!image_front.empty()) {
 			ROS_INFO("Found Image");
+            vision_mutex.lock();
 			temp_src = image_front.clone();
+            vision_mutex.unlock();
 			vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
 			image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
 																			front_low_g_, front_high_g_,
@@ -85,5 +85,3 @@ void Marker::spinThreadFront()
 		ros::spinOnce();
 	}
 }
-
-void Marker::spinThreadBottom () {}
