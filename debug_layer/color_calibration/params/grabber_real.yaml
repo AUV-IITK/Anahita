@@ -1,0 +1,13 @@
+vision:
+  grabber:
+    b_max: 169
+    b_min: 64
+    bilateral_iter: 0
+    closing_iter: 4
+    closing_mat_point: 2
+    g_max: 255
+    g_min: 180
+    opening_iter: 1
+    opening_mat_point: 1
+    r_max: 219
+    r_min: 146

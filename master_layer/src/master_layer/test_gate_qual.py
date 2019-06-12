@@ -62,20 +62,18 @@ if __name__ == '__main__':
 
         pose = Pose()
         step_point = Point()
+
    
         change_odom_response = change_odom(odom="dvl")
         rospy.loginfo('changind the odom source to dvl')
         rospy.sleep(0.1)
 
-        # step_point.x = 0
-        # step_point.y = -8
-        # step_point.z = 0
+        step_point.x = 1
+        step_point.y = 0
+        step_point.z = 0
 
-        rospy.loginfo('passed gate')
         go_to_incremental_resp = go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete_resp = trajectory_complete(time_out=60)
-
-        rospy
 
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e

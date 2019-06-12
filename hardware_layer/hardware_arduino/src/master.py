@@ -5,7 +5,6 @@ Handles Arduino messages and publishes them to ROS topics
 import serial
 import rospy
 from std_msgs.msg import Float32
-from sensor_msgs.msg import FluidPressure
 from anahita_msgs.msg import Thrust
 from roslib.message import get_message_class
 
@@ -24,13 +23,13 @@ if __name__ == '__main__':
     rospy.init_node('handle_arduino')
     
     rospy.Subscriber("/pwm", Thrust, callback)
-    depth_publisher = rospy.Publisher("/anahita/depth", FluidPressure, queue_size=10)
-    bat_voltage_pub = rospy.Publisher("/anahita/battery_voltage", Float32, 	queue_size=10)
+    depth_publisher = rospy.Publisher("/anahita/depth", Float32, queue_size=10)
+    bat_voltage_pub = rospy.Publisher("/anahita/battery_voltage", Float32, queue_size=10)
 
-    #serial_port_id = rospy.get_param("~serial_port_id", "/dev/ttyACM0")
-    #baud_rate = rospy.get_param("~baud_rate", 115200)
+    serial_port_id = rospy.get_param("~serial_port_id", "/dev/ttyACM0")
+    baud_rate = rospy.get_param("~baud_rate", 115200)
 
-    fluid_pressure_msg = FluidPressure()
+    depth_msg = Float32()
     bat_voltage_msg = Float32()   
 
     # Initialize the serial connection
@@ -54,16 +53,18 @@ if __name__ == '__main__':
             # Serial read section
             msg = serial_connection.read(serial_connection.inWaiting()) # read all characters in buffer
             rospy.loginfo("Recieved: " + str(msg)) 
-            try: 
-
-		data = [x.strip() for x in msg.split(',')]
-                print(data)
-            	bat_voltage_msg.data, fluid_pressure.data = data
-            	depth_publisher.publish(fluid_pressure_msg)
-            	bat_voltage_pub.publish(bat_voltage_msg)
+            try:
+                data = list(map(float,[x.strip() for x in msg.split(',')]))
+                print("Data:" + str(data))
+                bat_voltage_msg.data = data[0]                
+                rospy.loginfo("Battery Voltage: " + str(bat_voltage_msg))
+                depth_msg.data = data[1]
+                rospy.loginfo("Depth: " + str(depth_msg))
+                depth_publisher.publish(depth_msg)
+                bat_voltage_pub.publish(bat_voltage_msg)
             except:
-		rospy.loginfo("error")
-	    
+                rospy.loginfo("Error in incoming values")
+        
 
     rospy.spin()
     serial_connection.close()

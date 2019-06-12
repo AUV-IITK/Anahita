@@ -83,13 +83,11 @@ void NavigationNode::ProcessCartesianPose()
         angularVelocity_ = imuData_.GetAngularVelocity();
         eulerAngel_ = imuData_.GetOrientation();
         quaternion_ = imuData_.GetQuaternion();
-        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f",
-                 incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
-         position_ += quaternion_.toRotationMatrix() * incrementPosition_;
-        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f",
-                 position_.x(), position_.y(), position_.z());
+        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f", incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
+        position_ += quaternion_.toRotationMatrix() * incrementPosition_;
+        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f", position_.x(), position_.y(), position_.z());
 
-        position_.z() = 0;
+        position_.z() = positionFromDepth_ - zOffset_;
 
         dvlFilter_.Update(position_, poseEstimation_);
 
@@ -107,8 +105,8 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
     ROS_INFO("Publishing a transform");
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
+    odom_trans.header.frame_id = "world";
+    odom_trans.child_frame_id = "anahita/base_link";
 
     odom_trans.transform.translation.x = position.x();
     odom_trans.transform.translation.y = position.y();
@@ -126,8 +124,8 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
 void NavigationNode::PublishData(ros::Time &current_time)
 {
     nav_msgs::Odometry odometry_msg;
-    odometry_msg.header.frame_id = "odom";
-    odometry_msg.child_frame_id = "base_link";
+    odometry_msg.header.frame_id = "world";
+    odometry_msg.child_frame_id = "anahita/base_link";
     odometry_msg.header.stamp = current_time;
 
     FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);

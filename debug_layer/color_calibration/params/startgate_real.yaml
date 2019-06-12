@@ -1,0 +1,13 @@
+vision:
+  start_gate:
+    b_max: 255
+    b_min: 0
+    bilateral_iter: 1
+    closing_iter: 0
+    closing_mat_point: 1
+    g_max: 93
+    g_min: 1
+    opening_iter: 1
+    opening_mat_point: 1
+    r_max: 232
+    r_min: 0

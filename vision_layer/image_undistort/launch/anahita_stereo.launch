@@ -1,0 +1,29 @@
+<launch>
+
+<arg name="namespace" default="anahita" />
+<arg name="process_every_nth_frame" default="1" />
+<arg name="stereo_params_camchain" default="$(find hardware_camera)/cfg/camchain-anahita.yaml"/>
+
+<group ns="$(arg namespace)">
+
+    <node name="dense_stereo" pkg="image_undistort" type="dense_stereo_node" output="screen">
+      <param name="input_camera_info_from_ros_params" value = "true"/>
+      <param name="first_camera_namespace" value="left"/>
+      <param name="second_camera_namespace" value="right"/>
+      <param name="first_output_frame" value="left_rect"/>
+      <param name="second_output_frame" value="right_rect"/>
+      <param name="scale" value="1.0"/>
+      <param name="process_every_nth_frame" value="$(arg process_every_nth_frame)"/>
+      <param name="depth/use_sgbm" value="false"/>
+      <param name="depth/do_median_blur" value="false"/>
+      <param name="depth/use_mode_HH" value="true"/>
+      <rosparam file="$(arg stereo_params_camchain)"/> 
+  
+      <remap from="raw/first/image" to="/anahita/left/image_raw"/>
+      <remap from="raw/second/image" to="/anahita/right/image_raw"/>
+      <remap from="raw/first/camera_info" to="/anahita/left/camera_info"/>
+      <remap from="raw/second/camera_info" to="/anahita/right/camera_info"/>
+    </node>
+</group>
+
+</launch>

@@ -3,10 +3,7 @@
     <!-- Arguments -->
     <arg name="namespace" default="anahita"/>
     <arg name="env" default="real"/>
-    <arg name="dvl_port" default="/dev/ttyUSB1"/>
-
-    <include file="$(find hardware_camera)/launch/camera_logitech.launch">
-    </include>
+    <arg name="dvl_port" default="/dev/ttyUSB0"/>
 
     <include file="$(find hardware_arduino)/launch/hardware_arduino.launch" output="screen"/>
 
