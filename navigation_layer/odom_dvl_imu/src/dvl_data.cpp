@@ -24,20 +24,83 @@ namespace navigation{
     }
 
     DvlData::~DvlData() { }
+
+    bool DvlData::inRange (double x, double avg, double thres) {
+        if (avg + thres >= x || avg - thres <= x) {
+            return true;
+        }
+        return false;
+    }
+
+
+    double DvlData::Average(std::vector<double> array) {
+        double sum = 0;
+        for (int i = 0; i < array.size(); i++) {
+            sum += array[i];
+        }
+        double size = array.size();
+        double avg_ = sum/size;
+
+        return avg_;
+    }
+
     void DvlData::DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg)
     {
         dvl_twist_ = msg;
-        // dvl_twist_.header = msg.header;
-        // dvl_twist_.twist = msg.twist;
-        dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.z;
-        dvl_twist_.twist.twist.linear.z = -msg.twist.twist.linear.x;
+        ROS_INFO("Inside callback");
 
+        
+        if(dvl_twist_.twist.twist.linear.x != -32.768 && dvl_twist_.twist.twist.linear.y != -32.768 && dvl_twist_.twist.twist.linear.z != -32.768)
+        {
+            dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.y;
+            dvl_twist_.twist.twist.linear.y = -msg.twist.twist.linear.x;
+            dvl_twist_.twist.twist.linear.z = 0;
+        }
+        else
+        {
+            ROS_ERROR("--------- Error reading from DVL ------------- ");
+            dvl_twist_.twist.twist.linear.x = 0;
+            dvl_twist_.twist.twist.linear.z = 0;
+            dvl_twist_.twist.twist.linear.y = 0;
+        }
+
+        // double x_vel_new = dvl_twist_.twist.twist.linear.x;
+        // double y_vel_new = dvl_twist_.twist.twist.linear.y;
+        // double z_vel_new = dvl_twist_.twist.twist.linear.z;
+
+        // if(vel_count < 10){
+        //     x_vel[vel_count] = x_vel_new;
+        //     y_vel[vel_count] = y_vel_new;
+        //     z_vel[vel_count] = z_vel_new;
+        //     vel_count++;
+        // }
+        // else
+        // {
+        //     if (inRange(x_vel_new, Average(x_vel), 2) && !(x_vel_new!=-32.768)) {
+        //         std::rotate (x_vel.begin(), x_vel.begin() + 1, x_vel.end());
+        //         x_vel[9] = x_vel_new;
+        //     }
+        //     if (inRange(y_vel_new, Average(y_vel), 2) && !(y_vel_new!=-32.768)) {
+        //         std::rotate (y_vel.begin(), y_vel.begin() + 1, y_vel.end());
+        //         y_vel[9] = y_vel_new;
+        //     }
+        //     if (inRange(z_vel_new, Average(z_vel), 2) && !(z_vel_new!=-32.768)) {
+        //         std::rotate (z_vel.begin(), z_vel.begin() + 1, z_vel.end());
+        //         z_vel[9] = z_vel_new;
+        //     }
+        // }
+        // dvl_twist_.twist.twist.linear.x = Average (x_vel);
+        // dvl_twist_.twist.twist.linear.y = Average (y_vel);
+        // dvl_twist_.twist.twist.linear.z = Average (z_vel);
+        // ROS_ERROR("Failed here");
         SetNewDataReady();
     }
 
     void DvlData::DvlPressureCallback(sensor_msgs::FluidPressure msg)
     {
         dvl_pressure_ = msg;
+        dvl_pressure_.fluid_pressure = msg.fluid_pressure;
+        ROS_INFO("pressure sensor: %f ", dvl_pressure_.fluid_pressure);
         SetNewDataReady();
     }
 

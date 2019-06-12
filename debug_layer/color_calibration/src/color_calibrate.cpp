@@ -76,7 +76,7 @@ int main (int argc, char** argv) {
     std::string camera = "front";
     nh.getParam("camera", camera);
 
-    image_transport::Subscriber image_sub = it.subscribe("/anahita/" + camera + "_camera/image_raw", 1, &callback);
+    image_transport::Subscriber image_sub = it.subscribe("/anahita/" + camera + "_camera/preprocessed", 1, &callback);
     image_transport::Publisher image_pub = it.advertise("/color_calibration/thresholded", 1);
 
     ros::ServiceClient client = nh.serviceClient<color_calibration::Dump>("dump_parameters");

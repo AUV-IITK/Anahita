@@ -11,7 +11,7 @@
   <group ns = "anahita">
     <!-- front camera -->
     <node name="front_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"      value="/dev/front_cam" />
+      <param name="video_device"      value="/dev/video0" />
       <param name="image_width"       value="$(arg image_width)" />
       <param name="image_height"      value="$(arg image_height)" />
       <param name="framerate"         value="$(arg framerate)"/>
@@ -24,7 +24,7 @@
 
     <!-- bottom camera -->
     <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"    value="/dev/bottom_cam" />
+      <param name="video_device"    value="/dev/video1" />
       <param name="image_width"     value="$(arg image_width)" />
       <param name="image_height"    value="$(arg image_height)" />
       <param name="framerate"       value="$(arg framerate)"/>

@@ -99,7 +99,7 @@ class XSensDriver(object):
         
         self.frame_id = get_param('~frame_id', '/base_imu')
 
-        self.frame_local = get_param('~frame_local', 'ENU')
+        self.frame_local = get_param('~frame_local', 'NWU')
 
         self.angular_velocity_covariance = matrix_from_diagonal(
             get_param_list('~angular_velocity_covariance_diagonal', [radians(0.025)] * 3)
@@ -802,12 +802,12 @@ class XSensDriver(object):
             if self.euler_yaw_pub is None:
                 self.euler_yaw_pub = rospy.Publisher('/imu/yaw', Float32, queue_size=10)
             if self.euler_roll_pub is None:
-                self.euler_roll_pub = rospy.Publisher('/imu/roll', Float32, queue_size=10)
+                self.euler_roll_pub = rospy.Publisher('/imu/pitch', Float32, queue_size=10)
             if self.euler_pitch_pub is None:
-                self.euler_pitch_pub = rospy.Publisher('/imu/pitch', Float32, queue_size=10)
+                self.euler_pitch_pub = rospy.Publisher('/imu/roll', Float32, queue_size=10)
             self.euler_yaw_pub.publish(self.euler_yaw_msg)
-            self.euler_roll_pub.publish(self.euler_roll_msg)
-            self.euler_pitch_pub.publish(self.euler_pitch_msg)
+            self.euler_roll_pub.publish(-self.euler_roll_msg)
+            self.euler_pitch_pub.publish(-self.euler_pitch_msg)
 
         # publish string representation
         self.str_pub.publish(str(data))
