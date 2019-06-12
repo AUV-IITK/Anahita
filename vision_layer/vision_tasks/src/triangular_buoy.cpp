@@ -4,7 +4,10 @@ TriangularBuoy::TriangularBuoy () {
     loadParams ();
     roi_pub = it.advertise("/anahita/roi", 1);
     depth_sub = nh.subscribe("/anahita/mean_coord", 100, &TriangularBuoy::depthCallback, this);
-    service = nh.advertiseService("/anahita/get_max_depth", &TriangularBuoy::depthRequest, this);
+    depth_service = nh.advertiseService("/anahita/get_max_depth", &TriangularBuoy::depthRequest, this);
+    blackout_service = nh.advertiseService("/anahita/get_blackout_time", &TriangularBuoy::blackoutCB, this);
+    image_rect_sub = it.subscribe("/anahita/left/image_rect_color", 1, &TriangularBuoy::rectCB, this);
+
     ROS_INFO ("Triangular Buoy Vision node initialise");
 }
 
@@ -16,6 +19,18 @@ bool TriangularBuoy::depthRequest (master_layer::GetMaxDepth::Request& req,
                                    master_layer::GetMaxDepth::Response& res) {
     res.depth = max_depth;
     return true;
+}
+
+void TriangularBuoy::rectCB (const sensor_msgs::Image::ConstPtr &msg) {
+	try {
+		rect_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image; 
+    }
+	catch (cv_bridge::Exception &e) {
+		ROS_ERROR("cv_bridge exception: %s", e.what()); 
+    }
+	catch (cv::Exception &e) {
+		ROS_ERROR("cv exception: %s", e.what()); 
+    }
 }
 
 void TriangularBuoy::loadParams () {
@@ -41,52 +56,41 @@ void TriangularBuoy::preProcess (cv::Mat& temp_src) {
                                 front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
 }
 
-cv::Point TriangularBuoy::findCenterAndSpeed () {
+cv::Point TriangularBuoy::findCenter () {
     static std::vector<std::vector<cv::Point> > contours;
     static std::vector<cv::Vec4i> hierarchy;
     
-    static float dt = 0;
-    static float then = 0;
-    static float contour_area = 0;
-    static float da = 0;
-    
     cv::findContours (image_front_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
     contours = vision_commons::Contour::filterContours (contours, 100);
-    if (!contours.size()) return cv::Point(-1, -1);
-    vision_commons::Contour::sortFromBigToSmall (contours);
     
-    dt = ros::Time::now().toSec() - then;
-    then = ros::Time::now().toSec();
-    da = cv::contourArea(contours[0], false) - contour_area;
-    contour_area = cv::contourArea(contours[0], false);
-    rotation_speed = da/dt;
-
-    cv::Rect bound_rect = cv::boundingRect (cv::Mat(contours[0]));
-    return cv::Point (((bound_rect.br()).x + (bound_rect.tl()).x)/2,
-                        ((bound_rect.tl()).y + (bound_rect.br()).y)/2);
-}
-
-float TriangularBuoy::blackout () {
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy;
-    bool init = false;
-    float init_time = 0;
-    float contour_init = false;
-
-    while (ros::ok()) {
-        cv::findContours (image_front_thresholded, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-        contours = vision_commons::Contour::filterContours (contours, 100);
-        vision_commons::Contour::sortFromBigToSmall (contours);
+    if (!blackout_response_ready) { // block to calculate blackout time 
         if (!init && contours.size() != 0) {
             contour_init = true;
             init = true;
         }
         else if (contour_init && contours.size() == 0) {
             init_time = ros::Time::now().toSec();
-            ros::Duration(1).sleep();
+            ros::Duration(0.1).sleep();
+            contour_init = false;
         }
-        else if (contours.size() != 0) return ros::Time::now().toSec() - init_time;
+        else if (contours.size() != 0) {
+            blackout_response_ready = true;
+            blackout_time = ros::Time::now().toSec() - init_time;
+        }
     }
+
+    if (!contours.size()) return cv::Point(-1, -1);
+    vision_commons::Contour::sortFromBigToSmall (contours);
+    
+    cv::Rect bound_rect = cv::boundingRect (cv::Mat(contours[0]));
+    return cv::Point (((bound_rect.br()).x + (bound_rect.tl()).x)/2,
+                        ((bound_rect.tl()).y + (bound_rect.br()).y)/2);
+}
+
+bool TriangularBuoy::blackoutCB (master_layer::GetBlackoutTime::Request& req,
+                                 master_layer::GetBlackoutTime::Response& res) {
+    res.blackout_time = blackout_time;
+    return true;
 }
 
 void TriangularBuoy::spinThreadFront () {
@@ -104,13 +108,15 @@ void TriangularBuoy::spinThreadFront () {
             vision_mutex.lock();
             image_front.copyTo(temp_src);
             vision_mutex.unlock();
-
+            if (!rect_image.empty()) {
+                rect_thresholded = vision_commons::Threshold::threshold(rect_image, bgr_min, bgr_max);
+                roi_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", rect_thresholded).toImageMsg());
+            }
             preProcess (temp_src);
 
             front_thresholded_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
-            roi_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg());
 
-            center = findCenterAndSpeed ();
+            center = findCenter ();
 
             if (center == cv::Point(-1, -1)) continue;
 

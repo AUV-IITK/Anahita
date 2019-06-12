@@ -79,6 +79,7 @@ add_service_files(
   PingerFrontTarget.srv
   TargetNormal.srv
   GetMaxDepth.srv
+  GetBlackoutTime.srv
 )
 
 ## Generate actions in the 'action' folder
