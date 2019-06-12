@@ -19,8 +19,8 @@ def callback(dvl, ensemble):
     
     twist_msg = TwistWithCovarianceStamped()
     twist_msg.header = ensemble.header
-    twist_msg.twist.twist.linear.x = ensemble.bottom_velocity.x
-    twist_msg.twist.twist.linear.y = ensemble.bottom_velocity.y
+    twist_msg.twist.twist.linear.x = (ensemble.bottom_velocity.x/(2**0.5)+ensemble.bottom_velocity.y/(2**0.5));
+    twist_msg.twist.twist.linear.y = ensemble.bottom_velocity.y/(2**0.5)-ensemble.bottom_velocity.x/(2**0.5);
     twist_msg.twist.twist.linear.z = ensemble.bottom_velocity.z
     twist_pub.publish(twist_msg)
    

@@ -13,7 +13,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "testgate";
+std::string current_task = "triangular_buoy";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
