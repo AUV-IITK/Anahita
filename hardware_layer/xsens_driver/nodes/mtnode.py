@@ -10,6 +10,11 @@ import mtdef
 from std_msgs.msg import Header, String, UInt16, Float32
 from sensor_msgs.msg import Imu, NavSatFix, NavSatStatus, MagneticField,\
     FluidPressure, Temperature, TimeReference
+from xsens_driver.srv import *
+# transform Euler angles or matrix into quaternions
+from math import radians, sqrt, atan2
+from tf.transformations import quaternion_from_matrix, quaternion_from_euler,identity_matrix, euler_from_quaternion, quaternion_inverse, quaternion_multiply
+
 from geometry_msgs.msg import TwistStamped, PointStamped
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 import time
@@ -17,10 +22,7 @@ import datetime
 import calendar
 import serial
 
-# transform Euler angles or matrix into quaternions
-from math import radians, sqrt, atan2
-from tf.transformations import quaternion_from_matrix, quaternion_from_euler,\
-    identity_matrix, euler_from_quaternion
+reset_quat = [0,0,0,1]
 
 def TO_DEGREE(angle_in_rad):
     return angle_in_rad*180/3.145
@@ -120,6 +122,9 @@ class XSensDriver(object):
                                          message='No status information')
         self.diag_msg.status = [self.stest_stat, self.xkf_stat, self.gps_stat]
 
+        reset_imu_orient_server = rospy.Service('/nav/set_imu_quat', ResetIMUOrient, self.reset_imu_orient)
+        rospy.loginfo("Starting the IMU Service quaternion")
+
         # publishers created at first use to reduce topic clutter
         self.diag_pub = None
         self.imu_pub = None
@@ -136,6 +141,8 @@ class XSensDriver(object):
         self.analog_in2_pub = None  # decide type+header
         self.ecef_pub = None
         self.time_ref_pub = None
+        self.imu_msg = Imu()
+
         # TODO pressure, ITOW from raw GPS?
         self.old_bGPS = 256  # publish GPS only if new
 
@@ -144,8 +151,18 @@ class XSensDriver(object):
         self.last_delta_q_time = None
         self.delta_q_rate = None
 
+    def reset_imu_orient(self, req):
+        rospy.loginfo("Trying to reset the imu orientation")    
+        try:
+            global reset_quat
+            rospy.loginfo("Inside service, quaternion: " + str(self.imu_msg.orientation))
+            reset_quat = [self.imu_msg.orientation.x, self.imu_msg.orientation.y, self.imu_msg.orientation.z, self.imu_msg.orientation.w]
+            return ResetIMUOrientResponse(True)
+        except rospy.ServiceException, e:
+            rospy.loginfo("Error: " + str(e)) 
+            return ResetIMUOrientResponse(False)
+
     def reset_vars(self):
-        self.imu_msg = Imu()
         self.pub_euler = True
         self.euler_yaw_msg = 0
         self.euler_roll_msg = 0
@@ -488,10 +505,19 @@ class XSensDriver(object):
             except KeyError:
                 pass
             w, x, y, z = convert_quat((w, x, y, z), o['frame'])
-            self.imu_msg.orientation.x = x
-            self.imu_msg.orientation.y = y
-            self.imu_msg.orientation.z = z
-            self.imu_msg.orientation.w = w
+
+            global reset_quat
+            rospy.loginfo("Reference quaternion: " + str(reset_quat))
+            true_orientation = [x,y,z,w]
+            #rospy.loginfo("The true orientation from IMU: " + str(true_orientation))
+            #rospy.loginfo("The inverse of the quaternion: " + str(quaternion_inverse(reset_quat)))
+            fixed_orientation = quaternion_multiply(true_orientation, quaternion_inverse(reset_quat))
+            rospy.loginfo("The value of the quaternion: " + str(fixed_orientation))
+            self.imu_msg.orientation.x = fixed_orientation[0]
+            self.imu_msg.orientation.y = fixed_orientation[1]
+            self.imu_msg.orientation.z = fixed_orientation[2]
+            self.imu_msg.orientation.w = fixed_orientation[3]
+
             self.imu_msg.orientation_covariance = self.orientation_covariance
             self.pub_euler = True
             self.euler_roll_msg, self.euler_pitch_msg, self.euler_yaw_msg = quaternion_to_eulerRPY(self.imu_msg.orientation)
@@ -736,6 +762,8 @@ class XSensDriver(object):
                 rospy.logwarn("Unknown MTi data packet: '%s', ignoring." % n)
 
         # publish available information
+        # print(str(self.imu_msg))
+
         if self.pub_imu:
             self.imu_msg.header = self.h
             if self.imu_pub is None:
