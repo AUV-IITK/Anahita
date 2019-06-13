@@ -55,8 +55,8 @@ if __name__ == '__main__':
         change_odom_response = change_odom(odom="dvl")
         rospy.sleep(0.1)
 
-        step_point.x = 6
-        step_point.y = 0
+        step_point.x = 0
+        step_point.y = -5
         step_point.z = 0
 
         rospy.loginfo('cmd to cross the gate')
@@ -68,16 +68,17 @@ if __name__ == '__main__':
         
         current_task_resp = current_task(current_task="marker")
         rospy.sleep(1)
-        change_odom_response = change_odom(odom="stereo")
+        change_odom_response = change_odom(odom="dvl")
         rospy.sleep(0.1)
 
-        pose = current_p
-        pose.position.x = -1.7
-        pose.position.y = 0
-        pose.position.z = -2.5
+        step_point.x = 0
+        step_point.y = -8
+        step_point.z = 0
+        go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
+
         rospy.loginfo('cmd to approach marker')
         
-        go_to_pose(target_pose=pose)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete(time_out=30)
         rospy.loginfo("infront of the marker")
         rospy.sleep(4)

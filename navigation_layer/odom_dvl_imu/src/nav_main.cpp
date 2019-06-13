@@ -80,17 +80,9 @@ void NavigationNode::ProcessCartesianPose()
         angularVelocity_ = imuData_.GetAngularVelocity();
         eulerAngel_ = imuData_.GetOrientation();
         quaternion_ = imuData_.GetQuaternion();
-<<<<<<< HEAD
         ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f", incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
         position_ += quaternion_.toRotationMatrix() * incrementPosition_;
         ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f", position_.x(), position_.y(), position_.z());
-=======
-        ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f",
-                 incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
-        position_ += quaternion_.toRotationMatrix() * incrementPosition_;
-        ROS_INFO("(Without EKF) Position.x: %f, Position.y: %f, Position.z: %f, Position.z: %.2f",
-                 position_.x(), position_.y(), position_.z());
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
         position_.z() = positionFromDepth_ - zOffset_;
 
@@ -111,11 +103,7 @@ void NavigationNode::BroadcastTransform(Eigen::Vector3d &position,
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
     odom_trans.header.frame_id = "world";
-<<<<<<< HEAD
     odom_trans.child_frame_id = "anahita/base_link";
-=======
-    odom_trans.child_frame_id = "base_link";
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 
     odom_trans.transform.translation.x = position.x();
     odom_trans.transform.translation.y = position.y();
@@ -134,15 +122,8 @@ void NavigationNode::PublishData(ros::Time &current_time)
 {
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.frame_id = "world";
-<<<<<<< HEAD
     odometry_msg.child_frame_id = "anahita/base_link";
-=======
-    odometry_msg.child_frame_id = "base_link";
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
     odometry_msg.header.stamp = current_time;
-
-    FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
-    FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
     navigationOdomPublisher_.publish(odometry_msg);
 }

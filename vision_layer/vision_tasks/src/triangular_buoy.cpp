@@ -5,11 +5,7 @@ TriangularBuoy::TriangularBuoy () {
     roi_pub = it.advertise("/anahita/roi", 1);
     depth_sub = nh.subscribe("/anahita/mean_coord", 100, &TriangularBuoy::depthCallback, this);
     service = nh.advertiseService("/anahita/get_max_depth", &TriangularBuoy::depthRequest, this);
-<<<<<<< HEAD
     ROS_INFO ("Triangular Buoy Vision node initialised");
-=======
-    ROS_INFO ("Triangular Buoy Vision node initialise");
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
 }
 
 void TriangularBuoy::depthCallback (const geometry_msgs::Point msg) {
