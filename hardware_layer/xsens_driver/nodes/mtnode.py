@@ -156,7 +156,10 @@ class XSensDriver(object):
         try:
             global reset_quat
             rospy.loginfo("Inside service, quaternion: " + str(self.imu_msg.orientation))
-            reset_quat = [self.imu_msg.orientation.x, self.imu_msg.orientation.y, self.imu_msg.orientation.z, self.imu_msg.orientation.w]
+
+            reset_quat_new_coords = [self.imu_msg.orientation.x, self.imu_msg.orientation.y, self.imu_msg.orientation.z, self.imu_msg.orientation.w]
+            reset_quat = quaternion_multiply(reset_quat, reset_quat_new_coords)
+
             return ResetIMUOrientResponse(True)
         except rospy.ServiceException, e:
             rospy.loginfo("Error: " + str(e)) 

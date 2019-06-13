@@ -49,6 +49,10 @@ if __name__ == '__main__':
         trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
         pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
 
+        rospy.loginfo("Circular response")       
+        circular_response = init_circular_trajectory(start_now=True, radius=2, center=Point(2,0,0), is_clockwise=True, angle_offset=0, n_points=5, heading_offset=0, max_forward_speed=1, duration=2)
+        trajectory_complete(time_out=40)
+
         pose = Pose()
         step_point = Point()
    
