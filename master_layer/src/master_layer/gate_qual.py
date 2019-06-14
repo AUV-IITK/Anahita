@@ -49,157 +49,176 @@ if __name__ == '__main__':
         trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
         pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
 
-        rospy.loginfo("Circular response")       
-        circular_response = init_circular_trajectory(start_now=True, radius=2, center=Point(2,0,0), is_clockwise=True, angle_offset=0, n_points=5, heading_offset=0, max_forward_speed=1, duration=2)
-        trajectory_complete(time_out=40)
-
+        change_odom_response = change_odom(odom="dvl")
+        
         pose = Pose()
         step_point = Point()
    
-        change_odom_response = change_odom(odom="dvl")
         rospy.sleep(0.1)
 
-        step_point.x = 0
-        step_point.y = -5
+        step_point.x = -3
+        step_point.y = 0
         step_point.z = 0
 
         rospy.loginfo('cmd to cross the gate')
         go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
         trajectory_complete(time_out=60)
 
-        rospy.loginfo("past the gate")
-        rospy.sleep(5)
+        rospy.loginfo("beffore marker")
+        rospy.sleep(4)
         
-        current_task_resp = current_task(current_task="marker")
-        rospy.sleep(1)
-        change_odom_response = change_odom(odom="dvl")
-        rospy.sleep(0.1)
+        rospy.loginfo("Circular response")       
+        circular_response = init_circular_trajectory(start_now=True, radius=2, center=Point(3,0,0), is_clockwise=False, angle_offset=180, n_points=5, heading_offset=0, max_forward_speed=1, duration=5)
+        trajectory_complete(time_out=60)
+
+        rospy.loginfo("completed")
+
+        # step_point.x = -12
+        # step_point.y = 0
+        # step_point.z = 0
+
+        # rospy.loginfo('cmd to cross the gate')
+        # go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
+        # trajectory_complete(time_out=60)
 
         step_point.x = 0
-        step_point.y = -8
+        step_point.y = 0
         step_point.z = 0
+        rospy.loginfo('made stationary')
         go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
+        trajectory_complete(time_out=60)
 
-        rospy.loginfo('cmd to approach marker')
+
+
+        # current_task_resp = current_task(current_task="marker")
+        # rospy.sleep(1)
+        # change_odom_response = change_odom(odom="dvl")
+        # rospy.sleep(0.1)
+
+        # step_point.x = 0
+        # step_point.y = -8
+        # step_point.z = 0
+        # go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
+
+        # rospy.loginfo('cmd to approach marker')
         
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=30)
-        rospy.loginfo("infront of the marker")
-        rospy.sleep(4)
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=30)
+        # rospy.loginfo("infront of the marker")
+        # rospy.sleep(4)
 
-        change_odom_response = change_odom(odom="dvl")
-        rospy.sleep(0.1)
+        # change_odom_response = change_odom(odom="dvl")
+        # rospy.sleep(0.1)
 
-        rospy.loginfo("publishing cmd for turning")
+        # rospy.loginfo("publishing cmd for turning")
 
-        pose = fill_pose(current_p.position.x, current_p.position.y, -2.5, 0, 0, 0.7071068, 0.7071068)
-        go_to_pose(target_pose=pose)
-        pose_reach(time_out=20)    
-        rospy.loginfo("bot turned 90 degrees")
+        # pose = fill_pose(current_p.position.x, current_p.position.y, -2.5, 0, 0, 0.7071068, 0.7071068)
+        # go_to_pose(target_pose=pose)
+        # pose_reach(time_out=20)    
+        # rospy.loginfo("bot turned 90 degrees")
 
-        rospy.loginfo("starting the circle")
+        # rospy.loginfo("starting the circle")
 
-        change_odom_response = change_odom(odom="dvl")
-        rospy.sleep(2)
+        # change_odom_response = change_odom(odom="dvl")
+        # rospy.sleep(2)
 
-        step_point = fill_point(2, 1.5, 0)
+        # step_point = fill_point(2, 1.5, 0)
 
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=200)
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=200)
 
-        rospy.loginfo("reached first quarter of the circle")
-        rospy.sleep(1)
+        # rospy.loginfo("reached first quarter of the circle")
+        # rospy.sleep(1)
 
-        step_point = fill_point(2.5, -1.7, 0)
+        # step_point = fill_point(2.5, -1.7, 0)
 
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=200)
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=200)
 
-        rospy.loginfo("reached second quarter of the circle")
-        rospy.sleep(1)
+        # rospy.loginfo("reached second quarter of the circle")
+        # rospy.sleep(1)
 
-        step_point = fill_point(-1.5, -1.5, 0)
+        # step_point = fill_point(-1.5, -1.5, 0)
 
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=200)
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=200)
 
-        rospy.loginfo("reached third quarter of the circle")
-        rospy.sleep(1)
+        # rospy.loginfo("reached third quarter of the circle")
+        # rospy.sleep(1)
 
-        step_point = fill_point(-1.5, 1.5, 0)
+        # step_point = fill_point(-1.5, 1.5, 0)
 
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=200)
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=200)
 
-        rospy.loginfo("reached fourth quarter of the circle")
-        rospy.sleep(1)
+        # rospy.loginfo("reached fourth quarter of the circle")
+        # rospy.sleep(1)
 
-        change_odom_response = change_odom(odom="dvl")
-        rospy.loginfo('changing the odom source to vision')
-        rospy.sleep(1)
+        # change_odom_response = change_odom(odom="dvl")
+        # rospy.loginfo('changing the odom source to vision')
+        # rospy.sleep(1)
 
-        pose = fill_pose(current_p.position.x, current_p.position.y, -2, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('cmd sent for turning back')
+        # pose = fill_pose(current_p.position.x, current_p.position.y, -2, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
+        # go_to_pose(target_pose=pose)
+        # rospy.loginfo('cmd sent for turning back')
 
-        pose_reach(time_out=20)
-        rospy.loginfo('turned back')
+        # pose_reach(time_out=20)
+        # rospy.loginfo('turned back')
 
-        current_task(current_task="gate")
-        rospy.loginfo('changing the vision target to gate')
-        rospy.sleep(1)
-        change_odom(odom="vision")
-        rospy.loginfo('changing the odom source to vision')
-        rospy.sleep(0.1)
+        # current_task(current_task="gate")
+        # rospy.loginfo('changing the vision target to gate')
+        # rospy.sleep(1)
+        # change_odom(odom="vision")
+        # rospy.loginfo('changing the odom source to vision')
+        # rospy.sleep(0.1)
 
-        pose.position.x = current_p.position.x
-        pose.position.y = 0
-        pose.position.z = 0
+        # pose.position.x = current_p.position.x
+        # pose.position.y = 0
+        # pose.position.z = 0
 
-        pose.orientation = opp_q
-        rospy.loginfo("present coordinate: %f", current_p.x)
+        # pose.orientation = opp_q
+        # rospy.loginfo("present coordinate: %f", current_p.x)
 
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('cmd to align to the center of the gate')
-        pose_reach(time_out=20)
-        rospy.loginfo('bot aligned to gate center now')
+        # go_to_pose(target_pose=pose)
+        # rospy.loginfo('cmd to align to the center of the gate')
+        # pose_reach(time_out=20)
+        # rospy.loginfo('bot aligned to gate center now')
 
-        change_odom(odom="dvl")
-        rospy.loginfo('changind the odom source to dvl')
-        rospy.sleep(0.1)
+        # change_odom(odom="dvl")
+        # rospy.loginfo('changind the odom source to dvl')
+        # rospy.sleep(0.1)
 
-        step_point = fill_point(-4, 0, 0)
+        # step_point = fill_point(-4, 0, 0)
 
-        rospy.loginfo('cmd to go near the gate')
-        go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
-        trajectory_complete(time_out=60)
-        rospy.loginfo('infront of the gate')
+        # rospy.loginfo('cmd to go near the gate')
+        # go_to_incremental(step=step_point, max_forward_speed=0.4, interpolator="cubic")
+        # trajectory_complete(time_out=60)
+        # rospy.loginfo('infront of the gate')
 
-        change_odom(odom="vision")
-        rospy.loginfo('changind the odom source to vision')
-        rospy.sleep(0.1)
+        # change_odom(odom="vision")
+        # rospy.loginfo('changind the odom source to vision')
+        # rospy.sleep(0.1)
 
-        pose.position.x = current_p.x
-        pose.position.y = 0
-        pose.position.z = 0
-        pose.orientation = opp_q
+        # pose.position.x = current_p.x
+        # pose.position.y = 0
+        # pose.position.z = 0
+        # pose.orientation = opp_q
 
-        go_to_pose(target_pose=pose)
-        rospy.loginfo('cmd to align to the center of the gate')
-        pose_reach(time_out=30)
-        rospy.loginfo('aligned to the center')
+        # go_to_pose(target_pose=pose)
+        # rospy.loginfo('cmd to align to the center of the gate')
+        # pose_reach(time_out=30)
+        # rospy.loginfo('aligned to the center')
 
-        change_odom(odom="dvl")
-        rospy.loginfo('changind the odom source to dvl')
-        rospy.sleep(0.1)
+        # change_odom(odom="dvl")
+        # rospy.loginfo('changind the odom source to dvl')
+        # rospy.sleep(0.1)
 
-        step_point = fill_point(-5, 0, 0)
+        # step_point = fill_point(-5, 0, 0)
 
-        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
-        trajectory_complete(time_out=60)
-        rospy.loginfo('past the gate')
+        # go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        # trajectory_complete(time_out=60)
+        # rospy.loginfo('past the gate')
 
-        rospy
 
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
