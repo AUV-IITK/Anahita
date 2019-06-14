@@ -1,0 +1,13 @@
+vision:
+  triangular_buoy:
+    b_max: 24
+    b_min: 0
+    bilateral_iter: 0
+    closing_iter: 0
+    closing_mat_point: 1
+    g_max: 108
+    g_min: 65
+    opening_iter: 0
+    opening_mat_point: 1
+    r_max: 14
+    r_min: 0

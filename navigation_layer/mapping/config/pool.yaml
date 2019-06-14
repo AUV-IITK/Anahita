@@ -1,0 +1,13 @@
+map:
+  dimension:
+    x: 21
+    y: 50
+    resolution: 1
+
+  gate:  
+    x: 5
+    y: 5
+
+  torpedo:
+    x: 10
+    y: 2  

@@ -7,6 +7,7 @@ TestGate::TestGate()
     image_rect_sub = it.subscribe("/anahita/left/image_rect_color", 1, &TestGate::rectCB, this);
     contour_center_client = nh.serviceClient<vision_tasks::ContourCenter>("contour_center");
     normal_server = nh.advertiseService("/anahita/target_normal", &TestGate::getNormal, this);
+    ROS_INFO("Test gate node started"); 
 }
 
 bool TestGate::getNormal (master_layer::TargetNormal::Request &req,

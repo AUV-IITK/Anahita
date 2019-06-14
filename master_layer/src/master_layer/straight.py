@@ -26,8 +26,8 @@ def straight_callback (msg):
         cmd_pose.orientation.z = 0
         cmd_pose.orientation.w = 1
         cmd_pose.position.z = cmd_pose.position.z
-        cmd_pose.position.y = cmd_pose.position.y - 4
-        cmd_pose.position.x = cmd_pose.position.x - 4
+        cmd_pose.position.y = cmd_pose.position.y
+        cmd_pose.position.x = cmd_pose.position.x - 2
         pose_cmd_pose.publish(cmd_pose)
 	rospy.loginfo("Pose: " + str(cmd_pose))
         rospy.sleep(4)
