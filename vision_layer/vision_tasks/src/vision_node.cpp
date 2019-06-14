@@ -101,6 +101,12 @@ int main(int argc, char *argv[])
             if (previous_task == "testgate") {
                 testgate.frontTaskHandling(false);
             }
+            if (current_task == "triangular_buoy") {
+                triangular_buoy.frontTaskHandling(true);
+            }
+            if (previous_task == "triangular_buoy") {
+                triangular_buoy.frontTaskHandling(false);
+            }
             previous_task = current_task;
         }
         loop_rate.sleep();
