@@ -34,6 +34,8 @@ def odometry_callback(msg):
 if __name__ == '__main__':
     rospy.init_node('pinger_controls')
     sub_odometry = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), odometry_callback)
+    vel_cmd_pub = rospy.Publisher('/anahita/cmd_vel', Twist, queue_size=10, latch=True)
+    disable_cmd_pose = rospy.Publisher('/anahita/disable_cmd_pose', Bool, queue_size=10, latch=True)
 
     try:
         go_to_incremental = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
@@ -61,3 +63,30 @@ if __name__ == '__main__':
     # `straight` script and `go_to_pose` have fixed speeds
     # need to give a large value and small time out to `go_to_pose`
     # need to sync the approach with the blackout time
+
+    time = 10.0
+    dist = 3.1
+
+    vel = Twist()
+    vel.linear.x = dist/time
+    print dist/time
+    vel.linear.y = 0
+    vel.linear.z = 0
+    vel.angular.x = 0
+    vel.angular.y = 0
+    vel.angular.z = 0
+
+    msg = Bool()
+    msg.data = True
+    disable_cmd_pose.publish(msg)
+    vel_cmd_pub.publish(vel)
+    rospy.loginfo('cmd to move forward')
+    rospy.sleep(time)
+    vel.linear.x = -vel.linear.x
+    vel_cmd_pub.publish(vel)
+    rospy.loginfo('cmd to move back')
+    rospy.sleep(time)
+    vel.linear.x = 0
+    vel_cmd_pub.publish(vel)
+    msg.data = False
+    disable_cmd_pose.publish(msg)
