@@ -244,6 +244,7 @@ void Torpedo::updateTracker (cv::Mat& src_img) {
 }
 
 void Torpedo::spinThreadFront() {
+    ROS_INFO("adsdasd");
 
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
@@ -254,6 +255,8 @@ void Torpedo::spinThreadFront() {
     sensor_msgs::ImagePtr front_image_thresholded_msg;
     ros::Rate loop_rate(15);
     std::vector<cv::Vec3f> circles;
+                ROS_INFO("adsdasd");
+
     cv::Mat roi;
 
 	while (ros::ok())
@@ -264,6 +267,8 @@ void Torpedo::spinThreadFront() {
 		}
 		if (!image_front.empty())
 		{
+            ROS_INFO("adsdasd");
+
             vision_mutex.lock();
             temp_src = image_front.clone();
             marked_img = image_front.clone();
