@@ -23,7 +23,7 @@ void Base_class::init(){
 
 	this->detection_pub = nh.advertise<std_msgs::Bool>("/detected", 1);
 
-	this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Base_class::imageFrontCallback, this);
+	//this->front_image_sub = it.subscribe("/anahita/front_camera/image_raw", 1, &Base_class::imageFrontCallback, this);
 	this->bottom_image_sub = it.subscribe("/anahita/bottom_camera/image_raw", 1, &Base_class::imageBottomCallback, this);
 
 	this->enhanced_image_sub = it.subscribe("/anahita/front_camera/preprocessed", 1, &Base_class::fusionCallback, this);
@@ -60,7 +60,7 @@ void Base_class::imageBottomCallback(const sensor_msgs::Image::ConstPtr &msg)
 void Base_class::fusionCallback(const sensor_msgs::Image::ConstPtr &msg)
 {
 	try {
-		enhanced_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
+		image_front	 = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image;
 	}
 	catch (cv_bridge::Exception &e) {
 		ROS_ERROR("cv_bridge exception: %s", e.what());

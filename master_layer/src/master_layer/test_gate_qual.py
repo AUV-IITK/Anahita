@@ -63,10 +63,11 @@ if __name__ == '__main__':
         pose = Pose()
         step_point = Point()
 
-   
         change_odom_response = change_odom(odom="dvl")
         rospy.loginfo('changind the odom source to dvl')
         rospy.sleep(0.1)
+
+        fill_pose(pose, 8)
 
         step_point.x = 1
         step_point.y = 0

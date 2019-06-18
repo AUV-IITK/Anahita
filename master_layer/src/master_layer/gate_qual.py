@@ -88,7 +88,7 @@ if __name__ == '__main__':
         change_odom_response = change_odom(odom="dvl")
 
         pose = current_p
-        pose.position.x = 7.5+4
+        pose.position.x = 7.5+4 
         pose.position.y = 0
         pose.position.z = 0
         rospy.loginfo('cmd to approach marker')
