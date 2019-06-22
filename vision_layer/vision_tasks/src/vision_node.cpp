@@ -13,7 +13,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "triangular_buoy";
+std::string current_task = "path_marker";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -106,6 +106,12 @@ int main(int argc, char *argv[])
             }
             if (previous_task == "triangular_buoy") {
                 triangular_buoy.frontTaskHandling(false);
+            }
+            if (current_task == "path_marker") {
+                path_marker.bottomTaskHandling(true); 
+            }
+            if (previous_task == "path_marker") {
+                path_marker.bottomTaskHandling(false);
             }
             previous_task = current_task;
         }

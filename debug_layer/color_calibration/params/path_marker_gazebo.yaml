@@ -1,13 +1,13 @@
 vision:
   path_marker:
-    b_max: 16
+    b_max: 9
     b_min: 0
     bilateral_iter: 0
-    closing_iter: 0
-    closing_mat_point: 1
-    g_max: 46
+    closing_iter: 2
+    closing_mat_point: 2
+    g_max: 35
     g_min: 0
-    opening_iter: 0
+    opening_iter: 1
     opening_mat_point: 1
-    r_max: 155
-    r_min: 104
+    r_max: 161
+    r_min: 14

@@ -90,3 +90,5 @@ nav_main.cpp
 dvl_data.cpp
 odom.launch
 test.py
+navigation_layer/odom_dvl_imu
+smach.txt

@@ -21,7 +21,6 @@ namespace navigation{
         measurementNoise_ *= rval;
     }
 
-
     void ExtendedKalmanFilter::Update(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation)
     {
         Eigen::Matrix3d inverse_matrix;

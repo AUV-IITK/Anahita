@@ -2,7 +2,7 @@
 #define DVL_DATA_H
 
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
-#include <std_msgs/Float32.h>
+#include <sensor_msgs/FluidPressure.h>
 #include <eigen3/Eigen/Geometry>
 #include "navigation_device.h"
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
@@ -28,26 +28,16 @@ namespace navigation{
         ~DvlData();
 
         void DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg);
-        void DvlPressureCallback(std_msgs::Float32 msg);
-
-        std::vector<double> x_vel;
-        std::vector<double> y_vel;
-        std::vector<double> z_vel;
-        int x_count = 0;
-        int y_count = 0;
-        int z_count = 0;
-        int vel_count = 0;
+        void DvlPressureCallback(sensor_msgs::FluidPressure msg);
 
         Eigen::Vector3d GetPositionXYZ();
         Eigen::Vector3d GetVelocityXYZ();
         double GetPositionZFromPressure();
-        std_msgs::Float32 GetPressure();
+        sensor_msgs::FluidPressure GetPressure();
 
     private:
         void StdIntegrationMethod(const double &dt_sec);
         void RKIntegrationMethod(const double &dt_sec);
-        double Average(std::vector<double> array);
-        bool inRange (double x, double avg, double thres);
 
         ros::Time last_timestamp_;
 
@@ -55,10 +45,9 @@ namespace navigation{
         Eigen::MatrixXd historyPositionIncrement_;
 
         geometry_msgs::TwistWithCovarianceStamped dvl_twist_;
-        std_msgs::Float32 dvl_pressure_;
+        sensor_msgs::FluidPressure dvl_pressure_;
 
         IntegrationMethodT integrationMethod_;
     };
-
 }
 #endif // DVLDATA_H
