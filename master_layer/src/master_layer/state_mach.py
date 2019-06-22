@@ -8,15 +8,23 @@ import numpy
 
 from uuv_control_msgs.srv import *
 from uuv_control_msgs.msg import Waypoint as WaypointMsg
-from master_layer.srv import VerifyObject
+
 from rospy.numpy_msg import numpy_msg
-from std_msgs.msg import Time, String
+
+from std_msgs.msg import Time, String, Int32
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Pose
-from std_msgs.msg import Int32
-from master_layer.srv import ChangeOdom
+from geometry_msgs.msg import Point, Pose, Quaternion
+
 from anahita_utils import *
+
+from master_layer.srv import GoToIncremental
+from master_layer.srv import GoTo
+from master_layer.srv import ChangeOdom
+from master_layer.srv import CurrentTask
+from master_layer.srv import GoToPose
+from master_layer.srv import TrajectoryComplete
+from master_layer.srv import PoseReach
+from master_layer.srv import VerifyObject
 
 class Transition(smach.State):
     def __init__(self):
@@ -24,7 +32,6 @@ class Transition(smach.State):
                             input_keys=['target_waypoint'])
         self._odom_topic_sub = rospy.Subscriber(
             '/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
-        
         
         self._pose = numpy.zeros(3)
         self._threshold = 0.5
@@ -81,69 +88,75 @@ class Transition(smach.State):
 class TaskBaseClass(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['random_outcome1', 'random_outcome2'],
-                            input_keys=['field1', 'field2', 'field3'],
-                            output_keys=['field1', 'field2', 'field2'])
+        smach.State.__init__(self, outcomes=['near', 'never_moved', 'thruster_inactive', 'unstable', 'far', 'success', 'fail'], 
+                             input_keys=['input_stage'], output_keys=['output_stage'])
 
-        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
-        self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
-        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
-        self._conventional_prob = 0
+        self.odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
+        self.conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
+        self.pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
+        self.conventional_prob = 0
+        self.pose = None
+        self.odom_init = False
+        self.service_timeout = 5
+        self.stages = None
+        self.current_stage = ''
+        self.task_timeout = None
+        self.current_odom_source = ''
         
         try:
-            self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
-            
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"
-    
-    def has_reached (self, pos, threshold):
-        while (not status or rospy.is_shutdown()):
-            return False
-        while (calc_dist(pos, self._pose) > threshold or rospy.is_shutdown()):
-            return False
-        return True
+            self.services = dict()
 
+            print 'Task Base Class: waiting for change odom server ....'
+            rospy.wait_for_service('odom_source')
+            self.services['change_odom'] = rospy.ServiceProxy('odom_source', ChangeOdom)
+            print 'Task Base Class: waiting for go_to_incremental server ....'
+            rospy.wait_for_service('anahita/go_to_incremental')
+            self.services['go_to_incremental'] = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
+            print 'Task Base Class: waiting for go_to server ....'
+            rospy.wait_for_service('anahita/go_to')
+            self.services['go_to'] = rospy.ServiceProxy('anahita/go_to', GoTo)
+            print 'Task Base Class: waiting for current task server ....'
+            rospy.wait_for_service('anahita/current_task')
+            self.services['current_task'] = rospy.ServiceProxy('anahita/current_task', CurrentTask)
+            print 'Task Base Class: waiting for go_to_pose server ....'
+            rospy.wait_for_service('anahita/go_to_pose')
+            self.services['go_to_pose'] = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+            print 'Task Base Class: waiting for trajectory_complete server ....'
+            rospy.wait_for_service('anahita/trajectory_complete')
+            self.services['trajectory_complete'] = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
+            print 'Task Base Class: waiting for pose_reach server ....'
+            rospy.wait_for_service('anahita/pose_reach')
+            self.services['pose_reach'] = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+            print 'Task Base Class: waiting for object recognition server ....'
+            rospy.wait_for_service('anahita/object_recognition')
+            self.services['verify_object'] = rospy.ServiceProxy('anahita/object_recognition', VerifyObject)
+        except:
+            print("Service Instantiation failed")
+    
     def odometry_callback(self, msg):
-        rospy.loginfo("Current pose: " + str(msg))
-        self._pose = msg.pose.pose.position
-        self._orientation = msg.pose.pose.orientation
-        global status
-        status = True 
-
-    
+        self.pose = msg.pose.pose.position
+        self.odom_init = True
         
-    def load_params(self):
-        # start point for the task
-        pass
-
-    def start_stereo(self):
-        # after the verification of the object start visual odometry
-        pass
-
     def execute(self):
-        pass
-
-    def object_detector(self):  
-        # to start object recognition as soon the bot enters
-        # that task and confirm it is the same object
-        # a service to ask vision layer if it is the same object
-        # vision layer will recognize for a particular period of time
-        # and verify the object
-
-        print 'waiting for object recognition server'
-        rospy.wait_for_service('anahita/object_recognition')
-
-        verify_object = rospy.ServiceProxy('anahita/object_recognition', VerifyObject)
-        resp = verify_object(object='')
-
-        if resp:
-            return True
-        else:
-            return False
+        raise NotImplementedError()
     
     def conventional_detector_cb(self, msg):
-        self._conventional_prob = msg.data
-        
+        self.conventional_prob = msg.data
+
+    def service_call_handler (self, task, service, req):
+        then = rospy.get_time()
+        while not rospy.is_shutdown():
+            diff = rospy.get_time() - then
+            if diff > self.service_timeout:
+                print ('{} controls: {} service timeout'.format(task, service))
+                # task failure, return a suitable outcome
+                return False
+            try:
+                self.services[service](req)
+                rospy.loginfo ('{} controls: sent a request to {} service'.format(task, service))
+                return True
+            except:
+                print ('{} controls: execption occured in {} service'.format(task, service))
 
 class MoveToXYZ(TaskBaseClass):
     
@@ -185,7 +198,6 @@ class MoveToXYZ(TaskBaseClass):
                 rospy.loginfo("I've lost")
                 return 'lost'
 
-
 class BouyTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
@@ -203,24 +215,126 @@ class BouyTask(TaskBaseClass):
         # hitting in separate states
         pass
 
-# if every task state execute will contains different set of member functions to 
-# complete the task like in buoy it will be hit_buoy() and in gate it will be just
-# move forward
-class GateTask(TaskBaseClass):
-    def __init__(self):
-        TaskBaseClass.__init__(self)
+class Examine (object):
+    # to find the problem
+    def __init__(self, task, stage, odom_source, target_pose):
+        self.task = task
+        self.stage = stage
+        self.odom_source = odom_source
+        self.target_pose = target_pose
 
-    def wait_for_crossing(self):
-        # to wait for the lower part of a pipe to be identified by the vision layer
-        # to send a request to the vision layer to do it with a timeout
+    def isThrusterActive (self):
+        # probably check the state of arduino and its serial connection
+        # and the respective topics are published
         pass
 
-    def move_forward(self):
-        # cross the gate
+    def isUnstable (self):
+        # should not move far away and has a lot of thrust
+        pass
+
+    def isNear (self):
+        # just a check using the target_pose in the userdata
         pass
 
     def execute(self):
-        pass
+        if self.isNear():
+            return 'near'
+        else:
+            if self.neverMoved():
+                if self.isThrusterActive():
+                    return 'never_moved'
+                else:
+                    return 'thruster_inactive'
+            else:
+                if self.isUnstable():
+                    return 'unstable'
+                else:
+                    return 'far'
+
+class GateTask(TaskBaseClass):
+    
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+        self.stages = ['align', 'front', 'cross']
+
+    def align(self, userdata):
+        pose = self.pose
+        pose.position.y = 0
+        pose.position.z = 0
+
+        rospy.loginfo('gate controls: cmd to align to center')
+        self.current_stage = 'align'
+        if not self.service_call_handler ("gate", 'go_to_pose', GoToPoseRequest(pose)):
+            return 'local_planner_inactive'
+        if not self.service_call_handler ("gate", 'pose_reach', PoseReachRequest(20)):
+            examine = Examine ("gate", self.current_stage, self.current_odom_source, pose)
+            return examine.execute()
+        rospy.loginfo('gate controls: aligned to the center')
+        return 'success'
+    
+    def front(self, userdata):
+        self.current_stage = 'front'
+        if not self.service_call_handler ("gate", 'odom_source', ChangeOdomRequest('dvl'))
+            return 'odom_inactive'
+        rospy.loginfo('gate: changed the odom source to dvl')
+        rospy.sleep(0.1)
+        
+        dist = 0 # a service to request the depth of the target 
+                 # service will be implemented in the vision layer
+        step_point = fill_point (dist - 2, 0, 0)
+        rospy.loginfo('Gate Controls: cmd to come near the gate')
+        if not self.service_call_handler ("gate", 'go_to_incremental', GoToIncrementalRequest(step_point, 0.5, 'cubic'))
+            return 'local_planner_inactive'
+        if not self.service_call_handler ("gate", 'trajectory_complete', TrajectoryCompleteRequest(30))
+            pose = Pose()
+            pose.position = step_point
+            pose.orientation = Quaternion(0, 0, 0, 1)
+            examine = Examine ("gate", self.current_stage, self.current_odom_source, pose)
+            return examine.execute()
+        rospy.loginfo('Gate Controls: near the gate')
+        return 'success'
+
+    def cross(self, userdata):
+        self.current_stage = 'cross'
+        step_point = fill_point (5, 0, 0)
+        rospy.loginfo('Gate Controls: cmd to cross the gate')
+        if not self.service_call_handler ("gate", 'go_to_incremental', GoToIncrementalRequest(step_point, 0.5, 'cubic'))
+            return 'local_planner_inactive'
+        if not self.service_call_handler ("gate", 'trajectory_complete', TrajectoryCompleteRequest(30))
+            pose = Pose()
+            pose.position = step_point
+            pose.orientation = Quaternion(0, 0, 0, 1)
+        rospy.loginfo('Gate Controls: gate crossed')
+        return 'success'
+
+    def execute(self, userdata):
+
+        if not self.service_call_handler ("gate", 'current_task', CurrentTaskRequest('gate')):
+            return 'vision_inactive'
+        rospy.loginfo('gate: changed current task to gate')
+        if not self.service_call_handler ("gate", 'odom_source', ChangeOdomRequest('vision')):
+            return 'odom_inactive'
+        rospy.loginfo('gate: odom source set to vision')
+        self.current_odom_source = 'vision'
+
+        if userdata.stage == 'align':
+            result = self.align()
+            if (result != 'sucess'):
+                return result
+            userdata.stage = 'front'
+
+        if userdata.stage == 'front':
+            result = self.front()
+            if (result != 'success'):
+                return result
+            userdata.stage = 'cross'
+
+        if userdata.stage == 'cross':
+            result = self.cross()
+            if (result != 'success'):
+                return result
+
+        return 'success'
 
 class TorpedoTask(TaskBaseClass):
     def __init__(self):
@@ -271,10 +385,6 @@ class LineTask(TaskBaseClass):
 
     def execute(self):
         pass
-
-# there are two kinds of findings that need to be dealt with
-# 1. one to find the object with the bottom camera
-# 2. and one with the front camera
 
 class FindBottomTarget(smach.State):
     def __init__(self):
@@ -391,15 +501,6 @@ class FindFrontTarget(smach.State):
         pass
         # move around to find a target
 
-# there are two kinds of scenarios for finding
-# 1. when the bot is working properly but is not able to find the
-#    object at the current position so it goes into `find target state`
-# 2. something very bad happens to the like the thruster behaving weirdly 
-#    and dragging to the direction where it should not go, in that situation 
-#    it becomes necessary for the reset all the things and plan for itself 
-#    according to the task it has done and last pose that it remebers and 
-#    use path planning algorithms to generate waypoints for the trajectory generation
-
 class RescueMode(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['some_outcome'])
@@ -430,8 +531,6 @@ class IdentifyTarget(smach.State):
         smach.State.__init__(self, outcomes=[''], input_keys=['target'])
         rospy.loginfo("Identifying the target")
         
-
-
 class TooFar(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=[''],
@@ -460,26 +559,19 @@ class StationKeeping(smach.State):
 if __name__ == '__main__':
     rospy.init_node('state_machine')
 
-    # Create a SMACH state machine
-    sm = smach.StateMachine(outcomes=['outcome4'])
+    sm = smach.StateMachine(outcomes=[])
+    sm.userdata.stage = 'align'
 
-    # Open the container
     with sm:
-        # Add states to the container
-        smach.StateMachine.add('MovingToXYZ', MoveToXYZ(), 
-                               transitions={'found_visually':'IdentifyTarget', 'cannot_see':'FindFrontTarget', 'lost':'MovingToXYZ'})
-                                   
-        smach.StateMachine.add('FindFrontTarget', FindFrontTarget(), transitions = {'found_visually':'IdentifyTarget', 'lost':'MovingToXYZ'})
-        smach.StateMachine.add('IdentifyTarget', IdentifyTarget())
-    
-    sis = smach_ros.IntrospectionServer('smach_introspect', sm, '/SM_ROOT')
-    sis.start()
-
-    outcome = sm.execute()
-
-    rospy.spin()
-    sis.stop()
-
-    # Execute SMACH plan
-    
-
+        smach.StateMachine.add('gate', GateTask(), transitions={
+           'success' : 'path_marker', # next task
+           'near' : 'gate', # to the gate again from the failed stage
+           'far' : 'fail', # means some logic error in the low level controller
+           'unstable' : 'reinit' # a state to make it stable
+           'never_moved' : 'check_infra' # a state to check all the relevant topics to the task, to see if it is working
+           'thruster_inactive' : 'fix_thruster' # a state to handle thruster failure
+           'fail' : 'next_task' # a state to handle the failure
+        }, remapping={
+            'input_stage' : 'stage', # the point from which the state should start
+            'output_stage' : 'stage' # the state where the state failed
+        })
