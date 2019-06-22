@@ -1,3 +1,0 @@
-# Tells the node to take the current depth and use it
-# as offset. Right after the call, depth is going to be 0
----
