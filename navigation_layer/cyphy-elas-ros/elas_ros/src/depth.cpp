@@ -17,10 +17,45 @@
 #include <pcl/segmentation/sac_segmentation.h>
 
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
-
-boost::shared_ptr<const PointCloud> cloud(new PointCloud);
-
 geometry_msgs::Point mean_coordinate;
+
+double z = 0;
+int z_count = 0;
+std::vector<double> z_coord;
+
+double avg (std::vector<double> array) {
+    double sum = 0;
+    for (int i = 0; i < array.size(); i++) {
+        sum += array[i];
+    }
+    double size = array.size();
+    double avg_ = sum/size;
+
+    return avg_;
+}
+
+bool inRange (double x, double avg, double thres) {
+    if (avg + thres >= x || avg - thres <= x) {
+        return true;
+    }
+    return false;
+}
+
+void zCallback (double msg) {
+    z = msg;
+    if (z_count < 10) { 
+        z_coord[z_count] = z;
+        mean_coordinate.z = avg (z_coord);
+        z_count++;
+    }
+    else {
+        mean_coordinate.z = avg (z_coord);
+        if (inRange(z, mean_coordinate.z, 15)) {
+            std::rotate (z_coord.begin(), z_coord.begin() + 1, z_coord.end());
+            z_coord[9] = z;
+        }
+    }
+}
 
 void callback (const PointCloud::ConstPtr& msg) {
     double z_sum = 0;
@@ -38,8 +73,7 @@ void callback (const PointCloud::ConstPtr& msg) {
     mean_coordinate.z = z_sum / size;
 
     mean_coordinate.z = mean_coordinate.z/1.75;
-
-    // cloud = msg;
+    zCallback (mean_coordinate.z);
 }
 
 int main (int argc, char** argv) {
@@ -48,18 +82,6 @@ int main (int argc, char** argv) {
     ros::NodeHandle nh;
     ros::Subscriber point_cloud_sub = nh.subscribe<PointCloud>("/elas/point_cloud", 30, &callback);
     ros::Publisher mean_coord_pub = nh.advertise<geometry_msgs::Point>("/anahita/mean_coord", 1);
-    // ros::Publisher plane_coeff_pub = nh.advertise<std_msgs::Float32MultiArray>("/anahita/plane_coeff", 1);
-
-    // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    // Create the segmentation object
-    // pcl::SACSegmentation<pcl::PointXYZRGB> seg;
-    // Optional
-    // seg.setOptimizeCoefficients (true);
-    // Mandatory
-    // seg.setModelType (pcl::SACMODEL_PLANE);
-    // seg.setMethodType (pcl::SAC_RANSAC);
-    // seg.setDistanceThreshold (0.01);
 
     ros::Rate loop_rate (20);
 
@@ -67,19 +89,8 @@ int main (int argc, char** argv) {
     mean_coordinate.y = 0;
     mean_coordinate.z = 0;
 
-    std_msgs::Float32MultiArray normal_coeff;
-
     while (ros::ok()) {
-        // seg.setInputCloud (cloud);
-        // seg.segment (*inliers, *coefficients);
-
-        // normal_coeff.data.push_back(coefficients->values[0]);
-        // normal_coeff.data.push_back(coefficients->values[1]);
-        // normal_coeff.data.push_back(coefficients->values[2]);
-        // normal_coeff.data.push_back(coefficients->values[3]);
-
         mean_coord_pub.publish(mean_coordinate);
-        // plane_coeff_pub.publish(normal_coeff);
 
         ros::spinOnce();
         loop_rate.sleep();
