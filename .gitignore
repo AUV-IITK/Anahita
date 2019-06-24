@@ -92,3 +92,4 @@ odom.launch
 test.py
 navigation_layer/odom_dvl_imu
 smach.txt
+*.csv
