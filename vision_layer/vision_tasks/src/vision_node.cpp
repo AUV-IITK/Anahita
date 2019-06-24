@@ -6,6 +6,7 @@
 #include "grabber.h"
 #include "testgate.h"
 #include "triangular_buoy.h"
+#include "start_gate.h"
 
 #include "ros/ros.h"
 #include <string>
@@ -13,7 +14,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "path_marker";
+std::string current_task = "start_gate";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     Grabber grabber;
     TestGate testgate;
     TriangularBuoy triangular_buoy;
+    StartGate start_gate;
 
     ros::Rate loop_rate(10);
 
@@ -113,6 +115,14 @@ int main(int argc, char *argv[])
             if (previous_task == "path_marker") {
                 path_marker.bottomTaskHandling(false);
             }
+            if (current_task == "start_gate") {
+                ROS_INFO ("Start gate");
+                start_gate.frontTaskHandling(true); 
+            }
+            if (previous_task == "start_gate") {
+                start_gate.frontTaskHandling(false);
+            }
+
             previous_task = current_task;
         }
         loop_rate.sleep();

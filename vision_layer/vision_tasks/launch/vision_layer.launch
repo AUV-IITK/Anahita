@@ -11,8 +11,9 @@
     <rosparam file="$(find color_calibration)/params/torpedo_holes_$(arg env).yaml" command="load" />
     <rosparam file="$(find color_calibration)/params/startgate_$(arg env).yaml" command="load" />
     <rosparam file="$(find color_calibration)/params/triangular_buoy_$(arg env).yaml" command="load" />
+    <rosparam file="$(find color_calibration)/params/start_gate_$(arg env).yaml" command="load" />
   </group>
 
-  <!-- <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen" if="$(eval env == 'real')"/> -->
+  <node name="fusion_node" type="fusion_node" pkg="vision_fusion" output="screen" if="$(eval env == 'real')"/>
   <node name="vision_node" type="vision_node" pkg="vision_tasks" output="screen" />
 </launch>

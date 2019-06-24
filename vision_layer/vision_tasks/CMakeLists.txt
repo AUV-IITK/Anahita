@@ -100,4 +100,5 @@ target_link_libraries(vision_node
   crucifix_task
   grabber_test
   startgate
+  start_gate
 )

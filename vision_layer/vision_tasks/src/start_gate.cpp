@@ -1,8 +1,9 @@
 #include <start_gate.h>
 
 StartGate::StartGate() {
-    this->loadParams();
-    this->front_roi_pub = it.advertise("/anahita/roi", 1);
+    loadParams();
+    front_roi_pub = it.advertise("/anahita/roi", 1);
+    features_pub = nh.advertise<std_msgs::Int32MultiArray>("/anahita/features", 10);
 }
 
 void StartGate::loadParams() {
@@ -85,6 +86,162 @@ cv::Point StartGate::findGateCenter (cv::Mat& thres_img) {
     return center;
 }
 
+bool cmp_x (cv::Point a, cv::Point b) {
+    return a.x < b.x;
+}
+
+cv::Point2d rect_center (cv::Rect2d bound_rect) {
+    cv::Point2d center;
+    center.x = ((bound_rect.br()).x + (bound_rect.tl()).x)/2;
+    center.y = ((bound_rect.tl()).y + (bound_rect.br()).y)/2;
+    return center;
+}
+
+bool in_range (float a, float b, float range) {
+    if (a + range >= b || a - range <= b) return true;
+    return false;
+}
+
+void fill_msg (std_msgs::Int32MultiArray &msg, int f0, int f1, int f2, int f3, int f4, 
+               int f5, int f6, int f7, int f8, int f9, int f10, int f11, int f12, int f13, int f14) {
+    msg.data.clear();
+    msg.data.push_back(f0); msg.data.push_back(f1); msg.data.push_back(f2);
+    msg.data.push_back(f3); msg.data.push_back(f4); msg.data.push_back(f5);
+    msg.data.push_back(f6); msg.data.push_back(f7); msg.data.push_back(f8);
+    msg.data.push_back(f9); msg.data.push_back(f10); msg.data.push_back(f11);
+    msg.data.push_back(f12); msg.data.push_back(f13); msg.data.push_back(f14);
+}
+
+void StartGate::extractFeatures (const cv::Mat& thres_img) {
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    contours = vision_commons::Contour::filterContours(contours, 50);
+    if (contours.size() < 2) return;
+    vision_commons::Contour::sortFromBigToSmall(contours);
+
+    int l_x = -1;
+    int l_y = -1;
+    int m_x = -1; 
+    int m_y = -1;
+    int r_x = -1;
+    int r_y = -1;
+    int l_l = -1;
+    int r_l = -1;
+    int m_l = -1;
+    int l_m_h = -1;
+    int m_r_h = -1;
+    int l_r_h = -1;
+    int l_m_v = -1;
+    int m_r_v = -1;
+    int l_r_v = -1;
+
+    if (contours.size() == 2) {
+        if (in_range(cv::contourArea (contours[1], false), cv::contourArea (contours[0], false), 15)) { // left and right
+            cv::Rect2d rect0; cv::Rect2d rect1;
+            rect0 = cv::boundingRect (cv::Mat(contours[0]));
+            rect1 = cv::boundingRect (cv::Mat(contours[1]));
+            cv::Point2d center0; cv::Point2d center1;
+            center0 = rect_center (rect0); center1 = rect_center (rect1);
+            if (center0.x < center1.x) { // 0 => left
+                l_x = center0.x;
+                l_y = center0.y;
+                r_x = center1.x;
+                r_y = center1.y;
+                l_l = std::abs(rect0.br().y - rect0.tl().y);
+                r_l = std::abs(rect1.br().y - rect1.tl().y);
+                l_r_h = std::abs(l_x - r_x);
+                l_r_v = std::abs(l_y - r_y);
+            }
+            else { // 0 => right
+                l_x = center1.x;
+                l_y = center1.y;
+                r_x = center0.x;
+                r_y = center0.y;
+                l_l = std::abs(rect1.br().y - rect1.tl().y);
+                r_l = std::abs(rect0.br().y - rect0.tl().y);
+                l_r_h = std::abs(l_x - r_x);
+                l_r_v = std::abs(l_y - r_y);
+            }
+        }
+        else { // left and middle or right and middle
+            cv::Rect2d rect0; cv::Rect2d rect1;
+            rect0 = cv::boundingRect (cv::Mat(contours[0]));
+            rect1 = cv::boundingRect (cv::Mat(contours[1]));
+            cv::Point2d center0; cv::Point2d center1;
+            center0 = rect_center (rect0); center1 = rect_center (rect1);
+            if (center0.x < center1.x) { // 0 => left, 1 => middle
+                l_x = center0.x;
+                l_y = center0.y;
+                m_x = center1.x;
+                m_y = center1.y;
+                l_l = std::abs(rect0.br().y - rect0.tl().y);
+                m_l = std::abs(rect1.br().y - rect1.tl().y);
+                l_m_h = std::abs(l_x - m_x);
+                l_m_v = std::abs(l_y - m_y);
+            }
+            else { // 0 => right
+                m_x = center1.x;
+                m_y = center1.y;
+                r_x = center0.x;
+                r_y = center0.y;
+                m_l = std::abs(rect1.br().y - rect1.tl().y);
+                r_l = std::abs(rect0.br().y - rect0.tl().y);
+                m_r_h = std::abs(m_x - r_x);
+                m_r_v = std::abs(m_y - r_y);
+            }
+        }
+    }
+    else {
+        ROS_INFO ("3 contours");
+        std::vector<cv::Rect2d> rects;
+        std::vector<cv::Point2d> centers;
+        for (int i = 0; i < 3; i++) {
+            cv::Rect2d rect = cv::boundingRect(cv::Mat(contours[i]));
+            rects.push_back(rect);
+        }
+        for (int i = 0; i < 3; i++) {
+            centers.push_back (rect_center(rects[i]));
+        }
+        if (centers[0].x < centers[1].x) { // 0 => left, 1 => right
+            l_x = centers[0].x;
+            l_y = centers[0].y;
+            r_x = centers[1].x;
+            r_y = centers[1].y;
+            m_x = centers[2].x;
+            m_y = centers[2].y;
+            l_l = std::abs(rects[0].br().y - rects[0].tl().y);
+            r_l = std::abs(rects[1].br().y - rects[1].tl().y);
+            m_l = std::abs(rects[2].br().y - rects[2].tl().y);
+            l_r_h = std::abs(l_x - r_x);
+            l_m_h = std::abs(l_x - m_x);
+            m_r_h = std::abs(r_x - m_x);
+            l_m_v = std::abs(l_y - m_y);
+            m_r_v = std::abs(r_y - m_y);
+            l_r_v = std::abs(l_y - r_y);
+        }
+        else { // 0 => right
+            l_x = centers[1].x;
+            l_y = centers[1].y;
+            r_x = centers[0].x;
+            r_y = centers[0].y;
+            m_x = centers[2].x;
+            m_y = centers[2].y;
+            l_l = std::abs(rects[1].br().y - rects[1].tl().y);
+            r_l = std::abs(rects[0].br().y - rects[0].tl().y);
+            m_l = std::abs(rects[2].br().y - rects[2].tl().y);
+            l_r_h = std::abs(l_x - r_x);
+            l_m_h = std::abs(l_x - m_x);
+            m_r_h = std::abs(r_x - m_x);
+            l_m_v = std::abs(l_y - m_y);
+            m_r_v = std::abs(r_y - m_y);
+            l_r_v = std::abs(l_y - r_y);
+        }
+    }
+    fill_msg (feature_msg, l_x, l_y, m_x, m_y, r_x, r_y, l_l, m_l, r_l, l_m_h, m_r_h, l_r_h, l_m_v, m_r_v, l_r_v);
+    features_pub.publish(feature_msg);
+}
+
 void StartGate::spinThreadFront() {
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
@@ -114,6 +271,14 @@ void StartGate::spinThreadFront() {
                                         front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
             vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1,
                                          front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
+
+            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
+            front_thresholded_pub.publish(front_image_thresholded_msg);
+            front_roi_pub.publish(front_image_thresholded_msg);
+
+            extractFeatures (image_front_thresholded);
+            loop_rate.sleep();
+            continue;
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
             if (!largest_contour.size()) {
                 ROS_INFO("No contour found");
@@ -126,10 +291,6 @@ void StartGate::spinThreadFront() {
 
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
-
-            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
-            front_thresholded_pub.publish(front_image_thresholded_msg);
-            front_roi_pub.publish(front_image_thresholded_msg);
 
             front_x_coordinate.data = 0;
             front_y_coordinate.data = center.x - temp_src.cols/2;

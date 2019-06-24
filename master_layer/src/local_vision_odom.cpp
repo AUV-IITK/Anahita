@@ -75,7 +75,6 @@ bool inRange (double x, double avg, double thres) {
 }
 
 void zCallback (const std_msgs::Float32 msg) {
-    ROS_INFO ("z");
     z = -msg.data;
     if (z_count < 10) { 
         z_coord[z_count] = z;
@@ -92,7 +91,6 @@ void zCallback (const std_msgs::Float32 msg) {
 }
 
 void yCallback (const std_msgs::Float32 msg) {
-    ROS_INFO("y");
     y = msg.data;
     if (y_count < 10) { 
         y_coord[y_count] = y;
@@ -221,7 +219,6 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.x = -x_avg;
         }
         else if (odom_source == "bottom_vision") {
-            ROS_INFO ("alfskas");
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/200.0;
             odom_msg.pose.pose.position.x = z_avg/200.0;

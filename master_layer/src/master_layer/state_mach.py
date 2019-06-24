@@ -28,68 +28,102 @@ from master_layer.srv import VerifyObject
 
 class Transition(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['success','timeout', 'failed'],
-                            input_keys=['target_waypoint'])
-        self._odom_topic_sub = rospy.Subscriber(
-            '/anahita/pose_gt', numpy_msg(Odometry), self.odometry_callback)
-        
-        self._pose = numpy.zeros(3)
-        self._threshold = 0.5
-        self._timeout = 60 # in seconds
-        self._cutoff = 1 # must be comparable to intial distance from the starting point
+        smach.State.__init__(self, outcomes=['success','timeout', 'failed', 'local_planner_inactive'],
+                             input_keys=['stage', 'prev_task', 'next_task', 'focus_camera', 'time_out', 'map'],
+                             output_keys=['stage'])
+        self.init_pose = None
+        self.final_approx_pose = None
+        self.focus_camera = None
+        self.time_out = None
+        self.stages = ['initiated', 'visible', 'near', 'reached']
+        self.odom_init = False
+        self.pose = Pose()
+        self.current_stage = ''
+        self.current_odom_source = ''
 
-    def calc_dist(self, current_pose, target_waypoint_msg):
-        dist = (current_pose.x - target_waypoint_msg.point.x)*(current_pose.x - target_waypoint_msg.point.x) + \
-                (current_pose.y - target_waypoint_msg.point.y)*(current_pose.y - target_waypoint_msg.point.y) + \
-                (current_pose.z - target_waypoint_msg.point.z)*(current_pose.z - target_waypoint_msg.point.z)
-        return dist
+        try:
+            self.services = dict()
+
+            print 'Intermediate Class: waiting for change odom server ....'
+            rospy.wait_for_service('odom_source')
+            self.services['change_odom'] = rospy.ServiceProxy('odom_source', ChangeOdom)
+            print 'Intermediate Class: waiting for go_to_incremental server ....'
+            rospy.wait_for_service('anahita/go_to_incremental')
+            self.services['go_to_incremental'] = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
+            print 'Intermediate Class: waiting for go_to server ....'
+            rospy.wait_for_service('anahita/go_to')
+            self.services['go_to'] = rospy.ServiceProxy('anahita/go_to', GoTo)
+            print 'Intermediate Class: waiting for current task server ....'
+            rospy.wait_for_service('anahita/current_task')
+            self.services['current_task'] = rospy.ServiceProxy('anahita/current_task', CurrentTask)
+            print 'Intermediate Class: waiting for go_to_pose server ....'
+            rospy.wait_for_service('anahita/go_to_pose')
+            self.services['go_to_pose'] = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+            print 'Intermediate Class: waiting for trajectory_complete server ....'
+            rospy.wait_for_service('anahita/trajectory_complete')
+            self.services['trajectory_complete'] = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
+            print 'Intermediate Class: waiting for pose_reach server ....'
+            rospy.wait_for_service('anahita/pose_reach')
+            self.services['pose_reach'] = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+            print 'Intermediate Class: waiting for object recognition server ....'
+            rospy.wait_for_service('anahita/object_recognition')
+            self.services['verify_object'] = rospy.ServiceProxy('anahita/object_recognition', VerifyObject)
+        except:
+            print("Service Instantiation failed")
+
+    def service_call_handler (self, task, service, req):
+        then = rospy.get_time()
+        while not rospy.is_shutdown():
+            diff = rospy.get_time() - then
+            if diff > self.service_timeout:
+                print ('{} controls: {} service timeout'.format(task, service))
+                # task failure, return a suitable outcome
+                return False
+            try:
+                self.services[service](req)
+                rospy.loginfo ('{} controls: sent a request to {} service'.format(task, service))
+                return True
+            except:
+                print ('{} controls: execption occured in {} service'.format(task, service))
 
     def odometry_callback(self, msg):
-        self._pose = numpy.array([msg.pose.pose.position.x,
-                                msg.pose.pose.position.y,
-                                msg.pose.pose.position.z])
-    
+        self.pose = msg.pose.pose.position
+        self.odom_init = True
+
     def execute(self, userdata):
-        target_waypoint_msg = WaypointMsg()
-        target_waypoint_msg = userdata.target_waypoint.to_message()
+        self.init_pose = self.pose
+        next_task = userdata.next_task
+        map_ = userdata.map
+        target_pose = map_[next_task] # prefed map
+        step_point = Point()
+        step_point = target_pose.position - self.init_pose.position
         
-        print 'waiting for go to waypoint server'
-        rospy.wait_for_service('anahita/go_to')
+        if not self.service_call_handler ("intermediate", 'current_task', ChangeOdomRequest(next_task)):
+            return 'vision_inactive'
+        rospy.loginfo('intermediate: current task set to %s', next_task)
 
-        go_to = rospy.ServiceProxy('anahita/go_to', GoTo)
+        if not self.service_call_handler ("intermediate", 'odom_source', ChangeOdomRequest('dvl')):
+            return 'odom_inactive'
+        rospy.loginfo('intermediate: odom source set to dvl')
+        self.current_odom_source = 'dvl'
 
-        start_time = Time()
-        start_time.data.secs = rospy.get_rostime().to_sec()
-        start_time.data.nsecs = rospy.get_rostime().to_nsec()
-        
-        interpolator = String()
-        interpolator.data = 'cubic_interpolator'
-        print 'adding waypoints....'
-        resp = init_waypoint_set(max_forward_speed = 0.5, 
-                                interpolator = interpolator,
-                                waypoint = target_waypoint_msg)
-
-        then = rospy.get_time()
-
-        while not rospy.is_shutdown():
-            now = rospy.get_time()
-            dt = now - then
-            dist = calc_dist(self._pose, target_waypoint_msg)
-            
-            if dist < self._threshold:
-                return 'success'
-
-            if dt > self._timeout:
-                return 'timeout'
-
-            if dist > self._cutoff:
-                return 'failed'
+        self.current_stage = 'initiated'
+        if not self.service_call_handler ('intermediate', 'go_to_incremental', GoToIncrementalRequest(step_point, 0.5, 'libp')):
+            return 'local_planner_inactive'
+        if not self.service_call_handler ("intermediate", 'trajectory_complete', TrajectoryCompleteRequest(60))
+            pose = Pose()
+            pose.position = step_point
+            pose.orientation = Quaternion(0, 0, 0, 1)
+            examine = Examine ("intermediate", self.current_stage, self.current_odom_source, pose)
+            return examine.execute()
+        rospy.loginfo('Gate Controls: gate crossed')
+        return 'success'
 
 class TaskBaseClass(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['near', 'never_moved', 'thruster_inactive', 'unstable', 'far', 'success', 'fail'], 
-                             input_keys=['input_stage'], output_keys=['output_stage'])
+                             input_keys=['input_stage'], output_keys=['output_stage', 'next_task'])
 
         self.odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
         self.conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
@@ -157,63 +191,6 @@ class TaskBaseClass(smach.State):
                 return True
             except:
                 print ('{} controls: execption occured in {} service'.format(task, service))
-
-class MoveToXYZ(TaskBaseClass):
-    
-    def __init__(self):
-        TaskBaseClass.__init__(self)
-        print("Creating an approachXYZ task")
-        smach.State.__init__(self, outcomes=['found_visually', 'cannot_see', 'lost'],
-                            input_keys=['task_found', 'field2', 'field3'],
-                            output_keys=['field1', 'field2', 'field2'])
-        change_odom_response = self._change_odom(odom="dvl")
-        self.then_ = rospy.get_time()
-        self.timeout_ = 50
-        self.target_pose_ = Pose()
-        self.start_moving()
-        self.present_status()
-    
-    def start_moving(self):
-        fill_pose_data(self.target_pose_, 10, 10, 1.5, 0, 0, 0, 1)
-        self._pose_cmd_pub.publish(self.target_pose_)
-        rospy.loginfo("We are now moving towards the target pose" + str(self.target_pose_))
-    
-    def present_status(self):
-        rospy.loginfo("Now, I'll check whatever is happening")
-        
-        while True:
-            rospy.loginfo("I am seraching, prob: " + str(self._conventional_prob))
-            if self._conventional_prob > .80:
-                rospy.loginfo("changing to visual odom")
-                change_odom_response = self._change_odom(odom="vision")
-                return 'found_visually'
-        
-            if self.has_reached(self.target_pose_.position, 3) is True:
-                rospy.loginfo("reached the position")
-                return 'cannot_see'
-            
-            now = rospy.get_time()
-            dt = now - self.then_
-            if dt > self.timeout_:
-                rospy.loginfo("I've lost")
-                return 'lost'
-
-class BouyTask(TaskBaseClass):
-    def __init__(self):
-        TaskBaseClass.__init__(self)
-
-    def hit_buoy(self):
-        # a service call to goto for hitting the buoy
-        pass
-
-    def get_back(self):
-        # a goto request to get back to its initial point
-        pass
-
-    def execute(self):
-        # can make a sub state machine to define the before hitting and after 
-        # hitting in separate states
-        pass
 
 class Examine (object):
     # to find the problem
@@ -304,6 +281,8 @@ class GateTask(TaskBaseClass):
             pose = Pose()
             pose.position = step_point
             pose.orientation = Quaternion(0, 0, 0, 1)
+            examine = Examine ("gate", self.current_stage, self.current_odom_source, pose)
+            return examine.execute()
         rospy.loginfo('Gate Controls: gate crossed')
         return 'success'
 
@@ -334,7 +313,15 @@ class GateTask(TaskBaseClass):
             if (result != 'success'):
                 return result
 
+        userdata.next_task = 'path_marker'
         return 'success'
+
+class PathMarker(TaskBaseClass):
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+    
+    def execute(self):
+        pass
 
 class TorpedoTask(TaskBaseClass):
     def __init__(self):
@@ -371,19 +358,61 @@ class OctagonTask(TaskBaseClass):
     def execute(self):
         pass
 
-class LineTask(TaskBaseClass):
+class MoveToXYZ(TaskBaseClass):
+    
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+        print("Creating an approachXYZ task")
+        smach.State.__init__(self, outcomes=['found_visually', 'cannot_see', 'lost'],
+                            input_keys=['task_found', 'field2', 'field3'],
+                            output_keys=['field1', 'field2', 'field2'])
+        change_odom_response = self._change_odom(odom="dvl")
+        self.then_ = rospy.get_time()
+        self.timeout_ = 50
+        self.target_pose_ = Pose()
+        self.start_moving()
+        self.present_status()
+    
+    def start_moving(self):
+        fill_pose_data(self.target_pose_, 10, 10, 1.5, 0, 0, 0, 1)
+        self._pose_cmd_pub.publish(self.target_pose_)
+        rospy.loginfo("We are now moving towards the target pose" + str(self.target_pose_))
+    
+    def present_status(self):
+        rospy.loginfo("Now, I'll check whatever is happening")
+        
+        while True:
+            rospy.loginfo("I am seraching, prob: " + str(self._conventional_prob))
+            if self._conventional_prob > .80:
+                rospy.loginfo("changing to visual odom")
+                change_odom_response = self._change_odom(odom="vision")
+                return 'found_visually'
+        
+            if self.has_reached(self.target_pose_.position, 3) is True:
+                rospy.loginfo("reached the position")
+                return 'cannot_see'
+            
+            now = rospy.get_time()
+            dt = now - self.then_
+            if dt > self.timeout_:
+                rospy.loginfo("I've lost")
+                return 'lost'
+
+class BouyTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
 
-    def align(self):
-        # to align with the line
+    def hit_buoy(self):
+        # a service call to goto for hitting the buoy
         pass
-    
-    def move_forward(self):
-        # after aligning to the line move forward
+
+    def get_back(self):
+        # a goto request to get back to its initial point
         pass
 
     def execute(self):
+        # can make a sub state machine to define the before hitting and after 
+        # hitting in separate states
         pass
 
 class FindBottomTarget(smach.State):
@@ -561,10 +590,12 @@ if __name__ == '__main__':
 
     sm = smach.StateMachine(outcomes=[])
     sm.userdata.stage = 'align'
+    sm.userdata.next_task = 'gate'
+    sm.userdata.prev_task = ''
 
     with sm:
         smach.StateMachine.add('gate', GateTask(), transitions={
-           'success' : 'path_marker', # next task
+           'success' : 'intermediate', # next task
            'near' : 'gate', # to the gate again from the failed stage
            'far' : 'fail', # means some logic error in the low level controller
            'unstable' : 'reinit' # a state to make it stable
@@ -574,4 +605,11 @@ if __name__ == '__main__':
         }, remapping={
             'input_stage' : 'stage', # the point from which the state should start
             'output_stage' : 'stage' # the state where the state failed
+            'next_task' : 'next_task'
+        })
+        smach.StateMachine.add('intermediate', Transition(), transitions={
+            'success' : 'intermediate',
+            'fail' : 'rescue'
+        }, remapping= {
+
         })
