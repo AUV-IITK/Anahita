@@ -1,13 +1,11 @@
 #include <gate.h>
 
-Gate::Gate()
-{
+Gate::Gate() {
     this->loadParams();
     this->front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
-void Gate::loadParams()
-{
+void Gate::loadParams() {
     nh.getParam("/anahita/vision/gate/b_min", front_low_b_);
     nh.getParam("/anahita/vision/gate/b_max", front_high_b_);
     nh.getParam("/anahita/vision/gate/g_min", front_low_g_);
@@ -21,8 +19,7 @@ void Gate::loadParams()
     nh.getParam("/anahita/vision/gate/bilateral_iter", front_bilateral_iter_);
 }
 
-void Gate::spinThreadFront()
-{
+void Gate::spinThreadFront() {
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
     cv::Rect bound_rect;
@@ -32,15 +29,12 @@ void Gate::spinThreadFront()
     sensor_msgs::ImagePtr front_image_thresholded_msg;
     ros::Rate loop_rate(15);
 
-    while (ros::ok())
-    {
-        if (close_task)
-        {
+    while (ros::ok()) {
+        if (close_task) {
             close_task = false;
             break;
         }
-        if (!image_front.empty())
-        {
+        if (!image_front.empty()) {
             ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
 
             vision_mutex.lock();
@@ -91,10 +85,7 @@ void Gate::spinThreadFront()
             front_y_coordinate_pub.publish(front_y_coordinate);
             front_z_coordinate_pub.publish(front_z_coordinate);
         }
-        else
-        {
-            ROS_INFO("Image empty");
-        }
+        else ROS_INFO("Image empty");
         loop_rate.sleep();
         ros::spinOnce();
     }

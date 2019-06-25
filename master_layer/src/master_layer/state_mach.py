@@ -27,6 +27,15 @@ from master_layer.srv import PoseReach
 from master_layer.srv import VerifyObject
 from master_layer.srv import Hold
 
+fail_report = {
+    'task' : '',
+    'stage' : '',
+    'local_pose' : '',
+    'global_pose' : '',
+    'problem' : '',
+    'next_task' : ''
+}
+
 class Fix(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['not_fixable', 'success', 'fail'], 
