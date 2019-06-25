@@ -27,7 +27,6 @@ namespace navigation{
     void DvlData::DvlTwistCallback(geometry_msgs::TwistWithCovarianceStamped msg)
     {
         dvl_twist_ = msg;
-<<<<<<< HEAD
         ROS_INFO("Inside callback");
 
         
@@ -35,7 +34,7 @@ namespace navigation{
         {
             dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.y;
             dvl_twist_.twist.twist.linear.y = -msg.twist.twist.linear.x;
-            dvl_twist_.twist.twist.linear.z = 0;
+            dvl_twist_.twist.twist.linear.z = msg.twist.twist.linear.z;
         }
         else
         {
@@ -45,7 +44,7 @@ namespace navigation{
             dvl_twist_.twist.twist.linear.y = 0;
         }
 
-
+        /*
         double x_vel_new = dvl_twist_.twist.twist.linear.x;
         double y_vel_new = dvl_twist_.twist.twist.linear.y;
         double z_vel_new = dvl_twist_.twist.twist.linear.z;
@@ -74,23 +73,14 @@ namespace navigation{
         dvl_twist_.twist.twist.linear.x = Average (x_vel);
         dvl_twist_.twist.twist.linear.y = Average (y_vel);
         dvl_twist_.twist.twist.linear.z = Average (z_vel);
-=======
-        // dvl_twist_.header = msg.header;
-        // dvl_twist_.twist = msg.twist;
-        dvl_twist_.twist.twist.linear.x = msg.twist.twist.linear.z;
-        dvl_twist_.twist.twist.linear.z = -msg.twist.twist.linear.x;
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
-
+*/
         SetNewDataReady();
     }
 
     void DvlData::DvlPressureCallback(std_msgs::Float32 msg)
     {
         dvl_pressure_ = msg;
-<<<<<<< HEAD
-        ROS_INFO("pressure sensor: %f ", dvl_pressure_.data);
-=======
->>>>>>> bf0b57b504b17bb9c772ef3f149b402739f3c7b0
+        dvl_pressure_.data = -msg.data;
         SetNewDataReady();
     }
 

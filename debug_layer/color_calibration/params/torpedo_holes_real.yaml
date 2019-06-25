@@ -1,0 +1,13 @@
+vision:
+  torpedo_holes:
+    b_max: 164
+    b_min: 66
+    bilateral_iter: 0
+    closing_iter: 0
+    closing_mat_point: 1
+    g_max: 187
+    g_min: 119
+    opening_iter: 3
+    opening_mat_point: 1
+    r_max: 49
+    r_min: 0

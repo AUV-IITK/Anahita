@@ -11,8 +11,8 @@ class AnahitaThrusterManager(object):
 
         self.n_thrusters = 0
         self.configuration_matrix = None
-       if rospy.has_param('~tam'):
-            tam = rospy.get_param('~tam')
+        if rospy.has_param('/anahita_thruster_allocator/tam'):
+            tam = rospy.get_param('/anahita_thruster_allocator/tam')
             self.configuration_matrix = numpy.array(tam)
             self.n_thrusters = self.configuration_matrix.shape[1]
 
@@ -99,4 +99,5 @@ if __name__ == '__main__':
     anahita_thruster_manager = AnahitaThrusterManager(input=thrust_input, output=pwm_output)
     print 'Anahita Thruster Manager started'
     rospy.spin()
+
 

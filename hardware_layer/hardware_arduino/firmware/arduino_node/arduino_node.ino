@@ -24,6 +24,7 @@ Servo servoNorthEastUp;
 Servo servoSouthWestUp;
 Servo servoSouthEastUp;
 Servo servoMarkerDropper;
+Servo led;
 
 void TEast(const int data);
 void TWest(const int data);
@@ -83,6 +84,9 @@ void setup()
     servoWest.writeMicroseconds(ESC_Zero);
     servoSouthSway.attach(servoSouthSwayPin);
     servoSouthSway.writeMicroseconds(ESC_Zero);
+
+    led.attach(7);
+    led.writeMicroseconds(1100);
   
     servoNorthWestUp.attach(servoNorthWestUpPin);
     servoNorthWestUp.writeMicroseconds(ESC_Zero);
@@ -121,6 +125,7 @@ void loop()
     //Just calling the two loops which will handle i/o as well
     actuatorLoop();
     sensorLoop();
+    led.writeMicroseconds(1100);
 }
 
 //this function takes any input serial to a string buffer
@@ -196,7 +201,7 @@ void read_pressure_data()
     /** Depth returned in meters (valid for operation in incompressible
     *  liquids only. Uses density that is set for fresh or seawater.
     */
-    depth_reading = -100*pressure_sensor.depth(); //convert to centimeters
+    depth_reading = pressure_sensor.depth(); //convert to centimeters
 
     batt_voltage = analogRead(A0)*125/1024;
     

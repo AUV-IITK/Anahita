@@ -244,17 +244,19 @@ void Torpedo::updateTracker (cv::Mat& src_img) {
 }
 
 void Torpedo::spinThreadFront() {
-
+    ROS_INFO("haha");
     cv::Mat temp_src;
     std::vector<cv::Point> largest_contour;
     cv::Rect bound_rect;
     cv::Scalar bound_rect_color(255, 255, 255);
     cv::Point bound_rect_center;
+    cv::Point bound_circle_center;
     sensor_msgs::ImagePtr front_image_marked_msg;
     sensor_msgs::ImagePtr front_image_thresholded_msg;
     ros::Rate loop_rate(15);
     std::vector<cv::Vec3f> circles;
     cv::Mat roi;
+    ROS_INFO("Haha");
 
 	while (ros::ok())
 	{
@@ -268,7 +270,7 @@ void Torpedo::spinThreadFront() {
             temp_src = image_front.clone();
             marked_img = image_front.clone();
             vision_mutex.unlock();
-
+	    ROS_INFO("LOL");
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
             image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
                                                                            front_low_g_, front_high_g_,
@@ -278,15 +280,14 @@ void Torpedo::spinThreadFront() {
             vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1,
                                          front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
-            if (!largest_contour.size()) {
-                ROS_INFO("No contour found");
-                continue;
-            }
-            // findCircles (temp_src, image_front_thresholded, 300);
+            if (largest_contour.size()) {
+                ROS_INFO(" contour found");
+
+	    // findCircles (temp_src, image_front_thresholded, 300);
             // updateTracker (temp_src);
             recogniseHoles (image_front_thresholded);
 
-            cv::Point bound_circle_center;
+
 
             if (!(TL_init||BOT_init||TR_init)) {
                 ROS_INFO ("Not visible hole");
@@ -298,6 +299,9 @@ void Torpedo::spinThreadFront() {
             else if (current_hole == "TL") {bound_circle_center.x = TL.x; bound_circle_center.y = TL.y;}
             else if (current_hole == "BOT") {bound_circle_center.x = BOT.x; bound_circle_center.y = BOT.y;}
 
+            }
+		
+            
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
 
