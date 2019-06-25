@@ -25,6 +25,125 @@ from master_layer.srv import GoToPose
 from master_layer.srv import TrajectoryComplete
 from master_layer.srv import PoseReach
 from master_layer.srv import VerifyObject
+from master_layer.srv import Hold
+
+class Fix(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['not_fixable', 'success', 'fail'], 
+                             input_keys=['problem'], output_keys=[])
+        self.fixable_list = ['local_planner_inactive', 'odom_inactive',
+                             'vision_inactive', 'camera_inactive', 'imu_inactive']
+        self.num_try = 1 # no. of try to fix the problem
+    
+    # in all the fixes make sure there is no thrust to any thruster
+
+    def fix_local_planner(self):
+        # relaunch the local_planner script
+        # return true if launched
+        pass
+
+    def isFixable (self, problem):
+        # if the problem falls within a list of fixable things
+        if problem in self.fixable_list:
+            return True
+        return False
+
+    def fix_odom(self):
+        # relaunch the local_vision_node
+        # return true if launched
+        pass
+
+    def fix_vision(self):
+        # relaunch the vision_node
+        # return true if launched
+        pass
+
+    def fix_imu(self):
+        # relaunch the imu driver
+        # return true if launched
+        pass
+
+    def fix_camera(self):
+        # relaunch the camera driver
+        # return true if launched
+        pass
+
+    def execute(self, userdata):
+        try_count = 0
+        if not self.isFixable(userdata.problem):
+            return 'not_fixable'
+        if userdata.problem is 'local_planner_inactive':
+            return self.fix_local_planner():
+        elif userdata.problem is 'vision_inactive':
+            return self.fix_vision()
+        elif userdata.problem is 'odom_inactive':
+            return self.fix_odom()
+        elif userdata.problem is 'camera_inactive':
+            return self.fix_camera()
+        elif userdata.problem is 'imu_inactive':
+            return self.fix_imu()
+
+class RescueMode(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['success', 'fail', 'target_not_found'],
+                             input_keys=['target'], output_keys=[''])
+        print 'RescueMode Class: waiting for hold server ....'
+        rospy.wait_for_service('/anahita/hold')
+        self.services = dict()
+        self.services['hold_vehicle'] = rospy.ServiceProxy("/anahita/hold", Hold)
+        self.target_pose = Pose()
+
+    def service_call_handler (self, task, service, req):
+        then = rospy.get_time()
+        while not rospy.is_shutdown():
+            diff = rospy.get_time() - then
+            if diff > self.service_timeout:
+                print ('{} controls: {} service timeout'.format(task, service))
+                # task failure, return a suitable outcome
+                return False
+            try:
+                self.services[service](req)
+                rospy.loginfo ('{} controls: sent a request to {} service'.format(task, service))
+                return True
+            except:
+                print ('{} controls: execption occured in {} service'.format(task, service))
+
+    def search (self, target, timeout):
+        # a call to object detection layer to recognise target
+        # a service to make a swiping motion for a timeout
+        # if found within timeout then return true else false
+        pass
+
+    def align (self, target, timeout):
+        # change the vision current_task to 'target'
+        # change the odom source to 'vision'
+        # make the request to local planner and wait for a timeout
+        # return true within timout and false when fail
+        pass
+
+    def execute(self, userdata):
+        # hold
+        if not self.service_call_handler ('rescue', 'hold_vehicle', HoldRequest()):
+            print ('rescue class: \'hold_vehicle\' service unresponsive')
+            return 'local_planner_inactive'
+        
+        # search
+        if not self.search (userdata.target, 120):
+            return 'target_not_found'
+        
+        # align to target
+        if not self.align (userdata.target, 30):
+            examine = Examine ("rescue", 'vision', self.target_pose)
+            return examine.execute()
+        
+        # get an approximate dist
+        # feed the dist to smach and transit to transition state
+        return 'success'
+
+    def localise(self):
+        # locate where is it now
+        # can make a special service for this
+        pass
 
 class Transition(smach.State):
     def __init__(self):
@@ -126,16 +245,19 @@ class TaskBaseClass(smach.State):
                              input_keys=['input_stage'], output_keys=['output_stage', 'next_task'])
 
         self.odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
+        self.trajectory_sub = rospy.Subscriber('/anahita/dp_controller/waypoints', Point, self.monitor_cb)
         self.conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
         self.pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
         self.conventional_prob = 0
-        self.pose = None
+        self.pose = Pose()
         self.odom_init = False
         self.service_timeout = 5
-        self.stages = None
+        self.stages = None # to set
         self.current_stage = ''
-        self.task_timeout = None
+        self.task_timeout = None # to set
         self.current_odom_source = ''
+        self.out_of_path_threshold = 0 # to set
+        self.in_range = True
         
         try:
             self.services = dict()
@@ -167,10 +289,21 @@ class TaskBaseClass(smach.State):
         except:
             print("Service Instantiation failed")
     
+    def verifyObject (self, object):
+        # request to object detection service
+        # return true if found else false
+
     def odometry_callback(self, msg):
         self.pose = msg.pose.pose.position
         self.odom_init = True
         
+    def monitor_cb (self, msg):
+        point = msg
+        if (dist (self.pose.position, point) < out_of_path_threshold):
+            self.in_range = True
+        else:
+            self.in_range = False
+
     def execute(self):
         raise NotImplementedError()
     
@@ -194,9 +327,8 @@ class TaskBaseClass(smach.State):
 
 class Examine (object):
     # to find the problem
-    def __init__(self, task, stage, odom_source, target_pose):
+    def __init__(self, task, odom_source, target_pose):
         self.task = task
-        self.stage = stage
         self.odom_source = odom_source
         self.target_pose = target_pose
 
@@ -319,24 +451,153 @@ class GateTask(TaskBaseClass):
 class PathMarker(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
+        self.outcomes = ['target_not_found', 'success'
+                         'align_fail', 'turn_fail']
+        self.stages = ['align', 'turn']
+        self.current_stage = 'align'
+
+    def align(self, timeout):
+        # use go_to_pose
+        pass
+
+    def turn(self, timeout):
+        # use go_to_pose
+        pass
     
+    def execute(self, userdata):
+        # verify the object in the bottom camera frame is path marker
+        if not self.verifyObject('path_marker'):
+            return 'target_not_found'
+        if userdata.stage == 'align':
+            if not self.align():
+                return 'align_fail'
+            self.current_stage = 'turn'
+        if userdata.stage == 'turn':
+            if not self.turn():
+                return 'turn_fail'
+        return 'success'
+
+class BouyTask(TaskBaseClass):
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+        self.stages = ['align', 'front', 'align_again', 'hit']
+        self.outcomes = ['align_fail', 'align_again_fail', 
+                         'front_fail', 'hit_fail', 'success']
+
+    def hit(self):
+        # a service call to goto for hitting the buoy
+        pass
+
+    def align(self):
+        pass
+
+    def align_again(self):
+        pass
+
+    def front(self):
+        pass
+
     def execute(self):
+        if not self.verifyObject('buoy'):
+            return 'target_not_found'
+        if userdata.stage == 'align':
+            if not self.align():
+                return 'align_fail'
+            self.current_stage = 'front'
+        if userdata.stage == 'front':
+            if not self.front():
+                return 'front_fail'
+            self.current_stage = 'align_again'
+        if userdata.stage == 'align_again':
+            if not self.align_again():
+                return 'align_again_fail'
+            self.current_stage = 'hit'
+        if (userdata.stage == 'hit'):
+            self.hit()
+        return 'success'
+
+class FireTorpedo (TaskBaseClass):
+    def __init__(self):
+        TaskBaseClass.__init__(self)
+    
+    def align(self):
+        pass
+
+    def front(self):
+        pass
+
+    def fire(self):
+        pass
+
+    def execute(self, userdata):
+        # align
+        # front
+        # align
+        # fire
         pass
 
 class TorpedoTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
+        self.stages = ['stabilise', 'fire_torpedo', 'get_back',
+                       'fire_torpedo_again']
+        self.outcomes =['stabilise_fail', 'torpedo_fire_fail',
+                        'target_not_found', 'success']
+        self.current_stage = 'stabilise'
 
-    def take_position(self):
-        # take position to fire the torpedo
-        # by making a req to the goto server
+    def stabilise(self, timeout):
         pass
 
-    def fire_torpedo(self):
+    def fire_torpedo(self, timeout):
+        torpedo_sm = smach.StateMachine()
+        torpedo_sm.userdata.stage = 'align'
+        with torpedo_sm:
+            smach.StateMachine.add('fire_torpedo', FireTorpedo(), transitions={
+                'success': 'success'
+                'align_fail': 'fire_torpedo'
+                'align_again_fail': 'fire_torpedo'
+                'fire_fail': 'fail'
+                'front_fail': 'fire_torpedo'
+            }, remapping={
+                'stage': 'stage'
+            })
+        outcome = torpedo_sm.execute()
+        if (outcome == 'fail'):
+            return False
+        return True
+
+    def get_back(self, timeout):
         pass
 
-    def execute(self):
+    def get_positions (self):
         pass
+
+    def execute(self, userdata):
+        # verify
+        if not self.verifyObject('buoy'):
+            return 'target_not_found'
+        # stabilise
+        if (userdata.stage == 'stabilise'):
+            if not self.stabilise():
+                return 'stabilise_fail'
+            # note the positions of the torpedo holes
+            self.get_positions()
+            userdata.stage = 'fire_torpedo'
+        # fire 1st torpedo
+        if userdata.stage == 'fire_torpedo':
+            if not self.fire_torpedo():
+                return 'torpedo_fire_fail'
+            userdata.stage = 'get_back'
+        # get back a bit
+        if userdata.stage == 'get_back':
+            if not self.get_back():
+                return 'get_back_fail'
+            userdata.stage = 'fire_torpedo_again'
+        # fire 2nd torpedo
+        if userdata.stage == 'fire_torpedo_again':
+            if not self.fire_torpedo():
+                return 'torpedo_fire_again_fail'
+        return 'success'
 
 class MarkerDropperTask(TaskBaseClass):
     def __init__(self):
@@ -398,23 +659,6 @@ class MoveToXYZ(TaskBaseClass):
                 rospy.loginfo("I've lost")
                 return 'lost'
 
-class BouyTask(TaskBaseClass):
-    def __init__(self):
-        TaskBaseClass.__init__(self)
-
-    def hit_buoy(self):
-        # a service call to goto for hitting the buoy
-        pass
-
-    def get_back(self):
-        # a goto request to get back to its initial point
-        pass
-
-    def execute(self):
-        # can make a sub state machine to define the before hitting and after 
-        # hitting in separate states
-        pass
-
 class FindBottomTarget(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome2'])
@@ -425,6 +669,28 @@ class FindBottomTarget(smach.State):
 
     def explore(self):
         # move around to find a target
+        pass
+
+class IdentifyTarget(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=[''], input_keys=['target'])
+        rospy.loginfo("Identifying the target")
+        
+class TooFar(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=[''],
+                            input_keys=['target'])
+
+    def execute(self):
+        pass
+    
+    def stop(self):
+        # if the bot is going out of the way of any target
+        # then stop it
+        pass
+
+    def restore(self):
+        # restore to a position from where it can still do the task
         pass
 
 class FindFrontTarget(smach.State):
@@ -530,53 +796,6 @@ class FindFrontTarget(smach.State):
         pass
         # move around to find a target
 
-class RescueMode(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['some_outcome'])
-
-    def execute(self):
-        # monitor the path tracing
-        pass
-
-    def localise(self):
-        # locate where is it now
-        # can make a special service for this
-        pass
-
-    def next_task(self):
-        # gives the next task to approach
-        pass
-
-    def path_to_new_target(self):
-        # use a service to get the path from a path algorithm
-        pass
-
-    def trace_path(self):
-        # make a request to the init_waypoint_server for trajectory generation
-        pass
-
-class IdentifyTarget(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=[''], input_keys=['target'])
-        rospy.loginfo("Identifying the target")
-        
-class TooFar(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=[''],
-                            input_keys=['target'])
-
-    def execute(self):
-        pass
-    
-    def stop(self):
-        # if the bot is going out of the way of any target
-        # then stop it
-        pass
-
-    def restore(self):
-        # restore to a position from where it can still do the task
-        pass
-
 class StationKeeping(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success'])
@@ -610,6 +829,4 @@ if __name__ == '__main__':
         smach.StateMachine.add('intermediate', Transition(), transitions={
             'success' : 'intermediate',
             'fail' : 'rescue'
-        }, remapping= {
-
-        })
+        }, remapping= {})
