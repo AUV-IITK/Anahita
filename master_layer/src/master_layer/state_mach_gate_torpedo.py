@@ -17,6 +17,23 @@ from geometry_msgs.msg import Pose
 from std_msgs.msg import Int32
 from master_layer.srv import ChangeOdom
 from anahita_utils import *
+from master_layer.srv import GoToIncremental
+from master_layer.srv import GoTo
+from master_layer.msg import Waypoint
+from master_layer.srv import ChangeOdom
+from master_layer.srv import CurrentTask
+from master_layer.srv import GoToPose
+from master_layer.srv import InitCircularTrajectory
+from master_layer.srv import Hold
+from master_layer.srv import TrajectoryComplete
+from master_layer.srv import PoseReach
+from master_layer.srv import ChangeTorpedoHole
+
+current_p = Pose()
+
+def odometry_callback(msg):
+    global current_p
+    current_p = msg.pose.pose
 
 class Transition(smach.State):
     def __init__(self):
@@ -85,16 +102,25 @@ class TaskBaseClass(smach.State):
                             input_keys=['field1', 'field2', 'field3'],
                             output_keys=['field1', 'field2', 'field2'])
 
-        self._odom_topic_sub = rospy.Subscriber('/anahita/pose_gt', Odometry, self.odometry_callback)
-        self._conventional_detection_pub = rospy.Subscriber('/anahita/conventional_detection', Int32, self.conventional_detector_cb)
-        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10)
-        self._conventional_prob = 0
+        self._sub_odometry = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), odometry_callback)
+        self._pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10, latch=True)
         
         try:
+            self._go_to_incremental = rospy.ServiceProxy('anahita/go_to_incremental', GoToIncremental)
+            self._go_to = rospy.ServiceProxy('anahita/go_to', GoTo)
+            self._current_task = rospy.ServiceProxy('anahita/current_task', CurrentTask)
             self._change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
-            
+            self._go_to_pose = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+            self._init_circular_trajectory = rospy.ServiceProxy('anahita/start_circular_trajectory', InitCircularTrajectory)
+            self._hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
+            self._trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
+            self._pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
+            self._change_torpedo_hole = rospy.ServiceProxy('anahita/change_torpedo_hole', ChangeTorpedoHole)
+                    
         except rospy.ServiceException, e:
             print "Service call failed: %s"
+        
+        rospy.loginfo("Intialised all services nicely")
     
     def has_reached (self, pos, threshold):
         while (not status or rospy.is_shutdown()):
@@ -124,7 +150,7 @@ class TaskBaseClass(smach.State):
         pass
 
     def object_detector(self):  
-        # to start object recognition as soon the bot enters
+        # to start object recognition as soon the bot enters    
         # that task and confirm it is the same object
         # a service to ask vision layer if it is the same object
         # vision layer will recognize for a particular period of time
@@ -190,6 +216,7 @@ class BouyTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
 
+
     def hit_buoy(self):
         # a service call to goto for hitting the buoy
         pass
@@ -209,18 +236,40 @@ class BouyTask(TaskBaseClass):
 class GateTask(TaskBaseClass):
     def __init__(self):
         TaskBaseClass.__init__(self)
-
+        smach.State.__init__(self, outcomes=['crossed'],
+                            input_keys=['task_found'],
+                            output_keys=[])
+        self.execute()   
+            
     def wait_for_crossing(self):
         # to wait for the lower part of a pipe to be identified by the vision layer
         # to send a request to the vision layer to do it with a timeout
-        pass
+        change_odom_response = self._change_odom(odom="vision") 
+        current_task_resp = current_task(current_task="marker")
+        
+        pose = current_p
+        pose.position.x = 0
+        pose.position.y = 0
+        pose.position.z = 0
+
+        go_to_pose(target_pose=pose)
+        rospy.loginfo(str(rospy.get_name()) + ': cmd to align to the gate center')
+        pose_reach(time_out=5)
+        return
 
     def move_forward(self):
         # cross the gate
-        pass
+        step_point = fill_point(6, 0, 0)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
+        return
 
     def execute(self):
-        pass
+        rospy.loginfo("Starting execution of gate")
+        then = rospy.get_time()
+        wait_for_crossing()
+        move_forward()
+        return 'crossed'
 
 class TorpedoTask(TaskBaseClass):
     def __init__(self):
@@ -429,6 +478,10 @@ class IdentifyTarget(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=[''], input_keys=['target'])
         rospy.loginfo("Identifying the target")
+
+
+
+        
         
 
 
@@ -466,9 +519,9 @@ if __name__ == '__main__':
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('GateTask', MoveToXYZ(), 
-                               transitions={'successfully_completed':'MoveToXYZ', 'cannot_see':'FindFrontTarget', 'lost':'MovingToXYZ'})
-                                   
+
+        smach.StateMachine.add('GateTask', GateTask(), transitions={'crossed':'MoveToXYZ', 'fatal_fail':'RescueMode', 'cannot_see':'FindFrontTarget'})
+        smach.StateMachine.add('HoverXYZ', HoverXYZ(), transitions={'detected':'IdentifyTarget', 'cannot_see':'FindFrontTarget'})                                   
         smach.StateMachine.add('FindFrontTarget', FindFrontTarget(), transitions = {'found_visually':'IdentifyTarget', 'lost':'MovingToXYZ'})
         smach.StateMachine.add('IdentifyTarget', IdentifyTarget())
     

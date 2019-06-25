@@ -1,0 +1,19 @@
+<launch>
+    <node pkg="ORB_SLAM2" type="Mono" name="orb_node" args="/home/ayush/Projects/Workspaces/ORB_SLAM2/Vocabulary/ORBvoc.txt /home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/logitech_camera_underwater.yaml" output="screen">
+		<remap from="/camera/image_raw" to="/anahita/front_camera/image_raw"/>
+	</node>
+    <node pkg="tf" type="static_transform_publisher" name="camera_to_left" args="0.0 0.0 0 0 0.0 0 1 world init_link 10" /> 
+
+    <!--node name="octomap" pkg="octomap_server" type="octomap_server_node" output="screen">
+		<remap from="cloud_in" to="/remode/rgb_pointcloud"/>
+		<param name="sensor_model/max_range" value="100"/>
+		<param name="pointcloud_min_y" value="-50"/>
+		<param name="pointcloud_max_y" value="50"/>
+		<param name="frame_id" value="world"/>
+		<param name="resolution" value="0.01" />
+		<param name="height_map" value="false" />
+		<param name="colored_map" value="true" />
+	</node -->
+
+    <!--include file="$(find rpg_open_remode)/launch/rgb_remode.launch"/-->    
+</launch>

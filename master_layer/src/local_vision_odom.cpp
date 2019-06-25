@@ -14,7 +14,7 @@
 
 double z, y, x;
 double z_avg, y_avg, x_avg;
-double y_ml, z_ml;
+double y_ml, z_ml, x_ml;
 
 nav_msgs::Odometry odom_data;
 
@@ -37,6 +37,7 @@ std::string current_task = "vampire";
 
 void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
 {
+    double x_len, y_len;
     int number_of_objects = sizeof(msg.bounding_boxes)/sizeof(msg.bounding_boxes[0]);
     for(int i = 0; i < number_of_objects; i++)
     {
@@ -44,7 +45,11 @@ void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
         {
             ROS_INFO("Inside ML Callback");
             y_ml = (msg.bounding_boxes[i].xmin + msg.bounding_boxes[i].xmax)/2 - 320; 
-            z_ml = 320 - (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2 ; 
+            z_ml = 320 - (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2;
+            y_len = (msg.bounding_boxes[i].ymax - msg.bounding_boxes[i].ymin);
+            x_len = (msg.bounding_boxes[i].ymax - msg.bounding_boxes[i].ymin);
+            x_ml = pow(y_len*y_len + x_len*x_len, 0.5);
+
         }
     }
 }
@@ -200,14 +205,9 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.z = z_avg/200.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
         }
-        else if (odom_source == "stereo") {
-            odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/200.0;
-            if (odom_init) transform (odom_msg.pose.pose.position);
-            odom_msg.pose.pose.position.x = -x_avg;
-        }
         else if (odom_source == "vision_ml"){
             odom_msg = odom_data;
+            odom_msg.pose.pose.position.x = -x_ml;
             odom_msg.pose.pose.position.y = y_ml;
             odom_msg.pose.pose.position.z = z_ml;
         }

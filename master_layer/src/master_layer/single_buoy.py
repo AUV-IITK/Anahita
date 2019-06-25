@@ -11,6 +11,18 @@ from geometry_msgs.msg import Point, Pose
 from nav_msgs.msg import Odometry
 from rospy.numpy_msg import numpy_msg
 import time
+from master_layer.srv import GoToIncremental
+from master_layer.srv import GoTo
+from master_layer.msg import Waypoint
+from master_layer.srv import ChangeOdom
+from master_layer.srv import CurrentTask
+from master_layer.srv import GoToPose
+from master_layer.srv import InitCircularTrajectory
+from master_layer.srv import Hold
+from master_layer.srv import TrajectoryComplete
+from master_layer.srv import PoseReach
+
+from std_msgs.msg import Time, String
 
 status = False
 _current_pose = Pose()
@@ -51,7 +63,7 @@ def has_reached_with_yaw(target_pose, curr_pose, pos_threshold, yaw_threshold):
         return False
     _curr_roll, _curr_pitch, _curr_yaw = quaternion_to_eulerRPY(curr_pose.orientation)
     _target_roll, _target_pitch, _target_yaw = quaternion_to_eulerRPY(target_pose.orientation)
-    rospy.loginfo('The current roll is: ' + str(TO_DEGREE(_curr_yaw))  + ", target roll is: " + str(TO_DEGREE(_target_yaw)))
+    rospy.loginfo('The current yaw is: ' + str(TO_DEGREE(_curr_yaw))  + ", target yaw is: " + str(TO_DEGREE(_target_yaw)))
     while (abs(TO_DEGREE(_curr_yaw) - TO_DEGREE(_target_yaw)) > yaw_threshold):
         return False
     print("Pahunchgye sir"  + str(abs(_curr_yaw - _target_yaw)))
@@ -80,7 +92,7 @@ def rotate_and_look():
 		continue
 
 def ml_callback(msg):
-    #rospy.loginfo("The number of objects being detected is: " + str(msg.data))  
+    rospy.loginfo("The number of objects being detected is: " + str(msg.data))  
     global num_objects
     num_objects = msg.data
     if num_objects > 0:
@@ -116,71 +128,71 @@ if __name__ == '__main__':
     set_odom_depth_response = set_odom_depth()
     initial_pose = Pose()
     fill_pose_data(initial_pose, 0, 0 , 0, 0, 0, 0, 1)
-    pose_cmd_pub.publish(initial_pose)
+    go_to_pose(target_pose=initial_pose)
     rospy.loginfo('Setting the initial pose')
 
-    rospy.sleep(3)
-    _then = rospy.get_time()
+    rospy.sleep(100)
+    # _then = rospy.get_time()
 	
-    while num_objects == 0 and detected_once is False:# and rospy.get_time() - _then < _timeout:
-        rospy.loginfo('I cannot fucking see anything')
-        rotate_and_look()
+    # while num_objects == 0 and detected_once is False:# and rospy.get_time() - _then < _timeout:
+    #     rospy.loginfo('I cannot fucking see anything')
+    #     rotate_and_look()
     
-    if rospy.get_time() - _then > _timeout:
-        rospy.loginfo("Timed out")
-        exit()
+    # if rospy.get_time() - _then > _timeout:
+    #     rospy.loginfo("Timed out")
+    #     exit()
 
-    change_odom_response = change_odom(odom="vision_ml")
+    # change_odom_response = change_odom(odom="vision_ml")
     
-    fill_pose_data_xyzq(_target_pose, _depth_target, 0, 0, _current_pose.orientation)
-    pose_cmd_pub.publish(_target_pose)
+    # fill_pose_data_xyzq(_target_pose, _depth_target, 0, 0, _current_pose.orientation)
+    # pose_cmd_pub.publish(_target_pose)
 
-    while _depth_target > 3:
-        rospy.loginfo("Approaching the target")
-        continue
+    # while _depth_target > 3:
+    #     rospy.loginfo("Approaching the target")
+    #     continue
 
-    fill_pose_data_xyzq(_target_pose, 3, 0, 0, _current_pose.orientation)       
-    pose_cmd_pub.publish(_target_pose)
-    rospy.loginfo('At a stable location')
+    # fill_pose_data_xyzq(_target_pose, 3, 0, 0, _current_pose.orientation)       
+    # pose_cmd_pub.publish(_target_pose)
+    # rospy.loginfo('At a stable location')
 
-    rospy.sleep(3)
+    # rospy.sleep(3)
 
-    # buoy hitting
+    # # buoy hitting
 
-    pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('Publishing cmd to align')
+    # pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('Publishing cmd to align')
 
-    pose_reach(time_out=20)
-    rospy.sleep(5)
-    rospy.loginfo('Aligned center')
+    # pose_reach(time_out=20)
+    # rospy.sleep(5)
+    # rospy.loginfo('Aligned center')
 
-    change_odom(odom="stereo_vision")
+    
 
-    pose = fill_pose(-2.1, 0, 0, 0, 0, 0, 1)
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('cmd to move near the torpedo hole')
+    # pose = fill_pose(-2.1, 0, 0, 0, 0, 0, 1)
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to move near the torpedo hole')
 
-    pose_reach(time_out=20)
-    rospy.sleep(1)
-    rospy.loginfo('Infront of the torpedo hole')
+    # pose_reach(time_out=20)
+    # rospy.sleep(1)
+    # rospy.loginfo('Infront of the torpedo hole')
 
-    change_odom(odom="dvl")
-    rospy.sleep(0.1)
-    pose = fill_pose(2.3 + _current_p.x, _current_p.y, _current_p.z, 0, 0, 0, 1)
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('cmd to hit the buoy')
+    # change_odom(odom="dvl")
+    # rospy.sleep(0.1)
+    # pose = fill_pose(2.3 + _current_p.x, _current_p.y, _current_p.z, 0, 0, 0, 1)
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to hit the buoy')
 
-    pose_reach(time_out=20)
-    rospy.loginfo('Buoy is hit!')
-    rospy.sleep(1)
+    # pose_reach(time_out=20)
+    # rospy.loginfo('Buoy is hit!')
+    # rospy.sleep(1)
 
-    pose = fill_pose(_current_p.x - 2, _current_p.y, _current_p.z, 0, 0, 0, 1)
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('cmd to go back')
+    # pose = fill_pose(_current_p.x - 2, _current_p.y, _current_p.z, 0, 0, 0, 1)
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to go back')
 
-    pose_reach(time_out=20)
-    rospy.loginfo('Bot is back')
+    # pose_reach(time_out=20)
+    # rospy.loginfo('Bot is back')
 
 
 
