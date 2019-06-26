@@ -13,6 +13,7 @@ from keras.models import load_model
 import h5py
 import matplotlib.pyplot as plt
 from sklearn.externals import joblib
+import pickle
 
 num_attr = 15 # number of features fed into the network
 
@@ -37,22 +38,47 @@ def baseline_model():
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
-# Instantiate the model as you please (we are not going to use this)
-# model2 = KerasRegressor(build_fn=baseline_model, batch_size=5, epochs=100, verbose=1)
-model2 = baseline_model()
-model2.load_weights('depth_model.h5')
-# This is where you load the actual saved model into new variable
-# model2.model = load_model("/home/ironman/anahita_ws/src/Anahita/master_layer/src/master_layer/depth_model.h5")
+test_type = "siple"
 
-# Now you can use this to predict on new data (without fitting model2, because it uses the older saved model)
-Y_pred = model2.predict(X)
-# clf_load = joblib.load('model.joblib')
-# print 'model loaded from model.joblib'
-# print clf_load.predict(X)
+def load_simple (file_name):
+    model = baseline_model()
+    model.load_weights(file_name)
+    return model
 
-fig, ax = plt.subplots()
-ax.scatter(Y, Y_pred)
-ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
-ax.set_xlabel('Measured')
-ax.set_ylabel('Predicted')
-plt.show()
+def load_complex (scaler_filename, regressor_filename):
+    standard_scaler = pickle.load(open(scaler_filename, 'rb'))
+    print ('loaded standard scaler')
+    p_model = KerasRegressor(build_fn=baseline_model)
+    p_model.fit(X, Y)
+    print ('training again')
+
+    p_model.model.load_weights(regressor_filename)
+    print ('loaded mlp')
+
+    predictor = Pipeline([
+        ('standardize', standard_scaler),
+        ('mlp', p_model)
+    ])
+    return predictor
+
+if (test_type == "simple"):
+    model = load_simple('../../models/gate_model_1.h5')
+    Y_pred = model.predict(X)
+else:
+    model = load_complex('../../models/standard_scaler.pkl', '../../models/gate_model_2.h5')
+    Y_pred = model.predict(X)
+
+sum_ = 0
+for i in range(len(Y)):
+    sum_ += abs(Y[i] - Y_pred[i])
+accuracy = sum_/len(Y)
+print ('accuracy: {}'.format(accuracy))
+
+def plot (Y, Y_pred):
+    fig, ax = plt.subplots()
+    ax.scatter(Y, Y_pred)
+    ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+    plt.savefig('depth_model.png')
+    plt.show()
