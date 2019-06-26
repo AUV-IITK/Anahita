@@ -1,9 +1,10 @@
 #include <torpedo.h>
 
-Torpedo::Torpedo(){
-	this->loadParams ();
-    this->front_roi_pub = it.advertise("/anahita/roi", 1);
+Torpedo::Torpedo () {
+	loadParams ();
+    front_roi_pub = it.advertise("/anahita/roi", 1);
     service = nh.advertiseService("/anahita/change_torpedo_hole", &Torpedo::changeTorpedoHole, this);
+    features_pub = nh.advertise<std_msgs::Int32MultiArray>("/anahita/features", 10);
 
     std::string trackerTypes[8] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN", "MOSSE", "CSRT"};
     std::string trackerType = trackerTypes[1];
@@ -21,7 +22,7 @@ Torpedo::Torpedo(){
 }
 
 bool Torpedo::changeTorpedoHole (master_layer::ChangeTorpedoHole::Request &req,
-                        master_layer::ChangeTorpedoHole::Response &resp) {
+                                 master_layer::ChangeTorpedoHole::Response &resp) {
     current_hole = req.hole;
     ROS_INFO ("Torpedo target changed to: %s", current_hole);
     return true;
@@ -290,6 +291,7 @@ void Torpedo::spinThreadFront() {
 
             if (!(TL_init||BOT_init||TR_init)) {
                 ROS_INFO ("Not visible hole");
+                loop_rate.sleep();
                 continue;
             }
 
@@ -315,9 +317,133 @@ void Torpedo::spinThreadFront() {
             front_y_coordinate_pub.publish(front_y_coordinate);
             front_z_coordinate_pub.publish(front_z_coordinate);
 		}
-		else
-			ROS_INFO("Image empty");
+		else ROS_INFO("Image empty");
 		loop_rate.sleep();
 		ros::spinOnce();
 	}
+}
+
+struct circle_ {
+    cv::Point2f center;
+    float radius;
+};
+
+bool circle_x_cmp (circle_ a, circle_ b) {
+    return a.center.x < b.center.x;
+}
+
+void sortCirclesLeftToRight (std::vector<circle_>& circles) {
+    std::sort (circles.begin(), circles.end(), circle_x_cmp);
+}
+
+double get_dist (cv::Point2f a, cv::Point2f b) {
+    return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
+}
+
+void fill_msg (std_msgs::Int32MultiArray& features_msg, int l_x, int l_y,
+               int m_x, int m_y, int r_x, int r_y, float l_m_d, float m_r_d,
+               float l_r_d, float l_s, float m_s, float r_s) {
+    features_msg.data.push_back(l_x); features_msg.data.push_back(l_y);
+    features_msg.data.push_back(m_x); features_msg.data.push_back(m_y);
+    features_msg.data.push_back(r_x); features_msg.data.push_back(r_y);
+    features_msg.data.push_back(l_m_d); features_msg.data.push_back(m_r_d);
+    features_msg.data.push_back(l_r_d); features_msg.data.push_back(l_s);
+    features_msg.data.push_back(m_s); features_msg.data.push_back(r_s);
+}
+
+bool in_range (float a, float b, float range) {
+    if (std::abs(a-b) <= range) return true;
+    return false;
+}
+
+void Torpedo::extractFeatures (const cv::Mat& thres_img) {
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    contours = vision_commons::Contour::filterContours(contours, 100);
+    if (contours.size() < 2) return;
+    vision_commons::Contour::sortFromBigToSmall(contours);
+    std::vector<std::vector<cv::Point> > filtered_contours;
+
+    for (int i = 0; i < contours.size(); i++) {
+        if (hierarchy[i][2] < 0 && hierarchy[i][3] > 0) continue;
+        filtered_contours.push_back(contours[i]);
+    }
+
+    static int l_x = -1;
+    static int l_y = -1;
+    static int m_x = -1;
+    static int m_y = -1;
+    static int r_x = -1;
+    static int r_y = -1;
+    static float l_m_d = -1;
+    static float m_r_d = -1;
+    static float l_r_d = -1;
+    static float l_s = -1;
+    static float m_s = -1;
+    static float r_s = -1;
+
+    std::vector<circle_> circles;
+    for (int i = 0; i < filtered_contours.size(); i++) {
+        cv::Point2f center; float radius;
+        cv::minEnclosingCircle (cv::Mat(contours[i]), center, radius);
+        circles.push_back({center, radius});
+    }
+    sortCirclesLeftToRight (circles);
+
+    if (circles.size() == 2) {
+        if (in_range (circles[0].center.y, circles[1].center.y, 20)) {
+            cv::Point2f l_center, r_center;
+            float l_radius, r_radius;
+            l_center = circles[0].center; l_radius = circles[0].radius;
+            r_center = circles[2].center; r_radius = circles[2].radius;
+
+            l_x = l_center.x; l_y = l_center.y;
+            r_x = r_center.x; r_y = r_center.y;
+
+            l_r_d = get_dist (l_center, r_center);
+
+            l_s = 2*M_PI*l_radius; r_s = 2*M_PI*r_radius;
+        }
+        else {
+            if (circles[0].center.y > circles[1].center.y) { // 0 => middle
+                cv::Point2f m_center, r_center;
+                float m_radius, r_radius;
+                m_center = circles[1].center; m_radius = circles[1].radius;
+                r_center = circles[2].center; r_radius = circles[2].radius;
+                m_x = m_center.x; m_y = m_center.y;
+                r_x = r_center.x; r_y = r_center.y;
+                m_r_d = get_dist (r_center, m_center);
+                m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius;
+            } else {
+                cv::Point2f l_center, m_center;
+                float l_radius, m_radius;
+                l_center = circles[0].center; l_radius = circles[0].radius;
+                m_center = circles[1].center; m_radius = circles[1].radius;
+                l_x = l_center.x; l_y = l_center.y;
+                m_x = m_center.x; m_y = m_center.y;
+                l_m_d = get_dist (l_center, m_center);
+                l_s = 2*M_PI*l_radius; m_s = 2*M_PI*m_radius;
+            }
+        }
+    } else {
+        cv::Point2f l_center, m_center, r_center;
+        float l_radius, m_radius, r_radius;
+
+        l_center = circles[0].center; l_radius = circles[0].radius;
+        m_center = circles[1].center; m_radius = circles[1].radius;
+        r_center = circles[2].center; r_radius = circles[2].radius;
+
+        l_x = l_center.x; l_y = l_center.y;
+        m_x = m_center.x; m_y = m_center.y;
+        r_x = r_center.x; r_y = r_center.y;
+
+        l_m_d = get_dist (l_center, m_center);
+        m_r_d = get_dist (r_center, m_center);
+        l_r_d = get_dist (l_center, r_center);
+
+        l_s = 2*M_PI*l_radius; m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius;
+    }
+    fill_msg (feature_msg, l_x, l_y, m_x, m_y, r_x, m_y, l_m_d, m_r_d, l_r_d, l_s, m_s, r_s);
+    features_pub.publish(feature_msg);
 }

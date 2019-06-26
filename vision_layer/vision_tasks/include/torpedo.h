@@ -5,6 +5,8 @@
 #include <opencv2/tracking.hpp>
 #include <opencv2/core/ocl.hpp>
 #include <master_layer/ChangeTorpedoHole.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <cmath>
 
 class Torpedo : public Base_class
 {
@@ -20,9 +22,13 @@ class Torpedo : public Base_class
         void updateCoordinates (std::vector<cv::Point> points);
         bool changeTorpedoHole (master_layer::ChangeTorpedoHole::Request &req,
                                 master_layer::ChangeTorpedoHole::Response &resp);
+        void extractFeatures (const cv::Mat& thres_img);
 
     private:
         image_transport::Publisher front_roi_pub;
+        ros::Publisher features_pub;
+        std_msgs::Int32MultiArray feature_msg;
+
         cv::Mat marked_img;
         bool initTracker = false;
         
