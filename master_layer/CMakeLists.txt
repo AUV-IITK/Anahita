@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  anahita_msgs
+#   anahita_msgs
   roscpp
   rospy
   std_msgs
@@ -21,8 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-find_package(task_handler_layer REQUIRED)
-find_package(motion_layer REQUIRED)
+# find_package(task_handler_layer REQUIRED)
+# find_package(motion_layer REQUIRED)
 find_package (Eigen3 REQUIRED NO_MODULE)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -79,6 +79,7 @@ add_service_files(
   PingerFrontTarget.srv
   TargetNormal.srv
   GetMaxDepth.srv
+  GetBlackoutTime.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -122,7 +123,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES action_servers
-CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs task_handler_layer motion_layer anahita_msgs geometry_msgs
+CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs geometry_msgs # task_handler_layer motion_layer anahita_msgs 
 #  DEPENDS system_lib
 )
 
@@ -135,8 +136,8 @@ CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${task_handler_layer_INCLUDE_DIRS}
-  ${motion_layer_INCLUDE_DIRS}
+#   ${task_handler_layer_INCLUDE_DIRS}
+#   ${motion_layer_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -151,44 +152,44 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(pwm_publisher src/pwm_publisher.cpp)
-target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
+# add_executable(pwm_publisher src/pwm_publisher.cpp)
+# target_link_libraries(pwm_publisher ${catkin_LIBRARIES})
 
-add_executable(master src/master.cpp)
-add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(master 
-  gate
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
+# add_executable(master src/master.cpp)
+# add_dependencies(master master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(master 
+#   gate
+#   moveSideward 
+#   moveStraight 
+#   task_handler 
+#   moveDownward 
+#   marker_dropper
+#   navigation_handler
+#   ${catkin_LIBRARIES}
+# )
 
-add_executable(test_node src/test_node.cpp)
-add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_node
-  moveSideward 
-  moveStraight 
-  task_handler 
-  moveDownward 
-  marker_dropper
-  navigation_handler
-  ${catkin_LIBRARIES}
-)
+# add_executable(test_node src/test_node.cpp)
+# add_dependencies(test_node master_layer_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(test_node
+#   moveSideward 
+#   moveStraight 
+#   task_handler 
+#   moveDownward 
+#   marker_dropper
+#   navigation_handler
+#   ${catkin_LIBRARIES}
+# )
 
-add_executable(motion_server src/motion_server.cpp)
-target_link_libraries(motion_server 
-  swayPIDServer 
-  heavePIDServer 
-  yawPIDServer 
-  surgePIDServer 
-  rollPIDServer 
-  pitchPIDServer 
-  ${catkin_LIBRARIES}
-)
+# add_executable(motion_server src/motion_server.cpp)
+# target_link_libraries(motion_server 
+#   swayPIDServer 
+#   heavePIDServer 
+#   yawPIDServer 
+#   surgePIDServer 
+#   rollPIDServer 
+#   pitchPIDServer 
+#   ${catkin_LIBRARIES}
+# )
 
 add_executable(local_vision_odom src/local_vision_odom.cpp)
 target_link_libraries(local_vision_odom ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES})

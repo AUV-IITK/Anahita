@@ -125,6 +125,7 @@ void NavigationNode::PublishData(ros::Time &current_time)
     odometry_msg.header.frame_id = "world";
     odometry_msg.child_frame_id = "anahita/base_link";
     odometry_msg.header.stamp = current_time;
+
 	FillPoseMsg(poseEstimation_, quaternion_, odometry_msg);
 	FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
     navigationOdomPublisher_.publish(odometry_msg);

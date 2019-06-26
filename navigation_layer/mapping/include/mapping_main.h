@@ -35,33 +35,7 @@ private:
     tf::TransformBroadcaster map_to_odom_broadcaster;
     
     std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
-    /*
-    ros::Subscriber dvlTwistSubscriber_;
-    ros::Subscriber dvlPressureSubscriber_;
-    ros::Subscriber imuSubscriber_;
 
-    ros::Publisher navigationOdomPublisher_;
-    tf::TransformBroadcaster odom_broadcaster;
-
-    ros::ServiceServer navigationDepthOffsetServer_;
-    ros::ServiceServer navigationXYOffsetServer_;
-
-    DvlData dvlData_;
-    IMUData imuData_;
-
-    ExtendedKalmanFilter dvlFilter_;
-    Eigen::Vector3d poseEstimation_;
-
-    double zOffset_;
-    double positionFromDepth_;
-
-    Eigen::Quaterniond quaternion_;
-    Eigen::Vector3d position_;
-    Eigen::Vector3d incrementPosition_;
-    Eigen::Vector3d velocity_;
-    Eigen::Vector3d angularVelocity_;
-    Eigen::Vector3d eulerAngel_;
-    */
 };
 
 } // namespace mapping

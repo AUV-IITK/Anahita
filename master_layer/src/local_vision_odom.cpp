@@ -43,6 +43,9 @@ void ml_callback(const darknet_ros_msgs::BoundingBoxes msg)
     //std::cout<<number_of_objects<<std::endl;
    
     for(int i = 0; i<1; i++)
+    double x_len, y_len;
+    int number_of_objects = sizeof(msg.bounding_boxes)/sizeof(msg.bounding_boxes[0]);
+    for(int i = 0; i < number_of_objects; i++)
     {
 	ROS_INFO("Current class: %s", msg.bounding_boxes[i].Class);
         if(msg.bounding_boxes[i].Class == current_task)
@@ -50,6 +53,7 @@ void ml_callback(const darknet_ros_msgs::BoundingBoxes msg)
             ROS_INFO("Inside ML Callback");
             y_ml = (msg.bounding_boxes[i].xmin + msg.bounding_boxes[i].xmax)/2 - 320; 
             z_ml = (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2 - 320;
+            z_ml = 320 - (msg.bounding_boxes[i].ymin + msg.bounding_boxes[i].ymax)/2;
             y_len = (msg.bounding_boxes[i].ymax - msg.bounding_boxes[i].ymin);
             x_len = (msg.bounding_boxes[i].ymax - msg.bounding_boxes[i].ymin);
             x_ml = pow(y_len*y_len + x_len*x_len, 0.5);
@@ -216,6 +220,9 @@ int main (int argc, char** argv) {
             //odom_msg.pose.pose.position.z = 0;
 //            transform (odom_msg.pose.pose.position);
 	    ROS_INFO("VALUES---------------------------------------------------------------------- %f %f %f", -x_ml/1000, y_ml/200, -z_ml/1000);
+            odom_msg.pose.pose.position.x = -x_ml;
+            odom_msg.pose.pose.position.y = y_ml;
+            odom_msg.pose.pose.position.z = z_ml;
         }
         else if (odom_source == "stereo_vision"){
             odom_msg = odom_data;

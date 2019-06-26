@@ -23,9 +23,9 @@
   <arg name="camera2_info_url"  default="package://hardware_camera/cfg/right.yaml"/>
 
   <group ns = "anahita">
-    <!-- front camera -->
-    <node name="front_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"      value="/dev/video0" />
+
+    <node name="$(arg camera1)" pkg="usb_cam" type="usb_cam_node">
+      <param name="video_device"      value="/$(arg camera1_dev)"/>
       <param name="image_width"       value="$(arg image_width)" />
       <param name="image_height"      value="$(arg image_height)" />
       <param name="framerate"         value="$(arg framerate)"/>
@@ -36,13 +36,12 @@
       <param name="autofocus"         value="true" />
     </node>
 
-    <!-- bottom camera -->
-    <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node">
-      <param name="video_device"    value="/dev/video1" />
+    <node name="$(arg camera2)" pkg="usb_cam" type="usb_cam_node">
+      <param name="video_device"    value="/$(arg camera2_dev)"/>
       <param name="image_width"     value="$(arg image_width)" />
       <param name="image_height"    value="$(arg image_height)" />
       <param name="framerate"       value="$(arg framerate)"/>
-      <param name="camera_name"     value="anahita/$(arg camera2_dev)"/>
+      <param name="camera_name"     value="anahita/$(arg camera2)"/>
       <param name="camera_frame_id" value="$(arg camera2)_link" />
       <param name="camera_info_url" value="$(arg camera2_info_url)"/>
       <param name="pixel_format"    value="mjpeg" />
