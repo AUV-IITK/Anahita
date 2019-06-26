@@ -137,7 +137,7 @@ void StartGate::extractFeatures (const cv::Mat& thres_img) {
     int l_r_v = -1;
 
     if (contours.size() == 2) {
-        if (in_range(cv::contourArea (contours[1], false), cv::contourArea (contours[0], false), 15)) { // left and right
+        if (in_range(cv::contourArea (contours[1], false), cv::contourArea (contours[0], false), 25)) { // left and right
             cv::Rect2d rect0; cv::Rect2d rect1;
             rect0 = cv::boundingRect (cv::Mat(contours[0]));
             rect1 = cv::boundingRect (cv::Mat(contours[1]));

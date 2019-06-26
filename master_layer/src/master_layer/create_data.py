@@ -32,7 +32,7 @@ def make_string (features, dist):
 def imu_cb (msg):
     global yaw
     orientation = msg.orientation
-    yaw = quaternion_to_eulerRPY(orientation)[2]
+    yaw = quaternion_to_eulerRPY(orientation)[2]*57.2957795
 
 if __name__=='__main__':
     rospy.init_node ('test_node')
@@ -43,16 +43,11 @@ if __name__=='__main__':
 
     gate_center = Point(0.83, 0, -1.2)
 
-    f = open('depth_data4.csv', 'w+')
-    g = open('yaw_data.csv', 'w+')
+    f = open('../../data/yaw_data1.csv', 'w+')
 
     while not rospy.is_shutdown():
-        dist = get_dist (curr_point, gate_center)
-        f.write(make_string(features, dist))
-        # g.write(make_string(features, yaw))
+        f.write(make_string(features, yaw))
         f.flush()
-        # g.flush()
-        # print make_string(features, yaw)
-        print make_string(features, dist)
+        print make_string(features, yaw)
         rospy.sleep(1)
         

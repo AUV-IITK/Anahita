@@ -18,7 +18,7 @@ import pickle
 num_attr = 15 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("depth_test.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/yaw_test.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -38,7 +38,7 @@ def baseline_model():
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
-test_type = "siple"
+test_type = "simple"
 
 def load_simple (file_name):
     model = baseline_model()
@@ -61,9 +61,19 @@ def load_complex (scaler_filename, regressor_filename):
     ])
     return predictor
 
+def plot (Y, Y_pred):
+    fig, ax = plt.subplots()
+    ax.scatter(Y, Y_pred)
+    ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
+    ax.set_xlabel('Measured')
+    ax.set_ylabel('Predicted')
+    plt.savefig('../../img/yaw_model.png')
+    plt.show()
+
 if (test_type == "simple"):
-    model = load_simple('../../models/gate_model_1.h5')
+    model = load_simple('../../models/yaw_model.h5')
     Y_pred = model.predict(X)
+    plot (Y, Y_pred)
 else:
     model = load_complex('../../models/standard_scaler.pkl', '../../models/gate_model_2.h5')
     Y_pred = model.predict(X)
@@ -73,12 +83,3 @@ for i in range(len(Y)):
     sum_ += abs(Y[i] - Y_pred[i])
 accuracy = sum_/len(Y)
 print ('accuracy: {}'.format(accuracy))
-
-def plot (Y, Y_pred):
-    fig, ax = plt.subplots()
-    ax.scatter(Y, Y_pred)
-    ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
-    ax.set_xlabel('Measured')
-    ax.set_ylabel('Predicted')
-    plt.savefig('depth_model.png')
-    plt.show()
