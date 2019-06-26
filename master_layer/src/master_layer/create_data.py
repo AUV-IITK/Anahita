@@ -43,7 +43,7 @@ if __name__=='__main__':
 
     gate_center = Point(0.83, 0, -1.2)
 
-    f = open('depth_data3.csv', 'w+')
+    f = open('depth_data4.csv', 'w+')
     g = open('yaw_data.csv', 'w+')
 
     while not rospy.is_shutdown():

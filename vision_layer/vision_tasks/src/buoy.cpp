@@ -20,7 +20,7 @@ void Buoy::loadParams () {
     nh.getParam("/anahita/vision/buoy/bilateral_iter", front_bilateral_iter_);
 }
 
-cv::Mat Buoy::preprocess (const cv::Mat& temp_src) {
+cv::Mat Buoy::preprocess (cv::Mat temp_src) {
     cv::Mat thres_img;
     vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
     thres_img = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
@@ -53,7 +53,7 @@ void Buoy::extractFeatures (const cv::Mat& thres_img) {
     contour = contours[0];
 
     cv::Rect bound_rect = cv::boundingRect (cv::Mat(contour));
-    cv::Rect bound_center = get_center (bound_rect);
+    cv::Point bound_center = get_center (bound_rect);
 
     static int x = -1;
     static int y = -1;
@@ -74,6 +74,7 @@ void Buoy::spinThreadFront () {
 
     ROS_INFO ("vision: buoy activated");
     cv::Mat temp_src;
+    ros::Rate loop_rate(15);
 	while (ros::ok()) {	
 		if (close_task) {
             close_task = false;

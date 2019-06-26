@@ -11,6 +11,8 @@ import os
 from keras.models import model_from_json
 from keras.models import load_model
 import h5py
+import matplotlib.pyplot as plt
+from sklearn.externals import joblib
 
 num_attr = 15 # number of features fed into the network
 
@@ -36,10 +38,21 @@ def baseline_model():
     return model
 
 # Instantiate the model as you please (we are not going to use this)
-model2 = KerasRegressor(build_fn=baseline_model, batch_size=5, epochs=100, verbose=1)
-
+# model2 = KerasRegressor(build_fn=baseline_model, batch_size=5, epochs=100, verbose=1)
+model2 = baseline_model()
+model2.load_weights('depth_model.h5')
 # This is where you load the actual saved model into new variable
-model2.model = load_model("/home/ironman/anahita_ws/src/Anahita/master_layer/src/master_layer/depth_model.h5")
+# model2.model = load_model("/home/ironman/anahita_ws/src/Anahita/master_layer/src/master_layer/depth_model.h5")
 
 # Now you can use this to predict on new data (without fitting model2, because it uses the older saved model)
-model2.predict(X)
+Y_pred = model2.predict(X)
+clf_load = joblib.load('model.joblib')
+print 'model loaded from model.joblib'
+print clf_load.predict(X)
+
+fig, ax = plt.subplots()
+ax.scatter(Y, Y_pred)
+ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+plt.show()

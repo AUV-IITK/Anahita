@@ -98,7 +98,7 @@ cv::Point2d rect_center (cv::Rect2d bound_rect) {
 }
 
 bool in_range (float a, float b, float range) {
-    if (a + range >= b || a - range <= b) return true;
+    if (std::abs(a-b) <= range) return true;
     return false;
 }
 
@@ -165,6 +165,7 @@ void StartGate::extractFeatures (const cv::Mat& thres_img) {
             }
         }
         else { // left and middle or right and middle
+            ROS_INFO ("left-middle or right-middle scenario");
             cv::Rect2d rect0; cv::Rect2d rect1;
             rect0 = cv::boundingRect (cv::Mat(contours[0]));
             rect1 = cv::boundingRect (cv::Mat(contours[1]));
