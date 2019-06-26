@@ -10,7 +10,7 @@ public:
 	Buoy();
     void loadParams () override;
 	void spinThreadFront() override;
-    cv::Mat preprocess (const cv::Mat&);
+    cv::Mat preprocess (cv::Mat);
     void extractFeatures (const cv::Mat&);
 
 private:
