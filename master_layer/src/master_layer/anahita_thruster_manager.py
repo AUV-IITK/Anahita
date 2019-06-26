@@ -4,6 +4,7 @@ import numpy
 import rospy
 from geometry_msgs.msg import Wrench
 from anahita_msgs.msg import Thrust
+from std_msgs.msg import Bool
 
 class AnahitaThrusterManager(object):
 
@@ -29,10 +30,12 @@ class AnahitaThrusterManager(object):
 
         self.input_sub = rospy.Subscriber('/anahita/thruster_manager/input',
                                           Wrench, self.input_callback)
+        self.kill_sub = rospy.Subscriber('/anahita/kill_thrust', Bool, self.killCB)
         self.pwm_pub = rospy.Publisher('/pwm', Thrust, queue_size=1, latch=True)
 
         self.thrust = None
         self.thrust = numpy.zeros(self.n_thrusters)
+        self.kill_thrust = False
 
         self.ready = True
 
@@ -47,6 +50,9 @@ class AnahitaThrusterManager(object):
 
     def compute_pwm(self, thrust):
         return numpy.interp(thrust, self._input, self._output)
+
+    def killCB(self, msg):
+        self.kill_thrust = msg.data
 
     def input_callback(self, msg):
 
@@ -69,7 +75,7 @@ class AnahitaThrusterManager(object):
         """
         # Calculate individual thrust forces
         thrust = self.inverse_configuration_matrix.dot(gen_forces)
-	rospy.loginfo("Thrust computed per thruster: " + str(thrust))
+	    rospy.loginfo("Thrust computed per thruster: " + str(thrust))
         return thrust
 
     def command_thrusters(self):
@@ -79,14 +85,15 @@ class AnahitaThrusterManager(object):
 
         pwm = Thrust()
 
-        pwm.forward_left = int(self.compute_pwm(self.thrust[1]))
-        pwm.forward_right = int(self.compute_pwm(self.thrust[0]))
-        pwm.sideward_back = int(self.compute_pwm(self.thrust[3]))
-        pwm.sideward_front = int(self.compute_pwm(self.thrust[2]))
-        pwm.upward_north_east = int(self.compute_pwm(self.thrust[6]))
-        pwm.upward_north_west = int(self.compute_pwm(self.thrust[5]))
-        pwm.upward_south_east = int(self.compute_pwm(self.thrust[7]))
-        pwm.upward_south_west = int(self.compute_pwm(self.thrust[4]))
+        if not self.kill_thrust:
+            pwm.forward_left = int(self.compute_pwm(self.thrust[1]))
+            pwm.forward_right = int(self.compute_pwm(self.thrust[0]))
+            pwm.sideward_back = int(self.compute_pwm(self.thrust[3]))
+            pwm.sideward_front = int(self.compute_pwm(self.thrust[2]))
+            pwm.upward_north_east = int(self.compute_pwm(self.thrust[6]))
+            pwm.upward_north_west = int(self.compute_pwm(self.thrust[5]))
+            pwm.upward_south_east = int(self.compute_pwm(self.thrust[7]))
+            pwm.upward_south_west = int(self.compute_pwm(self.thrust[4]))
 	
         self.pwm_pub.publish(pwm)
 

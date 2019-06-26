@@ -27,14 +27,105 @@ from master_layer.srv import PoseReach
 from master_layer.srv import VerifyObject
 from master_layer.srv import Hold
 
-fail_report = {
-    'task' : '',
-    'stage' : '',
-    'local_pose' : '',
-    'global_pose' : '',
-    'problem' : '',
-    'next_task' : ''
-}
+import threading
+import ctypes
+import time
+import os
+import subprocess
+
+# https://www.geeksforgeeks.org/python-different-ways-to-kill-a-thread/
+class thread_with_exception(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.response_time = 0
+
+    def run(self):
+        now = rospy.get_time()
+        try:
+            rospy.wait_for_service(name)
+            self.response_time = rospy.get_time() - now
+        finally:
+            self.response_time = rospy.get_time() - now
+            print('rospy wait for service ended') 
+    
+    def get_time(self):
+        return self.response_time
+
+    def get_id(self): 
+  
+        # returns id of the respective thread 
+        if hasattr(self, '_thread_id'): 
+            return self._thread_id 
+        for id, thread in threading._active.items(): 
+            if thread is self: 
+                return id
+   
+    def raise_exception(self): 
+        thread_id = self.get_id() 
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 
+              ctypes.py_object(SystemExit)) 
+        if res > 1: 
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0) 
+            print('Exception raise failure') 
+
+class FailReport (object):
+
+    def __init__(self, task='', stage='', local_pose='', 
+                 global_pose='', problem='', next_task=''):
+        self.task = task
+        self.stage = stage 
+        self.local_pose = local_pose
+        self.global_pose = global_pose
+        self.problem = problem
+        self.next_task = next_task
+
+class CheckTopic (object):
+
+    def __init__(self):
+        print 'initiated checktopic object'
+        self.sub = None
+        self.timeout = 5
+        self.isActive = False
+        self.msg_cnt = 0
+
+    def check (self, topic, message_type):
+        if self.sub is not None:
+            self.sub.unregister()
+        self.sub = rospy.Subscriber(topic, message_type, self.callback)
+        rospy.sleep(2)
+
+        then = rospy.get_time()
+        while (not rospy.is_shutdown()):
+            diff = rospy.get_time() - then
+            if self.isActive:
+                self.sub.unregister()
+                return True
+            if diff > self.timeout:
+                self.sub.unregister()
+                return False
+
+    def callback (self, msg):
+        if (self.msg_cnt > 7):
+            self.isActive = True
+        self.msg_cnt += 1
+
+class CheckService (object):
+    def __init__(self):
+        print 'initiated checkservice object'
+        self.service = None
+        self.timout = 5
+
+    def check (self, service):
+        t = thread_with_exception(service)
+        t.start()
+        rospy.sleep(timeout)
+        t.raise_exception()
+        t.join()
+
+        if t.get_time() >= self.timeout:
+            return False
+        return True
 
 class Fix(smach.State):
     def __init__(self):
@@ -43,13 +134,27 @@ class Fix(smach.State):
         self.fixable_list = ['local_planner_inactive', 'odom_inactive',
                              'vision_inactive', 'camera_inactive', 'imu_inactive']
         self.num_try = 1 # no. of try to fix the problem
+        self.kill_thrust_pub = rospy.Publisher('/anahita/kill_thrust', Bool, latch=True, queue_size=1)
     
     # in all the fixes make sure there is no thrust to any thruster
 
     def fix_local_planner(self):
+        kill_thrust_pub.publish(Bool(True))
+        # https://www.journaldev.com/16140/python-system-command-os-subprocess-call
+        
+        # first kill all the script running already
         # relaunch the local_planner script
+        cmd = "cd ~/anahita_ws && launch uuv_trajectory_control cascaded_pid_dp_controller.launch"
+    
+        cnt = 0
+        returned_value = False
+        while (cnt < self.try_count):
+            returned_value = subprocess.call(cmd, shell=True)
+            if returned_value:
+                kill_thrust_pub.publish(Bool(False))
+                break
         # return true if launched
-        pass
+        return returned_value
 
     def isFixable (self, problem):
         # if the problem falls within a list of fixable things
@@ -58,24 +163,69 @@ class Fix(smach.State):
         return False
 
     def fix_odom(self):
+        kill_thrust_pub.publish(Bool(True))
+
         # relaunch the local_vision_node
+        cmd = "cd ~/anahita_ws && launch odom_dvl_imu odom.launch"
+
+        cnt = 0
+        returned_value = False
+        while (cnt < self.try_count):
+            returned_value = subprocess.call(cmd, shell=True)
+            if returned_value:
+                kill_thrust_pub.publish(Bool(False))
+                break
         # return true if launched
-        pass
+        return returned_value
 
     def fix_vision(self):
+        kill_thrust_pub.publish(Bool(True))
+
+        # first kill the local_vision_node & and change the odom source if enabled
         # relaunch the vision_node
+        cmd = "cd ~/anahita_ws && launch vision_tasks vision_layer.launch env:=real"
+
+        cnt = 0
+        returned_value = False
+        while (cnt < self.try_count):
+            returned_value = subprocess.call(cmd, shell=True)
+            if returned_value:
+                kill_thrust_pub.publish(Bool(False))
+                break
         # return true if launched
-        pass
+        return returned_value
 
     def fix_imu(self):
+        kill_thrust_pub.publish(Bool(True))
+
         # relaunch the imu driver
+        cmd = "cd ~/anahita_ws && launch xsens_driver xsens_driver.launch"
+
+        cnt = 0
+        returned_value = False
+        while (cnt < self.try_count):
+            returned_value = subprocess.call(cmd, shell=True)
+            if returned_value:
+                kill_thrust_pub.publish(Bool(False))
+                break
         # return true if launched
-        pass
+        return returned_value
 
     def fix_camera(self):
-        # relaunch the camera driver
+        kill_thrust_pub.publish(Bool(True))
+
+        # relaunch the imu driver
+        cmd = "cd ~/anahita_ws && launch hardware_camera camera_logitech.launch"
+
+        cnt = 0
+        returned_value = False
+        while (cnt < self.try_count):
+            returned_value = subprocess.call(cmd, shell=True)
+            if returned_value:
+                kill_thrust_pub.publish(Bool(False))
+                break
         # return true if launched
-        pass
+        return returned_value
 
     def execute(self, userdata):
         try_count = 0
