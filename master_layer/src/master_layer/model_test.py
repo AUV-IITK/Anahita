@@ -46,9 +46,9 @@ model2.load_weights('depth_model.h5')
 
 # Now you can use this to predict on new data (without fitting model2, because it uses the older saved model)
 Y_pred = model2.predict(X)
-clf_load = joblib.load('model.joblib')
-print 'model loaded from model.joblib'
-print clf_load.predict(X)
+# clf_load = joblib.load('model.joblib')
+# print 'model loaded from model.joblib'
+# print clf_load.predict(X)
 
 fig, ax = plt.subplots()
 ax.scatter(Y, Y_pred)
