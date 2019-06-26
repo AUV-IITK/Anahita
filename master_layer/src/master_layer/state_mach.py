@@ -267,6 +267,16 @@ class RescueMode(smach.State):
             except:
                 print ('{} controls: execption occured in {} service'.format(task, service))
 
+    # for bottom targets
+    def bottom_manoeuvre (self): 
+        # trace a circular trajectory which completely covers a circle
+        pass
+
+    # for front targets
+    def front_manoeuvre (self):
+        # rotate the bot for sometime
+        pass
+
     def search (self, target, timeout):
         # a call to object detection layer to recognise target
         # a service to make a swiping motion for a timeout
@@ -817,41 +827,7 @@ class MoveToXYZ(TaskBaseClass):
             if dt > self.timeout_:
                 rospy.loginfo("I've lost")
                 return 'lost'
-
-class FindBottomTarget(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['outcome2'])
-
-    def execute(self, userdata):
-        # request to move in a circle or helix to the local planner
-        pass
-
-    def explore(self):
-        # move around to find a target
-        pass
-
-class IdentifyTarget(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=[''], input_keys=['target'])
-        rospy.loginfo("Identifying the target")
         
-class TooFar(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=[''],
-                            input_keys=['target'])
-
-    def execute(self):
-        pass
-    
-    def stop(self):
-        # if the bot is going out of the way of any target
-        # then stop it
-        pass
-
-    def restore(self):
-        # restore to a position from where it can still do the task
-        pass
-
 class FindFrontTarget(smach.State):
 
     def __init__(self):
@@ -954,14 +930,6 @@ class FindFrontTarget(smach.State):
     def explore(self):
         pass
         # move around to find a target
-
-class StationKeeping(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['success'])
-
-    def execute(self):
-        # just maintain the current pose
-        pass
 
 if __name__ == '__main__':
     rospy.init_node('state_machine')
