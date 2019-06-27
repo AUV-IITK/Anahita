@@ -24,7 +24,7 @@ void Marker::extractFeatures (const cv::Mat& thres_img) {
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
     cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-    contours = vision_commons::Contour::filterContours(contours, 200);
+    contours = vision_commons::Contour::filterContours(contours, 100);
     if (contours.size() == 0) return;
     vision_commons::Contour::sortFromBigToSmall(contours);
 
@@ -43,7 +43,8 @@ void Marker::extractFeatures (const cv::Mat& thres_img) {
     y = center.y;
     l_x = std::abs(rect.br().x - rect.tl().x);
     l_y = std::abs(rect.br().y - rect.tl().y);
-
+    
+    feature_msg.data.clear();
     feature_msg.data.push_back(x); feature_msg.data.push_back(y);
     feature_msg.data.push_back(l_x); feature_msg.data.push_back(l_y);
     features_pub.publish(feature_msg);
@@ -79,6 +80,11 @@ void Marker::spinThreadFront()
 										front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
 			vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1, 
 										front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
+
+			front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
+        	front_thresholded_pub.publish(front_image_thresholded_msg);
+			front_roi_pub.publish(front_image_thresholded_msg);
+
             extractFeatures (image_front_thresholded);
 			largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
             if (!largest_contour.size()) {

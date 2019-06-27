@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 from sklearn.externals import joblib
 import pickle
 
-num_attr = 15 # number of features fed into the network
+num_attr = 4 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("../../data/yaw_test.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/marker_depth_test.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -31,8 +31,8 @@ def baseline_model():
     # create model
     print ('model called')
     model = Sequential()
-    model.add(Dense(num_attr, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
-    model.add(Dense(int(num_attr/2), kernel_initializer='normal', activation='relu'))
+    model.add(Dense(8, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(4, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
     # Compile model
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -67,11 +67,11 @@ def plot (Y, Y_pred):
     ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
-    plt.savefig('../../img/yaw_model.png')
+    plt.savefig('../../img/marker_depth_model.png')
     plt.show()
 
 if (test_type == "simple"):
-    model = load_simple('../../models/yaw_model.h5')
+    model = load_simple('../../models/marker_depth_model.h5')
     Y_pred = model.predict(X)
     plot (Y, Y_pred)
 else:

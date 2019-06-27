@@ -278,8 +278,6 @@ void StartGate::spinThreadFront() {
             front_roi_pub.publish(front_image_thresholded_msg);
 
             extractFeatures (image_front_thresholded);
-            loop_rate.sleep();
-            continue;
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
             if (!largest_contour.size()) {
                 ROS_INFO("No contour found");
