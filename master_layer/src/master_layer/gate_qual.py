@@ -67,7 +67,11 @@ if __name__ == '__main__':
         change_odom_response = change_odom(odom="dvl")
         rospy.sleep(0.1)
         
-        step_point = fill_point(5, 0, 0)
+        step_point = fill_point(4, 0, 0)
+        go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
+        trajectory_complete(time_out=200)
+
+        step_point = fill_point(2, 0, 0)
         go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete(time_out=200)
 
@@ -80,7 +84,7 @@ if __name__ == '__main__':
 
         rospy.sleep(0.1)
 
-        step_point = fill_point(5, 0, 0)
+        step_point = fill_point(3, 0, 0)
         go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete(time_out=200)
 
@@ -108,7 +112,7 @@ if __name__ == '__main__':
         rospy.loginfo("reached first quarter of the circle")
         rospy.sleep(1)
 
-        step_point = fill_point(3.5, 0, 0)
+        step_point = fill_point(2, 0, 0)
 
         go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete(time_out=200)
@@ -134,7 +138,7 @@ if __name__ == '__main__':
         rospy.loginfo("reached fourth quarter of the circle")
         rospy.sleep(1)
 
-        step_point = fill_point(-3.5, 0, 0)
+        step_point = fill_point(2, 0, 0)
         go_to_incremental(step=step_point, max_forward_speed=0.2, interpolator="cubic")
         trajectory_complete(time_out=200)
 
@@ -181,7 +185,7 @@ if __name__ == '__main__':
         rospy.loginfo('changind the odom source to vision')
         rospy.sleep(0.1)
 
-        pose = fill_pose(current_p.position.x, 0, 0, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
+        pose = fill_pose(current_p.position.x, -1.5, 0, opp_q[0], opp_q[1], opp_q[2], opp_q[3])
 
         go_to_pose(target_pose=pose)
         rospy.loginfo('cmd to align to the center of the gate')
@@ -200,3 +204,4 @@ if __name__ == '__main__':
 
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
+

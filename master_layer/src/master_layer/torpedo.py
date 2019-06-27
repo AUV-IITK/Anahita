@@ -13,6 +13,7 @@ from master_layer.srv import Hold
 from master_layer.srv import TrajectoryComplete
 from master_layer.srv import PoseReach
 from master_layer.srv import ChangeTorpedoHole
+from xsens_driver.srv import ResetIMUOrient
 
 import time
 from std_msgs.msg import Time, String
@@ -26,15 +27,15 @@ from nav_msgs.msg import Odometry
 from rospy.numpy_msg import numpy_msg
 import tf.transformations as trans
 
-current_p = Point()
+current_p = Pose()
 
 def odometry_callback(msg):
     global current_p
-    current_p = msg.pose.pose.position
+    current_p = msg.pose.pose
 
 if __name__ == '__main__':
 
-    rospy.init_node('gate_qual')
+    rospy.init_node('torpedo')
 
     sub_odometry = rospy.Subscriber('/anahita/pose_gt', numpy_msg(Odometry), odometry_callback)
     pose_cmd_pub = rospy.Publisher('/anahita/cmd_pose', Pose, queue_size=10, latch=True)
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     current_task = rospy.ServiceProxy('anahita/current_task', CurrentTask)
     change_odom = rospy.ServiceProxy('odom_source', ChangeOdom)
     go_to_pose = rospy.ServiceProxy('anahita/go_to_pose', GoToPose)
+    reset_imu = rospy.ServiceProxy('/nav/set_imu_quat', ResetIMUOrient)
     init_circular_trajectory = rospy.ServiceProxy('anahita/start_circular_trajectory', InitCircularTrajectory)
     hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
     trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
@@ -53,19 +55,23 @@ if __name__ == '__main__':
     pose = Pose()
     step_point = Point()
 
-    current_task_resp = current_task(current_task="torpedo")
-    change_odom_response = change_odom(odom="vision")
+#    current_task_resp = current_task(current_task="torpedo")
+  #  change_odom_response = change_odom(odom="vision")
     rospy.sleep(0.05)
-
+    intial_orientation = quaternion_to_eulerRPY(current_p.orientation)
+    reset_imu_resp = reset_imu()
+	
     # 1st torpedo shoot
-    change_torpedo_hole(hole="TL")
+   # change_torpedo_hole(hole="BOT")
     pose = fill_pose(0, 0, 0, 0, 0, 0, 1)
     go_to_pose(target_pose=pose)
     rospy.loginfo('Publishing cmd to align')
 
-    pose_reach(time_out=20)
+    pose_reach(time_out=2000)
     rospy.sleep(5)
     rospy.loginfo('Aligned center')
+
+    rospy.sleep(100000)
 
     # change_odom(odom="stereo_vision")
 

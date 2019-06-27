@@ -14,8 +14,8 @@
   <arg name="camera3" default="right_camera"/>
 
   <!-- dev ports for the cameras -->
-  <arg name="camera1_dev" default="dev/video1"/>
-  <arg name="camera2_dev" default="dev/bottom_cam"/>
+  <arg name="camera1_dev" default="dev/video0"/>
+  <arg name="camera2_dev" default="dev/video1"/>
   <arg name="camera3_dev" default="dev/right_cam"/>
 
   <!-- camera calibration files -->

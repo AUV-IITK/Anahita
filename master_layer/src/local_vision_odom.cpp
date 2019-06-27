@@ -209,9 +209,10 @@ int main (int argc, char** argv) {
         }
         else if (odom_source == "vision") {
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/200.0;
-            odom_msg.pose.pose.position.z = z_avg/200.0;
+            odom_msg.pose.pose.position.y = y_avg/1000.0;
+            odom_msg.pose.pose.position.z = z_avg/1000.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
+  	    ROS_INFO("VALUES---------- %f %f %f", -x_avg/1000, y_avg/200, -z_avg/1000);
         }
         else if (odom_source == "vision_ml"){
             odom_msg = odom_data;

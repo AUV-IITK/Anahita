@@ -290,8 +290,6 @@ void Torpedo::spinThreadFront() {
             // updateTracker (temp_src);
             recogniseHoles (image_front_thresholded);
 
-
-
             if (!(TL_init||BOT_init||TR_init)) {
                 ROS_INFO ("Not visible hole");
                 continue;
