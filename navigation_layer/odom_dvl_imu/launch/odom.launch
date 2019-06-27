@@ -1,0 +1,6 @@
+<launch>
+
+    <node pkg="odom_dvl_imu" name="odom_dvl_imu_node" type="odom_dvl_imu_node" output="screen" />
+    <node pkg="master_layer" name="local_vision_odom" type="local_vision_odom" output="screen" />
+
+</launch>
