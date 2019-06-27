@@ -251,6 +251,8 @@ class RescueMode(smach.State):
         self.services = dict()
         self.services['hold_vehicle'] = rospy.ServiceProxy("/anahita/hold", Hold)
         self.target_pose = Pose()
+        self.target_found = False
+        self.manoeuvre_stop = False
 
     def service_call_handler (self, task, service, req):
         then = rospy.get_time()
@@ -269,19 +271,25 @@ class RescueMode(smach.State):
 
     # for bottom targets
     def bottom_manoeuvre (self): 
-        # trace a circular trajectory which completely covers a circle
-        pass
+        # trace a square trajectory 
+        # make a request
+        while (not self.target_found and not self.manoeuvre_stop):
+            rospy.sleep(1)
+        # make a request to cancel it
 
     # for front targets
     def front_manoeuvre (self):
         # rotate the bot for sometime
-        pass
+        while (not self.target_found and not self.manoeuvre_stop):
+            rospy.sleep(1)
+        # make a request to cancel it
 
     def search (self, target, timeout):
         # a call to object detection layer to recognise target
+        if not self.verifyObject(target):
+            return 'target_not_found'
         # a service to make a swiping motion for a timeout
         # if found within timeout then return true else false
-        pass
 
     def align (self, target, timeout):
         # change the vision current_task to 'target'
