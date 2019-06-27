@@ -1,0 +1,13 @@
+vision:
+  buoy:
+    b_max: 25
+    b_min: 0
+    bilateral_iter: 0
+    closing_iter: 3
+    closing_mat_point: 3
+    g_max: 141
+    g_min: 28
+    opening_iter: 0
+    opening_mat_point: 1
+    r_max: 17
+    r_min: 0

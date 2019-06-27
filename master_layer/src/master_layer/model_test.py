@@ -18,7 +18,7 @@ import pickle
 num_attr = 4 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("../../data/marker_depth_test.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/buoy_depth_test.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -31,8 +31,8 @@ def baseline_model():
     # create model
     print ('model called')
     model = Sequential()
-    model.add(Dense(8, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
-    model.add(Dense(4, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(13, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(6, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
     # Compile model
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -67,11 +67,11 @@ def plot (Y, Y_pred):
     ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
-    plt.savefig('../../img/marker_depth_model.png')
+    plt.savefig('../../img/buoy_depth_model2.png')
     plt.show()
 
 if (test_type == "simple"):
-    model = load_simple('../../models/marker_depth_model.h5')
+    model = load_simple('../../models/buoy_depth_model2.h5')
     Y_pred = model.predict(X)
     plot (Y, Y_pred)
 else:

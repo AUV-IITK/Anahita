@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 num_attr = 4 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("../../data/marker_depth_train.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/buoy_depth_train.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -33,8 +33,8 @@ def baseline_model():
     # create model
     print ('model called')
     model = Sequential()
-    model.add(Dense(8, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
-    model.add(Dense(4, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(13, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(6, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
     # Compile model
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -57,10 +57,10 @@ if training_type == "simple":
 
     # serialize model to JSON
     depth_model_json = regressor.model.to_json()
-    with open("../../models/marker_depth_model.json", "w+") as json_file:
+    with open("../../models/buoy_depth_model1.json", "w+") as json_file:
         json_file.write(depth_model_json)
     # serialize weights to HDF5
-    regressor.model.save_weights("../../models/marker_depth_model.h5")
+    regressor.model.save_weights("../../models/buoy_depth_model2.h5")
     print("Saved model to disk")
 
 if training_type == "standard":

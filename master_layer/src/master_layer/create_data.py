@@ -29,6 +29,13 @@ def make_string (features, dist):
     str_ = str_ + str(dist) + '\n'
     return str_
 
+def make_string_ (features, dist, yaw):
+    str_ = ''
+    for i in range(len(features.data)):
+        str_ += str(features.data[i]) + ' '
+    str_ = str_ + ' ' + str(yaw) + str(dist) + '\n'
+    return str_
+
 def imu_cb (msg):
     global yaw
     orientation = msg.orientation
@@ -41,9 +48,9 @@ if __name__=='__main__':
     depth_sub = rospy.Subscriber('/anahita/distance', Point, depth_cb)
     imu_sub = rospy.Subscriber('/anahita/imu', Imu, imu_cb)
 
-    marker_center = Point(13, 0, -1.5)
+    marker_center = Point(0.75, 0, -1.5)
 
-    f = open('../../data/marker_depth_test.csv', 'w+')
+    f = open('../../data/buoy_depth_train3.csv', 'w+')
 
     while not rospy.is_shutdown():
         depth = get_dist (marker_center, curr_point)

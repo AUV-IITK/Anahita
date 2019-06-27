@@ -44,8 +44,7 @@ void Buoy::extractFeatures (const cv::Mat& thres_img) {
     std::vector<cv::Vec4i> hierarchy;
     cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
-    if (contours.size())
-        contours = vision_commons::Contour::filterContours(contours, 200);
+    contours = vision_commons::Contour::filterContours(contours, 200);
     if (contours.size() == 0) return;
     vision_commons::Contour::sortFromBigToSmall (contours);
 
@@ -65,6 +64,7 @@ void Buoy::extractFeatures (const cv::Mat& thres_img) {
     l_x = std::abs(bound_rect.br().x - bound_rect.tl().x);
     l_y = std::abs(bound_rect.br().y - bound_rect.tl().y);
 
+    feature_msg.data.clear();
     feature_msg.data.push_back(x); feature_msg.data.push_back(y);
     feature_msg.data.push_back(l_x); feature_msg.data.push_back(l_y);
     features_pub.publish(feature_msg);
@@ -75,16 +75,28 @@ void Buoy::spinThreadFront () {
     ROS_INFO ("vision: buoy activated");
     cv::Mat temp_src;
     ros::Rate loop_rate(15);
+    sensor_msgs::ImagePtr front_image_thresholded_msg;
+
 	while (ros::ok()) {	
 		if (close_task) {
             close_task = false;
 			break;
 		}
 		if (!image_front.empty()) {
-			image_front.copyTo(temp_src);
+			ROS_INFO ("4");
+            vision_mutex.lock();
+            image_front.copyTo(temp_src);
+            vision_mutex.unlock();
+            ROS_INFO ("5");
             image_front_thresholded = preprocess (temp_src);
+            ROS_INFO ("1");
+            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
+        	front_thresholded_pub.publish(front_image_thresholded_msg);
+			front_roi_pub.publish(front_image_thresholded_msg);
+            ROS_INFO ("2");
             extractFeatures (image_front_thresholded);
-		}
+            ROS_INFO ("3");
+        }
 		else ROS_INFO("Image empty");
 		loop_rate.sleep();
 		ros::spinOnce();

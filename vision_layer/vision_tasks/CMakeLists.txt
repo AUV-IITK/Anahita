@@ -105,4 +105,5 @@ target_link_libraries(vision_node
   grabber_test
   startgate
   start_gate
+  buoy
 )
