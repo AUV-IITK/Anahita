@@ -121,7 +121,7 @@ bool NavigationNode::resetCB (master_layer::ResetIMU::Request& req,
 }
 
 void NavigationNode::correct_orientation (Eigen::Quaterniond& q) {
-    Eigen::Vector3d euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
+    Eigen::Vector3d euler = toEulerAngle (q);
     euler = euler + imu_offset_;
     if (euler[2] >= M_PI) {
         euler[2] = euler[2] - 2*M_PI;
@@ -130,6 +130,14 @@ void NavigationNode::correct_orientation (Eigen::Quaterniond& q) {
         euler[2] = 2*M_PI - euler[2];
     }
     q = Eigen::AngleAxisd(euler[0], Eigen::Vector3d::UnitX())*Eigen::AngleAxisd(euler[1], Eigen::Vector3d::UnitY())*Eigen::AngleAxisd(euler[2], Eigen::Vector3d::UnitZ());
+
+    if (q.w() < 0 && q.z() < 0) {
+        q.z() = std::abs(q.z());
+        q.w() = std::abs(q.w());
+    } else if (q.w() < 0 && q.z() > 0) {
+        q.w() = std::abs(q.w());
+        q.z() = -1*q.z();
+    }
 }
 
 void NavigationNode::ProcessCartesianPose()
@@ -147,6 +155,8 @@ void NavigationNode::ProcessCartesianPose()
         quaternion_ = imuData_.GetQuaternion();
         local_orientation_ = quaternion_;
         correct_orientation (local_orientation_);
+        local_orientation_.x() = quaternion_.x();
+        local_orientation_.y() = quaternion_.y();
         // ROS_INFO("Value of incrementPosition_: x: %f, y: %f,z: %f", incrementPosition_.x(), incrementPosition_.y(), incrementPosition_.z());
         position_ += quaternion_.toRotationMatrix() * incrementPosition_;
         local_position_ += local_orientation_.toRotationMatrix() * incrementPosition_;
