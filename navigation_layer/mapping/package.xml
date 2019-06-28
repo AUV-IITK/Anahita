@@ -69,6 +69,7 @@
     <exec_depend>rospy</exec_depend>
     <exec_depend>std_msgs</exec_depend>
     <exec_depend>message_generation</exec_depend>
+    <exec_depend>message_runtime</exec_depend>
     <exec_depend>grid_map_core</exec_depend>
     <exec_depend>grid_map_msgs</exec_depend>
     <exec_depend>grid_map_ros</exec_depend>
