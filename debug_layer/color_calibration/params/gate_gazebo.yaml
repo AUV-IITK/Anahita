@@ -1,13 +1,13 @@
 vision:
   gate:
-    b_max: 18
+    b_max: 11
     b_min: 0
     bilateral_iter: 0
-    closing_iter: 2
+    closing_iter: 1
     closing_mat_point: 2
-    g_max: 14
+    g_max: 101
     g_min: 0
     opening_iter: 0
     opening_mat_point: 1
-    r_max: 102
-    r_min: 2
+    r_max: 128
+    r_min: 5

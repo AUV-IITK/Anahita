@@ -198,12 +198,12 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/200.0;
             odom_msg.pose.pose.position.z = z_avg/200.0;
-            if (odom_init) transform (odom_msg.pose.pose.position);
+            // if (odom_init) transform (odom_msg.pose.pose.position);
         }
         else if (odom_source == "stereo") {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/200.0;
-            if (odom_init) transform (odom_msg.pose.pose.position);
+            // if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
         }
         else if (odom_source == "vision_ml"){
@@ -215,7 +215,7 @@ int main (int argc, char** argv) {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/200.0;
             odom_msg.pose.pose.position.z = z_avg/200.0;
-            if (odom_init) transform (odom_msg.pose.pose.position);
+            // if (odom_init) transform (odom_msg.pose.pose.position);
             odom_msg.pose.pose.position.x = -x_avg;
         }
         else if (odom_source == "bottom_vision") {

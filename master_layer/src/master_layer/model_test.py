@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 from sklearn.externals import joblib
 import pickle
 
-num_attr = 4 # number of features fed into the network
+num_attr = 15 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("../../data/buoy_depth_test.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/gate_depth_test1.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -40,10 +40,17 @@ def baseline_model():
 
 test_type = "simple"
 
-def load_simple (file_name):
-    model = baseline_model()
-    model.load_weights(file_name)
-    return model
+MODEL_DIR = '/home/ironman/anahita_ws/src/Anahita/master_layer/models'
+
+def load_simple (model_name):
+    json_filename = os.path.join(MODEL_DIR, model_name + '.json')
+    json_file = open(json_filename, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    weights_filename = os.path.join(MODEL_DIR, model_name + '.h5')
+    loaded_model.load_weights(weights_filename)
+    return loaded_model
 
 def load_complex (scaler_filename, regressor_filename):
     standard_scaler = pickle.load(open(scaler_filename, 'rb'))
@@ -61,25 +68,27 @@ def load_complex (scaler_filename, regressor_filename):
     ])
     return predictor
 
+def mean_error (Y, Y_pred):
+    sum_ = 0
+    for i in range(len(Y)):
+        sum_ += abs(Y[i] - Y_pred[i])
+    accuracy = sum_/len(Y)
+    print ('mean error: {}'.format(accuracy))
+
 def plot (Y, Y_pred):
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.scatter(Y, Y_pred)
     ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
-    plt.savefig('../../img/buoy_depth_model2.png')
+    plt.savefig('../../img/gate_depth_model3.png')
     plt.show()
 
 if (test_type == "simple"):
-    model = load_simple('../../models/buoy_depth_model2.h5')
+    model = load_simple('gate_depth_model2')
     Y_pred = model.predict(X)
+    mean_error(Y, Y_pred)
     plot (Y, Y_pred)
 else:
     model = load_complex('../../models/standard_scaler.pkl', '../../models/gate_model_2.h5')
     Y_pred = model.predict(X)
-
-sum_ = 0
-for i in range(len(Y)):
-    sum_ += abs(Y[i] - Y_pred[i])
-accuracy = sum_/len(Y)
-print ('accuracy: {}'.format(accuracy))
