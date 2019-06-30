@@ -1,8 +1,8 @@
 #include <gate.h>
 
 Gate::Gate() {
-    this->loadParams();
-    this->front_roi_pub = it.advertise("/anahita/roi", 1);
+    loadParams();
+    front_roi_pub = it.advertise("/anahita/roi", 1);
 }
 
 void Gate::loadParams() {
@@ -35,12 +35,11 @@ void Gate::spinThreadFront() {
             break;
         }
         if (!image_front.empty()) {
-            ROS_INFO("Foundd Image: %d %d", image_front.cols, image_front.rows);
+            ROS_INFO("Foundd Image");
 
             vision_mutex.lock();
             temp_src = image_front.clone();
             vision_mutex.unlock();
-            ROS_INFO("TMPSRC: %d %d", temp_src.cols, temp_src.rows);
 
             vision_commons::Filter::bilateral(temp_src, front_bilateral_iter_);
             image_front_thresholded = vision_commons::Threshold::threshold(temp_src, front_low_b_, front_high_b_,
@@ -51,13 +50,18 @@ void Gate::spinThreadFront() {
             vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1,
                                          front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
+
+            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
+            front_thresholded_pub.publish(front_image_thresholded_msg);
+            front_roi_pub.publish(front_image_thresholded_msg);
+
             if (!largest_contour.size()) {
                 ROS_INFO("No contour found");
                 continue;
             }
             bound_rect = cv::boundingRect(cv::Mat(largest_contour));
-            ROS_INFO("Center of bound_rect_tl: %d %d", (bound_rect.tl()).x, (bound_rect.tl()).y);
-            ROS_INFO("Center of bound_rect_tr: %d %d", (bound_rect.br()).x, (bound_rect.br()).y);
+            // ROS_INFO("Center of bound_rect_tl: %d %d", (bound_rect.tl()).x, (bound_rect.tl()).y);
+            // ROS_INFO("Center of bound_rect_tr: %d %d", (bound_rect.br()).x, (bound_rect.br()).y);
 
             cv::rectangle(temp_src, bound_rect.tl(), bound_rect.br(), bound_rect_color, 2, 8, 0);
             bound_rect_center.x = ((bound_rect.br()).x + (bound_rect.tl()).x) / 2;
@@ -70,10 +74,6 @@ void Gate::spinThreadFront() {
 
             front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_src).toImageMsg();
             front_marked_pub.publish(front_image_marked_msg);
-
-            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
-            front_thresholded_pub.publish(front_image_thresholded_msg);
-            front_roi_pub.publish(front_image_thresholded_msg);
 
             front_x_coordinate.data = 0;
             front_y_coordinate.data = bound_rect_center.x - temp_src.cols/2;

@@ -19,6 +19,8 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(vision_commons REQUIRED)
 
+catkin_python_setup()
+
 add_service_files (
     FILES
     ContourCenter.srv

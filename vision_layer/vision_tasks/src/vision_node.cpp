@@ -14,8 +14,9 @@
 #include <std_msgs/String.h>
 
 #include <master_layer/CurrentTask.h>
+#include <std_msgs/String.h>
 
-std::string current_task = "buoy";
+std::string current_task = "start_gate";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -26,12 +27,17 @@ bool changeCurrentTask(master_layer::CurrentTask::Request &req,
     return true;
 }
 
+void currentTaskCB (std_msgs::String msg) {
+    current_task = msg.data;
+}
+
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "vision_node");
     ros::NodeHandle nh;
     ros::Time::init();
     ros::ServiceServer service = nh.advertiseService("anahita/current_task", changeCurrentTask);
+    ros::Subscriber current_task_sub = nh.subscribe("anahita/current_task", 1, currentTaskCB);
 
     ros::Duration(1).sleep();
 
