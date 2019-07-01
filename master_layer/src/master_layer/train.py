@@ -15,10 +15,10 @@ from sklearn.externals import joblib
 import pickle
 import matplotlib.pyplot as plt
 
-num_attr = 15 # number of features fed into the network
+num_attr = 12 # number of features fed into the network
 
 # load dataset
-dataframe_ = pandas.read_csv("../../data/gate_yaw_train1.csv", delim_whitespace=True, header=None)
+dataframe_ = pandas.read_csv("../../data/torpedo_yaw_train.csv", delim_whitespace=True, header=None)
 dataframe = dataframe_.sample(frac=1)
 dataset = dataframe.values
 print ('data loaded')
@@ -34,8 +34,8 @@ def baseline_model():
     # create model
     print ('model called')
     model = Sequential()
-    model.add(Dense(20, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
-    model.add(Dense(10, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(18, input_dim=num_attr, kernel_initializer='normal', activation='relu'))
+    model.add(Dense(8, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
     # Compile model
     model.compile(loss='mean_squared_error', optimizer='adam')
@@ -58,10 +58,10 @@ if training_type == "simple":
 
     # serialize model to JSON
     depth_model_json = regressor.model.to_json()
-    with open("../../models/gate_yaw_model1.json", "w+") as json_file:
+    with open("../../models/torpedo_yaw_model.json", "w+") as json_file:
         json_file.write(depth_model_json)
     # serialize weights to HDF5
-    regressor.model.save_weights("../../models/gate_yaw_model1.h5")
+    regressor.model.save_weights("../../models/torpedo_yaw_model.h5")
     print("Saved model to disk")
 
 if training_type == "standard":

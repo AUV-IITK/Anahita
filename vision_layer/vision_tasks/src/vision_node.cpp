@@ -16,7 +16,7 @@
 #include <master_layer/CurrentTask.h>
 #include <std_msgs/String.h>
 
-std::string current_task = "start_gate";
+std::string current_task = "torpedo";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,

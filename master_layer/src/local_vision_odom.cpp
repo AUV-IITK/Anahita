@@ -52,6 +52,7 @@ void ml_callback(const darknet_ros_msgs::BoundingBoxes &msg)
 bool changeOdom (master_layer::ChangeOdom::Request &req,
                 master_layer::ChangeOdom::Response &res) {
     odom_source = req.odom;
+    std::cout << "odom source changed to: " << odom_source << std::endl;
     res.success = true;
     return true;
 }
@@ -200,24 +201,24 @@ int main (int argc, char** argv) {
             odom_msg.pose.pose.position.z = z_avg/200.0;
             // if (odom_init) transform (odom_msg.pose.pose.position);
         }
-        else if (odom_source == "stereo") {
+        else if (odom_source == "zvision") {
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/200.0;
+            odom_msg.pose.pose.position.z = z_avg/200.0;
             // if (odom_init) transform (odom_msg.pose.pose.position);
-            odom_msg.pose.pose.position.x = -x_avg;
+            // odom_msg.pose.pose.position.x = -x_avg;
         }
         else if (odom_source == "vision_ml"){
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_ml;
             odom_msg.pose.pose.position.z = z_ml;
         }
-        else if (odom_source == "stereo_vision"){
-            odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/200.0;
-            odom_msg.pose.pose.position.z = z_avg/200.0;
-            // if (odom_init) transform (odom_msg.pose.pose.position);
-            odom_msg.pose.pose.position.x = -x_avg;
-        }
+        // else if (odom_source == "stereo_vision"){
+        //     odom_msg = odom_data;
+        //     odom_msg.pose.pose.position.y = y_avg/200.0;
+        //     odom_msg.pose.pose.position.z = z_avg/200.0;
+        //     // if (odom_init) transform (odom_msg.pose.pose.position);
+        //     odom_msg.pose.pose.position.x = -x_avg;
+        // }
         else if (odom_source == "bottom_vision") {
             odom_msg = odom_data;
             odom_msg.pose.pose.position.y = y_avg/200.0;

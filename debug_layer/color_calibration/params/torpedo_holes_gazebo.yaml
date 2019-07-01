@@ -5,9 +5,9 @@ vision:
     bilateral_iter: 0
     closing_iter: 0
     closing_mat_point: 1
-    g_max: 85
-    g_min: 50
+    g_max: 99
+    g_min: 51
     opening_iter: 0
     opening_mat_point: 1
-    r_max: 14
+    r_max: 55
     r_min: 0

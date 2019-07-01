@@ -14,6 +14,7 @@ from master_layer.srv import PoseReach
 from master_layer.srv import StallVehicle
 from master_layer.srv import GetMaxDepth
 from master_layer.srv import TargetNormal
+from master_layer.srv import ResetIMU
 
 import time
 from std_msgs.msg import Time, String
@@ -49,52 +50,58 @@ if __name__ == '__main__':
         pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
         get_max_depth = rospy.ServiceProxy('anahita/get_max_depth', GetMaxDepth)
         stall_vehicle = rospy.ServiceProxy('/anahita/stall_vehicle', StallVehicle)
-        target_normal = rospy.ServiceProxy('anahita/target_vehicle', TargetNormal)
+        target_normal = rospy.ServiceProxy('anahita/target_normal', TargetNormal)
+        reset_imu = rospy.ServiceProxy('/anahita/reset_imu', ResetIMU)
     except:
         print ('failed to connect to servers')
 
     point = Point()
     pose = Pose()
 
-    stall_vehicle(status=True)
-    rospy.loginfo('vehicle stalled')
+    # stall_vehicle(status=True)
+    # rospy.loginfo('vehicle stalled')
 
-    current_task(current_task="start_gate")
-    rospy.loginfo('vision task changed to start_gate')
+    # reset_imu()
+    # rospy.loginfo('imu reset')
 
-    change_odom(odom="vision")
-    rospy.loginfo('odom source changes to vision')
+    # current_task(current_task="start_gate")
+    # rospy.loginfo('vision task changed to start_gate')
 
-    rospy.sleep(1)
+    # change_odom(odom="vision")
+    # rospy.loginfo('odom source changes to vision')
+
+    # rospy.sleep(1)
     
-    stall_vehicle(status=False)
-    rospy.loginfo('vehicle unstalled')
+    # stall_vehicle(status=False)
+    # rospy.loginfo('vehicle unstalled')
 
-    pose = current_p
-    pose.position.y = 0
-    pose.position.z = 0
+    # pose = current_p
+    # pose.position.y = 0
+    # pose.position.z = 0
 
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('cmd to align to the gate center')
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to align to the gate center')
 
-    pose_reach(time_out=30)
-    rospy.loginfo('aligned to the center')
+    # pose_reach(time_out=30)
+    # rospy.loginfo('aligned to the center')
 
     depth_to_cover = get_max_depth(task="start_gate")
 
     stall_vehicle(status=True)
     rospy.loginfo('vehicle stalled')
 
-    change_odom(odom="dvl")
-    rospy.loginfo('odom source changd to dvl')
+    change_odom(odom="zvision")
+    rospy.loginfo('odom source changd to zvision')
 
     rospy.sleep(1)
 
     stall_vehicle(status=False)
     rospy.loginfo('vehicle unstalled')
 
+    # if depth_to_cover.depth - 3 < 2:
     pose = current_p
-    pose.position.x = pose.position.x + depth_to_cover.depth - 2
+    pose.position.x = pose.position.x + depth_to_cover.depth - 3
+    pose.position.z = 0
 
     # to add a conditional to choose gotopose only if near else gotoincremental
     go_to_pose(target_pose=pose)
@@ -102,41 +109,75 @@ if __name__ == '__main__':
 
     pose_reach(time_out=30)
     rospy.loginfo('in front of the gate')
+    # else:
+    #     point.x = depth_to_cover.depth - 3
+    #     point.y = 0
+    #     point.z = 0
 
-    stall_vehicle(status=True)
-    rospy.loginfo('vehicle stalled')
+    #     go_to_incremental(step=point, interpolator='lipb', max_forward_speed=0.2)
+    #     rospy.loginfo('cmd to go infront of the gate')
 
-    change_odom(odom="vision")
-    rospy.loginfo('odom source changed')
+    #     trajectory_complete(time_out=120)
+    #     rospy.loginfo('infront of the gate')
 
-    rospy.sleep(1)
+    # yaw_to_move = target_normal(task="start_gate").angle
+    # print ("yaw to move: {}".format(yaw_to_move))
 
-    pose = current_p
-    pose.position.y = 0
-    pose.position.z = 0
+    # _, _, euler_yaw = quaternion_to_eulerRPY(current_p.orientation)
+    # euler_yaw = euler_yaw - yaw_to_move
 
-    go_to_pose(target_pose=pose)
-    rospy.loginfo('cmd to align to the center again')
+    # print ("euler to turn: {}".format(euler_yaw))
 
-    pose_reach(time_out=30)
-    rospy.loginfo('aligned to the center')
+    # q = eulerRPY_to_quaternion(0, 0, euler_yaw)
+    # print ("qauternion: {}".format(q))
+    # pose = current_p
+    # pose.orientation.x = q[0]
+    # pose.orientation.y = q[1]
+    # pose.orientation.z = q[2]
+    # pose.orientation.w = q[3]
 
-    stall_vehicle(status=True)
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to turn')
 
-    change_odom(odom="dvl")
-    rospy.loginfo('odom source changed')
+    # pose_reach(time_out=30)
+    # rospy.loginfo('turned')
 
-    rospy.sleep(1)
+    # stall_vehicle(status=True)
+    # rospy.loginfo('vehicle stalled')
 
-    depth_to_cover = get_max_depth(task="start_gate")
-    print ("depth to conver: {}".format(depth_to_cover.depth))
+    # reset_imu()
+    # rospy.loginfo('reset imu')
 
-    point.x = depth_to_cover.depth*2
-    point.y = 0
-    point.z = 0
+    # change_odom(odom="vision")
+    # rospy.loginfo('odom source changed')
 
-    go_to_incremental(step=point, interpolator='lipb', max_forward_speed=0.5)
-    rospy.loginfo('cmd to cross the gate')
+    # rospy.sleep(1)
 
-    trajectory_complete(time_out=120)
-    rospy.loginfo('completed gate task')
+    # pose = current_p
+    # pose.position.y = 0
+    # pose.position.z = 0
+
+    # go_to_pose(target_pose=pose)
+    # rospy.loginfo('cmd to align to the center again')
+
+    # pose_reach(time_out=30)
+    # rospy.loginfo('aligned to the center')
+
+    # stall_vehicle(status=True)
+
+    # change_odom(odom="dvl")
+    # rospy.loginfo('odom source changed')
+
+    # rospy.sleep(1)
+
+    # depth_to_cover = get_max_depth(task="start_gate")
+
+    # point.x = depth_to_cover.depth*2
+    # point.y = 0
+    # point.z = 0
+
+    # go_to_incremental(step=point, interpolator='lipb', max_forward_speed=0.5)
+    # rospy.loginfo('cmd to cross the gate')
+
+    # trajectory_complete(time_out=120)
+    # rospy.loginfo('completed gate task')

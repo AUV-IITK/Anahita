@@ -59,7 +59,7 @@ cv::Point StartGate::findGateCenter (cv::Mat& thres_img) {
         bigger_rect = cv::boundingRect (cv::Mat (contours[0]));
         smaller_rect = cv::boundingRect (cv::Mat (contours[1]));
         center.x = ((bigger_rect.br()).x + (bigger_rect.tl()).x)/4 + ((smaller_rect.br()).x + (smaller_rect.tl()).x)/4;
-        center.y = ((bigger_rect.br()).y + (bigger_rect.tl()).y)/4 + ((smaller_rect.br()).y + (smaller_rect.tl()).y)/4;
+        center.y = ((bigger_rect.br()).y + (bigger_rect.tl()).y)/2 - 0.3*((smaller_rect.br()).y - (smaller_rect.tl()).y);
     }
     else if (contours.size() >= 3) {
         std::vector<cv::Rect> rects;
@@ -76,8 +76,10 @@ cv::Point StartGate::findGateCenter (cv::Mat& thres_img) {
         int idx_ = 0;
         if (dist (centers[2], centers[1]) < dist (centers[2], centers[0])) idx_ = 1;
 
+        int mean_l = 0.5*((rects[0].br()).y - (rects[0].tl()).y) + 0.5*((rects[0].br()).y - (rects[0].tl()).y);
+
         center.x = ((rects[idx_].br()).x + (rects[idx_].tl()).x)/4 + ((rects[2].br()).x + (rects[2].tl()).x)/4;
-        center.y = ((rects[idx_].br()).x + (rects[idx_].tl()).x)/4 + ((rects[2].br()).x + (rects[2].tl()).x)/4;
+        center.y = ((rects[0].br()).x + (rects[0].tl()).x)/4 + ((rects[1].br()).x + (rects[1].tl()).x)/4 - 0.3*mean_l;
     }
 
     return center;

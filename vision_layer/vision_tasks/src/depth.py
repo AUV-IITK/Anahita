@@ -39,11 +39,11 @@ def load_model (model_name):
 
 models = dict()
 
-models['gate_depth'] = load_model ('gate_depth_model2')
+models['gate_depth'] = load_model ('gate_depth_model')
 # models['buoy_depth'] = load_model ('buoy_depth_model')
 # models['buoy_yaw'] = load_model ('buoy_yaw_model')
 # models['marker'] = load_model ('marker_depth_model')
-# models['gate_yaw'] = load_model ('gate_yaw_model')
+models['gate_yaw'] = load_model ('gate_yaw_model')
 
 def in_range (a, b, thres):
     if abs(a - b) < thres:
@@ -67,7 +67,7 @@ def depth_avg (depth):
         z_count += 1
     else:
         z_avg = avg (z_coord)
-        if (in_range(z, z_avg, 15)):
+        if (in_range(z, z_avg, 10)):
             z_coord = numpy.roll(z_coord, -1)
             z_coord[9] = z
 
@@ -82,8 +82,8 @@ def yaw_avg_ (yaw):
         yaw_count += 1
     else:
         yaw_avg = avg (yaw_coord)
-        if (in_range(yaw, yaw_avg, 15)):
-            numpy.roll(yaw_coord, -1)
+        if (in_range(yaw, yaw_avg, 2)):
+            yaw_coord = numpy.roll(yaw_coord, -1)
             yaw_coord[9] = yaw
 
 def predict_ (model, features):
@@ -120,7 +120,7 @@ def getDepthCB (request):
     return GetMaxDepthResponse(z_avg)
 
 def getNormal (request):
-    return TargetNormalResponse(yaw_avg)
+    return TargetNormalResponse(yaw_avg/57.11)
 
 if __name__ == '__main__':
     
@@ -129,13 +129,16 @@ if __name__ == '__main__':
     current_task_sub = rospy.Subscriber ('/anahita/current_task', String, currentTaskCB)
 
     get_max_depth = rospy.Service('/anahita/get_max_depth', GetMaxDepth, getDepthCB)
-    target_normal = rospy.ServiceProxy('/anahita/target_normal', TargetNormal, getNormal)
+    target_normal = rospy.Service('/anahita/target_normal', TargetNormal, getNormal)
 
     while not rospy.is_shutdown():
         if features_init:
             try:
                 depth = predict_(depth_model, features)
                 depth_avg (depth)
+                yaw = predict_(yaw_model, features)
+                yaw_avg_ (yaw)
+                print (yaw_avg)
             except:
                 print ('something bad happened')
         time.sleep(0.1)

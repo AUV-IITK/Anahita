@@ -48,14 +48,14 @@ if __name__=='__main__':
     depth_sub = rospy.Subscriber('/anahita/distance', Point, depth_cb)
     imu_sub = rospy.Subscriber('/anahita/imu', Imu, imu_cb)
 
-    marker_center = Point(3.2, 1.5, -1.5)
+    marker_center = Point(0, 0, -10)
 
-    f = open('yaw.csv', 'w+')
+    f = open('../../data/torpedo_yaw_data.csv', 'w+')
 
     while not rospy.is_shutdown():
         # depth = get_dist (marker_center, curr_point)
         f.write(make_string(features, yaw))
         f.flush()
-        print make_string(features, yaw)
+        print (make_string(features, yaw))
         rospy.sleep(0.5)
         

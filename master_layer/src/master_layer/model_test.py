@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 from sklearn.externals import joblib
 import pickle
 
-num_attr = 15 # number of features fed into the network
+num_attr = 12 # number of features fed into the network
 
 # load dataset
-dataframe = pandas.read_csv("../../data/gate_depth_test1.csv", delim_whitespace=True, header=None)
+dataframe = pandas.read_csv("../../data/torpedo_yaw_test.csv", delim_whitespace=True, header=None)
 dataset = dataframe.values
 print ('data loaded')
 
@@ -81,11 +81,11 @@ def plot (Y, Y_pred):
     ax.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'k--', lw=4)
     ax.set_xlabel('Measured')
     ax.set_ylabel('Predicted')
-    plt.savefig('../../img/gate_depth_model3.png')
+    plt.savefig('../../img/torpedo_yaw_model.png')
     plt.show()
 
 if (test_type == "simple"):
-    model = load_simple('gate_depth_model2')
+    model = load_simple('torpedo_yaw_model')
     Y_pred = model.predict(X)
     mean_error(Y, Y_pred)
     plot (Y, Y_pred)

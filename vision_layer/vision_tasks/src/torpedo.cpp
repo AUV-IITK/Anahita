@@ -278,6 +278,18 @@ void Torpedo::spinThreadFront() {
                                         front_opening_mat_point_, front_opening_mat_point_, front_opening_iter_);
             vision_commons::Morph::close(image_front_thresholded, 2 * front_closing_mat_point_ + 1,
                                          front_closing_mat_point_, front_closing_mat_point_, front_closing_iter_);
+
+            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
+            front_thresholded_pub.publish(front_image_thresholded_msg);
+            front_roi_pub.publish(front_image_thresholded_msg);
+
+            extractFeatures (image_front_thresholded);
+            front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
+            front_marked_pub.publish(front_image_marked_msg);
+
+            loop_rate.sleep();
+            continue;
+
             largest_contour = vision_commons::Contour::getLargestContour(image_front_thresholded);
             if (!largest_contour.size()) {
                 ROS_INFO("No contour found");
@@ -299,13 +311,6 @@ void Torpedo::spinThreadFront() {
             else if (current_hole == "TR") {bound_circle_center.x = TR.x; bound_circle_center.y = TR.y;}
             else if (current_hole == "TL") {bound_circle_center.x = TL.x; bound_circle_center.y = TL.y;}
             else if (current_hole == "BOT") {bound_circle_center.x = BOT.x; bound_circle_center.y = BOT.y;}
-
-            front_image_marked_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", marked_img).toImageMsg();
-            front_marked_pub.publish(front_image_marked_msg);
-
-            front_image_thresholded_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_front_thresholded).toImageMsg();
-            front_thresholded_pub.publish(front_image_thresholded_msg);
-            front_roi_pub.publish(front_image_thresholded_msg);
 
             front_x_coordinate.data = 0;
             front_y_coordinate.data = bound_circle_center.x;
@@ -359,16 +364,22 @@ bool in_range (float a, float b, float range) {
 void Torpedo::extractFeatures (const cv::Mat& thres_img) {
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
+    std::vector<int> idx_;
     cv::findContours (thres_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-    contours = vision_commons::Contour::filterContours(contours, 100);
-    if (contours.size() < 2) return;
-    vision_commons::Contour::sortFromBigToSmall(contours);
+    vision_commons::Contour::filterContours(contours, idx_, 70);
+    if (idx_.size() < 2) return;
+
     std::vector<std::vector<cv::Point> > filtered_contours;
 
-    for (int i = 0; i < contours.size(); i++) {
-        if (hierarchy[i][2] < 0 && hierarchy[i][3] > 0) continue;
-        filtered_contours.push_back(contours[i]);
+    for (int i = 0; i < idx_.size(); i++) {
+        if (hierarchy[idx_[i]][3] >= 0) { continue; }
+        else {
+            std::cout << "index: " << idx_[i] << "child: " << hierarchy[idx_[i]][2] << "parent: " << hierarchy[idx_[i]][3] << std::endl;
+            filtered_contours.push_back(contours[idx_[i]]);
+        }
     }
+
+    vision_commons::Contour::sortFromBigToSmall(filtered_contours);
 
     static int l_x = -1;
     static int l_y = -1;
@@ -386,47 +397,73 @@ void Torpedo::extractFeatures (const cv::Mat& thres_img) {
     std::vector<circle_> circles;
     for (int i = 0; i < filtered_contours.size(); i++) {
         cv::Point2f center; float radius;
-        cv::minEnclosingCircle (cv::Mat(contours[i]), center, radius);
+        cv::minEnclosingCircle (cv::Mat(filtered_contours[i]), center, radius);
+        cv::circle(marked_img, center, (int)radius, cv::Scalar(0, 0, 255), 2, 8, 0);
         circles.push_back({center, radius});
     }
     sortCirclesLeftToRight (circles);
 
     if (circles.size() == 2) {
+        std::cout << "2 contours" << std::endl;
         if (in_range (circles[0].center.y, circles[1].center.y, 20)) {
-            cv::Point2f l_center, r_center;
+            cv::Point2f l_center, r_center, m_center;
             float l_radius, r_radius;
             l_center = circles[0].center; l_radius = circles[0].radius;
-            r_center = circles[2].center; r_radius = circles[2].radius;
-
+            r_center = circles[1].center; r_radius = circles[1].radius;
+            
             l_x = l_center.x; l_y = l_center.y;
             r_x = r_center.x; r_y = r_center.y;
 
             l_r_d = get_dist (l_center, r_center);
 
             l_s = 2*M_PI*l_radius; r_s = 2*M_PI*r_radius;
+        
+            m_center.x = (l_center.x + r_center.x)/2;
+            m_center.y = (l_center.y + r_center.y)/2 + 1.2*l_r_d;
+
+            m_x = m_center.x; m_y = m_center.y;
+            l_m_d = get_dist (l_center, m_center);
+            m_r_d = get_dist (m_center, r_center);
+
+            m_s = (l_s + r_s)/2;
         }
         else {
             if (circles[0].center.y > circles[1].center.y) { // 0 => middle
-                cv::Point2f m_center, r_center;
-                float m_radius, r_radius;
-                m_center = circles[1].center; m_radius = circles[1].radius;
-                r_center = circles[2].center; r_radius = circles[2].radius;
+                cv::Point2f m_center, r_center, l_center;
+                float m_radius, r_radius, l_radius;
+                m_center = circles[0].center; m_radius = circles[0].radius;
+                r_center = circles[1].center; r_radius = circles[1].radius;
+                l_center.x = 2*m_center.x - r_center.x;
+                l_center.y = r_center.y;
+                l_radius = r_radius;
+
+                l_x = l_center.x; l_y = l_center.y;
                 m_x = m_center.x; m_y = m_center.y;
                 r_x = r_center.x; r_y = r_center.y;
                 m_r_d = get_dist (r_center, m_center);
-                m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius;
+                l_m_d = get_dist (l_center, m_center);
+                l_r_d = get_dist (l_center, r_center);
+                m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius; l_s = 2*M_PI*l_radius; 
             } else {
-                cv::Point2f l_center, m_center;
-                float l_radius, m_radius;
+                cv::Point2f l_center, m_center, r_center;
+                float l_radius, m_radius, r_radius;
                 l_center = circles[0].center; l_radius = circles[0].radius;
                 m_center = circles[1].center; m_radius = circles[1].radius;
+                r_center.x = 2*m_center.x - l_center.x;
+                r_center.y = r_center.y;
+                r_radius = l_radius;
+
                 l_x = l_center.x; l_y = l_center.y;
                 m_x = m_center.x; m_y = m_center.y;
+                r_x = r_center.x; r_y = r_center.y;
                 l_m_d = get_dist (l_center, m_center);
-                l_s = 2*M_PI*l_radius; m_s = 2*M_PI*m_radius;
+                m_r_d = get_dist (r_center, m_center);
+                l_r_d = get_dist (l_center, r_center);
+                l_s = 2*M_PI*l_radius; m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius;
             }
         }
     } else {
+        std::cout << "3 contours" << std::endl;
         cv::Point2f l_center, m_center, r_center;
         float l_radius, m_radius, r_radius;
 
@@ -444,6 +481,7 @@ void Torpedo::extractFeatures (const cv::Mat& thres_img) {
 
         l_s = 2*M_PI*l_radius; m_s = 2*M_PI*m_radius; r_s = 2*M_PI*r_radius;
     }
+    feature_msg.data.clear();
     fill_msg (feature_msg, l_x, l_y, m_x, m_y, r_x, m_y, l_m_d, m_r_d, l_r_d, l_s, m_s, r_s);
     features_pub.publish(feature_msg);
 }
