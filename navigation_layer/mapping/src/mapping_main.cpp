@@ -54,7 +54,7 @@ namespace mapping{
       if(_map.atPosition("occupancy", checked_space) == 0)
           _map.atPosition("occupancy", checked_space) = -1;
         
-      ROS_INFO("We have already gone to: %d %d",msg->pose.pose.position.x,msg->pose.pose.position.y);
+      ROS_INFO("We have already gone to: %f %f",msg->pose.pose.position.x,msg->pose.pose.position.y);
       
   }
 

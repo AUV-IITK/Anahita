@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   grid_map_ros
   std_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,7 +74,7 @@ add_service_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs nav_msgs
+  DEPENDENCIES actionlib_msgs std_msgs nav_msgs geometry_msgs
 )
 
 ################################################
@@ -108,7 +109,7 @@ generate_messages(
 catkin_package(
   # INCLUDE_DIRS include
   # LIBRARIES heavePIDServer swayPIDServer surgePIDServer yawPIDServer pitchPIDServer rollPIDServer
-  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation grid_map_core grid_map_msgs grid_map_ros
+  CATKIN_DEPENDS actionlib actionlib_msgs roscpp rospy std_msgs message_generation grid_map_core grid_map_msgs grid_map_ros geometry_msgs
   # DEPENDS system_lib
 )
 

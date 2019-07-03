@@ -2,7 +2,7 @@
 #define SLAM_SERVER_H
 
 #include "slam_filter.h"
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include "mapping/slam_msg.h"
 #include "mapping/slam_srv.h"
 #include "nav_msgs/Odometry.h"
