@@ -3,7 +3,10 @@
 namespace mapping{
 
 //SLAM CLIENT DEFINTIONS
-int SlamClient::observe_landmark(const ros::NodeHandlePtr &n_,std::string obj_id, double m_x, double m_y, double m_z, double u_x=0, 
+SlamClient::SlamClient(const ros::NodeHandlePtr &n_): n_(n_)
+{
+}
+int SlamClient::observe_landmark(std::string obj_id, double m_x, double m_y, double m_z, double u_x=0, 
             double u_y=0, double u_z=0, int uncertainty=0)
 {
     mapping::slam_msg msg;
@@ -34,7 +37,7 @@ int SlamClient::observe_landmark(const ros::NodeHandlePtr &n_,std::string obj_id
         ROS_ERROR("REQUEST FAILED");
 }
 
-vec6 SlamClient::request_landmark(const ros::NodeHandlePtr &n_, std::string obj_id)
+vec6 SlamClient::request_landmark( std::string obj_id)
 {
     ros::ServiceClient slclient=n_->serviceClient<mapping::slam_srv>("request_slam"); 
     mapping::slam_srv srv;
@@ -52,7 +55,7 @@ vec6 SlamClient::request_landmark(const ros::NodeHandlePtr &n_, std::string obj_
     }
 }
 
-vec3 SlamClient::request_position(const ros::NodeHandlePtr &n_)
+vec3 SlamClient::request_position()
 {
     ros::ServiceClient slclient=n_->serviceClient<mapping::slam_srv>("request_slam"); 
     mapping::slam_srv srv;
@@ -70,8 +73,8 @@ vec3 SlamClient::request_position(const ros::NodeHandlePtr &n_)
 }
 
 //SLAM SERVER DEFINITIONS
-SlamServer::SlamServer(SlamFilter *filter)
-    : filter_{filter} {
+SlamServer::SlamServer(const ros::NodeHandlePtr &n_, SlamFilter *filter)
+    : n_(n_), filter_{filter} {
 
 }
 bool SlamServer::slam_do(mapping::slam_srv::Request &req, mapping::slam_srv::Response &res)
@@ -93,9 +96,9 @@ bool SlamServer::slam_do(mapping::slam_srv::Request &req, mapping::slam_srv::Res
         res.u_z=state(5,0);
         }
     return true;
-    }
+}
 
-void SlamServer::Listen(const ros::NodeHandlePtr &n_) {
+void SlamServer::Listen() {
     while (true) 
     {
         ros::ServiceServer slsrv=n_->advertiseService("request_slam",&SlamServer::slam_do,this);
@@ -112,9 +115,28 @@ bool SlamServer::observe(mapping::slam_msg::Request &msg, mapping::slam_msg::Res
     rep.rep=1;
     return true;
 }
-void SlamServer::Landmark_observe(const ros::NodeHandlePtr n_)
+void SlamServer::Landmark_observe()
 {
     ros::ServiceServer sub=n_->advertiseService("observe_landmark",&SlamServer::observe,this);
 }
+
+//SlamNode
+
+SlamNode::SlamNode(const ros::NodeHandlePtr &n_): n_(n_), client(n_), server(n_, new SlamFilter(100))
+{  
+}
+void SlamNode::add_landmark()
+{
+    sub=n_->subscribe("landmark", 10, &SlamNode::Observe, this);   
+}
+
+void SlamNode::Observe(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
+{
+    client.observe_landmark(msg->header.frame_id, msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+    server.Landmark_observe();
+}
+
+
+
 
 }

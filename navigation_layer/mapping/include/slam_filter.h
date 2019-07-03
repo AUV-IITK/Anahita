@@ -58,7 +58,7 @@ class SlamFilter {
 
         void GNUPlotOut();
 
-
+        
         friend std::ostream& operator<<(std::ostream &os, const SlamFilter &sf);
 
     private:

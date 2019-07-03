@@ -33,8 +33,8 @@ private:
     grid_map::GridMap _map;
 
     tf::TransformBroadcaster map_to_odom_broadcaster;
-    
-    std::string map_yaml_location = "/home/ayush/Projects/anahita_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
+
+    std::string map_yaml_location = "/home/kartavya/catkin_ws/src/Anahita/navigation_layer/mapping/config/transdec.yaml";
 
 };
 
