@@ -138,9 +138,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(mapping_node src/mapping_node.cpp include/mapping_main.h ${FILES})
+add_executable(mapping_node src/mapping_node.cpp include/mapping_main.h include/slam_server.h ${FILES})
 target_link_libraries(mapping_node ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(mapping_node mapping_gencpp)
+
+add_executable(test src/test.cpp ${FILES})
+target_link_libraries(test ${catkin_LIBRARIES} yaml-cpp)
 
 
 ## Declare a C++ library
