@@ -3,6 +3,7 @@
 #include "marker.h"
 #include "torpedo.h"
 #include "crucifix.h"
+#include "cruc.h"
 #include "grabber.h"
 #include "testgate.h"
 #include "triangular_buoy.h"
@@ -13,7 +14,7 @@
 
 #include <master_layer/CurrentTask.h>
 
-std::string current_task = "torpedo";
+std::string current_task = "crucifix";
 std::string previous_task = "";
 
 bool changeCurrentTask(master_layer::CurrentTask::Request &req,
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
     ros::Duration(1).sleep();
 
     Gate gate;
+    Cruc cruc;
     Torpedo torpedo;
     PathMarker path_marker;
     Marker marker;
@@ -41,7 +43,7 @@ int main(int argc, char *argv[])
     Grabber grabber;
     TestGate testgate;
     TriangularBuoy triangular_buoy;
-    current_task = "torpedo";
+    current_task = "grabber_test";
 
     ros::Rate loop_rate(10);
 
@@ -103,6 +105,12 @@ int main(int argc, char *argv[])
                 testgate.frontTaskHandling(false);
             }
             if (current_task == "triangular_buoy") {
+                triangular_buoy.frontTaskHandling(true);
+            }
+            if (previous_task == "triangular_buoy") {
+                triangular_buoy.frontTaskHandling(false);
+            }
+	    if (current_task == "c") {
                 triangular_buoy.frontTaskHandling(true);
             }
             if (previous_task == "triangular_buoy") {

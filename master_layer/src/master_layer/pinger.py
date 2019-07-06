@@ -76,8 +76,8 @@ if __name__ == '__main__':
         hold_vehicle = rospy.ServiceProxy('anahita/hold_vehicle', Hold)
         trajectory_complete = rospy.ServiceProxy('anahita/trajectory_complete', TrajectoryComplete)
         pose_reach = rospy.ServiceProxy('anahita/pose_reach', PoseReach)
-        pinger_front = rospy.ServiceProxy('anahita/pinger_front_target', PingerFrontTarget)
-        pinger_bottom = rospy.ServiceProxy('anahita/pinger_bottom_target', PingerBottomTarget)
+       # pinger_front = rospy.ServiceProxy('anahita/pinger_front_target', PingerFrontTarget)
+      #  pinger_bottom = rospy.ServiceProxy('anahita/pinger_bottom_target', PingerBottomTarget)
     
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -86,14 +86,15 @@ if __name__ == '__main__':
     
     #request to hold the vehicle before the pinger is detected
 
-    while not rospy.is_shutdown():
-        if init_pinger:
-            break
+   # while not rospy.is_shutdown():
+    #    if init_pinger:
+     #       break
 
     pose = Pose()
     step_point = Point()
+    print("Started")
 
-    current_task(current_task="pinger")
+  #  current_task(current_task="pinger")
     
     curr_eu = trans.euler_from_quaternion(current_p.orientation)
     target_eu = curr_eu
@@ -121,7 +122,7 @@ if __name__ == '__main__':
         if (pinger_front()):
             success = True
             break
-        else if (now - then > straight_time.data):
+        elif (now - then > straight_time.data):
             break
         rospy.sleep(2)
 
@@ -153,7 +154,7 @@ if __name__ == '__main__':
             if (pinger_bottom()):
                 success = True
                 break
-            else if (now - then > straight_time.data):
+            elif (now - then > straight_time.data):
                 break
             rospy.sleep(2)
 
@@ -180,7 +181,7 @@ if __name__ == '__main__':
             if (pinger_bottom()):
                 success = True
                 break
-            else if (now - then > straight_time.data):
+            elif (now - then > straight_time.data):
                 break
             rospy.sleep(2)
 

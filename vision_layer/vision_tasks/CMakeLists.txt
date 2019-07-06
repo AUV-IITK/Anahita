@@ -50,6 +50,10 @@ add_library(gate_task SHARED src/gate.cpp include/gate.h include/base_class.h)
 add_dependencies(gate_task base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(gate_task base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
 
+add_library(cruc_task SHARED src/cruc.cpp include/cruc.h include/base_class.h)
+add_dependencies(cruc_task base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(cruc_task base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
+
 add_library(path_marker SHARED src/path_marker.cpp include/path_marker.h include/base_class.h)
 add_dependencies(path_marker base_class  ${vision_tasks_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_marker base_class  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} vision_commons )
@@ -100,4 +104,5 @@ target_link_libraries(vision_node
   crucifix_task
   grabber_test
   startgate
+  cruc_task
 )

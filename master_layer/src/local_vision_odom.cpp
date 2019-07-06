@@ -119,8 +119,8 @@ void yCallback (const std_msgs::Float32 msg) {
     }
 }
 
-void xCallback (const geometry_msgs::Point msg) {
-    x = msg.z;
+void xCallback (const std_msgs::Float32 msg) {
+    x = msg.data;
     if (x_count < 10) { 
         x_coord[x_count] = x;
         x_avg = avg (x_coord);
@@ -187,8 +187,9 @@ int main (int argc, char** argv) {
 
     ros::Subscriber z_sub = nh.subscribe("/anahita/front_camera/z_coordinate", 100, &zCallback);
     ros::Subscriber y_sub = nh.subscribe("/anahita/front_camera/y_coordinate", 100, &yCallback);
+    ros::Subscriber x_sub = nh.subscribe("/anahita/front_camera/x_coordinate", 100, &xCallback);
     ros::Subscriber odom_sub = nh.subscribe("/anahita/pose_gt/relay", 100, &dvlCallback);
-    ros::Subscriber mean_coord_sub = nh.subscribe("/anahita/mean_coord", 100, &xCallback);
+//    ros::Subscriber mean_coord_sub = nh.subscribe("/anahita/mean_coord", 100, &xCallback);
 
     ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/anahita/pose_gt", 100);
     ros::Subscriber ml_sub = nh.subscribe("/anahita/bounding_boxes", 1, &ml_callback);
@@ -209,10 +210,12 @@ int main (int argc, char** argv) {
         }
         else if (odom_source == "vision") {
             odom_msg = odom_data;
-            odom_msg.pose.pose.position.y = y_avg/1000.0;
-            odom_msg.pose.pose.position.z = z_avg/1000.0;
+            odom_msg.pose.pose.position.x = 0;
+            odom_msg.pose.pose.position.y = y_avg/500.0;
+            odom_msg.pose.pose.position.z = z_avg/500.0;
             if (odom_init) transform (odom_msg.pose.pose.position);
-  	    ROS_INFO("VALUES---------- %f %f %f", -x_avg/1000, y_avg/200, -z_avg/1000);
+            odom_msg.pose.pose.position.x = 0;
+  	    ROS_INFO("VALUES---------- %f %f %f", -x_avg/500, y_avg/500, -z_avg/500);
         }
         else if (odom_source == "vision_ml"){
             odom_msg = odom_data;

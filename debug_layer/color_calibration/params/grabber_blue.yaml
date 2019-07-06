@@ -9,5 +9,5 @@ vision:
     g_min: 0
     opening_iter: 3
     opening_mat_point: 1
-    r_max: 255
-    r_min: 187
+    r_max: 42
+    r_min: 0

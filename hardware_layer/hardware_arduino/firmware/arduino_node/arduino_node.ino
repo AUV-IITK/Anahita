@@ -121,7 +121,7 @@ void loop()
         prev_pressure_time = millis();
     }
     
-    delay(10);
+    delay(67);
     //Just calling the two loops which will handle i/o as well
     actuatorLoop();
     sensorLoop();
@@ -165,6 +165,7 @@ void actuatorLoop(){
     // We've already used this message
     message = "";
     stringComplete = false;
+   //Serial.print(splitMessages[3] + "," + splitMessages[2] + "," + splitMessages[0] + "," + splitMessages[1] + ","  + splitMessages[4] + ","  + splitMessages[5] + ","  + splitMessages[6] + "," + splitMessages[7] + ","); 
     TEast(-splitMessages[3].toInt());
     TWest(-splitMessages[2].toInt());
     TNorth(-splitMessages[0].toInt());

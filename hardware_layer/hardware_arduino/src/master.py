@@ -48,7 +48,7 @@ if __name__ == '__main__':
             pwm_msg = pwm_str.encode('utf-8')
             serial_connection.write(pwm_msg)
             rospy.loginfo(pwm_str)
-            rospy.sleep(0.05)
+            rospy.sleep(0.067)
 
             # Serial read section
             msg = serial_connection.read(serial_connection.inWaiting()) # read all characters in buffer
