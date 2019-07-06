@@ -74,7 +74,11 @@ add_service_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs nav_msgs geometry_msgs
+  DEPENDENCIES 
+  actionlib_msgs 
+  std_msgs 
+  nav_msgs 
+  geometry_msgs
 )
 
 ################################################
@@ -138,12 +142,19 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(mapping_node src/mapping_node.cpp include/mapping_main.h include/slam_server.h ${FILES})
+add_executable(test_node src/test_node.cpp)
+target_link_libraries(test_node ${catkin_LIBRARIES})
+add_dependencies(test_node mapping_gencpp)
+
+add_executable(mapping_node  src/mapping_node.cpp src/mapping_main.cpp src/ekf.cpp src/slam_clsrv.cpp src/slam_filter.cpp include/mapping_main.h include/slam_server.h include/conf.h include/ekf.h include/slam_ekf.h include/slam_filter.h include/util.h)
 target_link_libraries(mapping_node ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(mapping_node mapping_gencpp)
 
-add_executable(test src/test.cpp ${FILES})
-target_link_libraries(test ${catkin_LIBRARIES} yaml-cpp)
+add_executable(server_node src/server_node.cpp src/ekf.cpp src/slam_clsrv.cpp src/slam_filter.cpp include/slam_server.h include/conf.h include/ekf.h include/slam_ekf.h include/slam_filter.h include/util.h )
+target_link_libraries(server_node ${catkin_LIBRARIES})
+add_dependencies(server_node mapping_gencpp)
+
+
 
 
 ## Declare a C++ library

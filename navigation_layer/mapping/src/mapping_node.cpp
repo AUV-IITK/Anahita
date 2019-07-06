@@ -11,8 +11,9 @@ int main(int argc, char** argv)
   mapping::MappingNode mapping_node(nh);
   mapping::SlamNode node(nh);
   node.add_landmark();
+  
   ROS_INFO("Started the mapping_node handler");
-  mapping_node.Spin();
+  ros::spin();
   return 0;
 
 }

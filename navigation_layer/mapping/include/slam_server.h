@@ -39,7 +39,7 @@ class SlamNode
         ros::NodeHandlePtr n_;
         ros::Subscriber sub;
         SlamClient client;
-        SlamServer server;
+        
     public:
         SlamNode(const ros::NodeHandlePtr &n_);
         void Observe(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);

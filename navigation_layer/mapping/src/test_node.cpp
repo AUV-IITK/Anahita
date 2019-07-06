@@ -5,13 +5,14 @@ typedef geometry_msgs::PoseWithCovarianceStamped pose;
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "test");
-    ros::NodeHandlePtr nh(new ros::NodeHandle("~"));
+    ros::init(argc, argv, "test_node");
+    ros::NodeHandle nh;
     ros::Rate rate(15);
+    ros::Publisher pub= nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/test_node/landmarks",1000);
+     
     int count=0;
     while(ros::ok())
     {
-        ros::Publisher pub= nh->advertise<geometry_msgs::PoseWithCovarianceStamped>("anahita/landmarks",1000);
         pose msg;
         std::string id("test %d", count);
         msg.header.frame_id=id;
@@ -23,7 +24,8 @@ int main(int argc, char** argv)
         msg.pose.pose.orientation.z=0.0;
         msg.pose.pose.orientation.w=1.0;
         pub.publish(msg);
-        ros::spin();
+        ROS_INFO("published message {%d}" ,count);
+        ros::spinOnce();
         rate.sleep();
         count++;
     }
