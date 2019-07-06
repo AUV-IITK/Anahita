@@ -57,25 +57,24 @@ find_package(Boost REQUIRED COMPONENTS system)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+#add_message_files(
+ #  FILES
+ # slam_msg.msg
+ #)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  slam_msg.srv
+  slam_srv.srv
+)
 
 ## Generate actions in the 'action' folder
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES actionlib_msgs std_msgs nav_msgs
-# )
+generate_messages(
+  DEPENDENCIES actionlib_msgs std_msgs nav_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
