@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="mapping" name="server_node" type="server_node" output="screen"/>
+    <node pkg="mapping" name="mapping_node" type="mapping_node" output="screen"/>
+    <node pkg="mapping" name="test_node" type="test_node" output="screen"/>
+</launch>    
